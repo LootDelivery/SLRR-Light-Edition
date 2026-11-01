@@ -143,6 +143,31 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewPart.setMatrix( null, null );
 		previewPart.refreshGlassOpacityPreview();
 
+		// Native BBox query probe. Use only with the matching query-probe EXE.
+		int previewMeshID = previewPart.getMesh();
+		if( previewMeshID )
+		{
+			GameRef previewMeshRef = new GameRef( previewMeshID );
+			previewMeshRef.load();
+
+			int previewMeshType = previewMeshRef.type();
+			int previewCenterX = previewMeshRef.getInfo( 0x584F4242, 0 );
+			int previewCenterY = previewMeshRef.getInfo( 0x584F4242, 1 );
+			int previewCenterZ = previewMeshRef.getInfo( 0x584F4242, 2 );
+
+			System.log(
+				"BBOX_QUERY meshID=" + previewMeshID +
+				" type=" + previewMeshType +
+				" center_milli=" + previewCenterX + "," +
+				previewCenterY + "," + previewCenterZ
+			);
+
+			previewMeshRef.unload();
+		}
+		else
+			System.log( "BBOX_QUERY Part.getMesh returned 0" );
+
+
 		savedPosition = previewPart.getPos();
 		if( savedPosition )
 			savedPosition = new Vector3( savedPosition );
