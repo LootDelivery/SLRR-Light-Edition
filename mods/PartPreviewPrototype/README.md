@@ -59,7 +59,7 @@ Run from this folder in PowerShell. GNU binutils (`as`, `ld`) with ELF32/i386 su
 ```powershell
 python .\native\build_partpreview_aabb_experimental.py `
   .\StreetLegal_Redline_native_getinfo_route_probe.exe `
-  .\StreetLegal_Redline_native_aabb_getter_experimental.exe
+  .\StreetLegal_Redline_native_aabb_getter_diagnostics.exe
 ```
 
 The builder pins the input SHA-256, refuses to overwrite the input, verifies the native registration/dispatcher bytes, and requires the candidate `.text` padding to be zero. It writes a separate executable and verifies that changes are restricted to the `.text` VirtualSize field, the two code caves, and the eight-byte dispatch site.
@@ -69,7 +69,7 @@ No DLL, injected process hook, external process-memory access, or new Java nativ
 ## Test sequence
 
 1. Keep the route-probe executable and original game executable untouched.
-2. Build the separate `StreetLegal_Redline_native_aabb_getter_experimental.exe`.
+2. Build the separate `StreetLegal_Redline_native_aabb_getter_diagnostics.exe`.
 3. Test in a copied game installation.
 4. First confirm garage entry and catalog category loading.
 5. Open a part preview and inspect `PartPreviewTrace.txt` in the game's temp-save directory. Axes `0..5` are the fresh CPU-vertex bounds; axes `6..11` are the loader's stored root bounds. Compare them on an unmodified mesh.
