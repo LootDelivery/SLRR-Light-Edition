@@ -1,0 +1,6 @@
+diff --git a/sl/Scripts/game/src/Catalog.java b/sl/Scripts/game/src/Catalog.java
+--- a/sl/Scripts/game/src/Catalog.java
++++ b/sl/Scripts/game/src/Catalog.java
+@@ -2187,7 +2187,7 @@
+-				Dialog d = new BuyCatalogItemDialog( player.controller, Dialog.DF_MODAL|Dialog.DF_DEFAULTBG|Dialog.DF_WIDE, item, price );
++				Dialog d = new BuyPartPreviewDialog( player.controller, Dialog.DF_MODAL|Dialog.DF_DEFAULTBG|Dialog.DF_WIDE, item, price );
