@@ -23,7 +23,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	InventoryItem item;
 	Part sourcePart;
 	Part previewPart;
-	GameRef previewMeshRef;
 
 	Dummy previewRoot;
 	RenderRef previewLight;
@@ -190,12 +189,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( previewMeshID )
 		{
 			tracePreview( "12 before preview mesh GameRef construction" );
-			previewMeshRef = new GameRef( previewMeshID );
+			GameRef previewMeshRef = new GameRef( previewMeshID );
 			tracePreview( "13 after preview mesh GameRef construction" );
 
-			tracePreview( "14 before previewMeshRef.load" );
-			previewMeshRef.load();
-			tracePreview( "15 after previewMeshRef.load" );
+			// previewPart already owns and uses this live mesh. Do not acquire
+			// or release a second load reference for the shared mesh resource.
+			tracePreview( "14 using mesh through live previewPart; no extra load" );
 
 			tracePreview( "16 before previewMeshRef.type" );
 			int previewMeshType = previewMeshRef.type();
@@ -220,9 +219,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				previewCenterY + "," + previewCenterZ
 			);
 
-			// Keep the mesh resource loaded while previewPart may render it.
-			// It is released only after previewPart is destroyed in hide().
-			tracePreview( "27 mesh resource retained for preview lifetime" );
+			// No explicit unload: the mesh lifetime is owned by previewPart.
+			tracePreview( "27 mesh handle released; no separate resource unload" );
 		}
 		else
 			tracePreview( "19 previewPart.getMesh returned 0; BBOX skipped" );
@@ -409,45 +407,55 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	public void hide()
 	{
+		tracePreview( "H00 hide begin" );
+		tracePreview( "H01 before disableAnimateHook" );
 		disableAnimateHook();
+		tracePreview( "H02 after disableAnimateHook" );
 
 		if( previewCamera )
 		{
+			tracePreview( "H10 before previewCamera.destroy" );
 			previewCamera.destroy();
 			previewCamera = null;
+			tracePreview( "H11 after previewCamera.destroy" );
 		}
 
 		if( previewViewport )
 		{
+			tracePreview( "H20 before previewViewport.deactivate" );
 			previewViewport.deactivate();
+			tracePreview( "H21 after previewViewport.deactivate" );
 			previewViewport.destroy();
 			previewViewport = null;
+			tracePreview( "H22 after previewViewport.destroy" );
 		}
 
 		if( previewLight )
 		{
+			tracePreview( "H30 before previewLight.destroy" );
 			previewLight.destroy();
 			previewLight = null;
+			tracePreview( "H31 after previewLight.destroy" );
 		}
 
 		if( previewPart )
 		{
+			tracePreview( "H40 before previewPart.destroy" );
 			previewPart.destroy();
 			previewPart = null;
-		}
-
-		if( previewMeshRef )
-		{
-			previewMeshRef.unload();
-			previewMeshRef = null;
+			tracePreview( "H41 after previewPart.destroy" );
 		}
 
 		if( previewRoot )
 		{
+			tracePreview( "H50 before previewRoot.destroy" );
 			previewRoot.destroy();
 			previewRoot = null;
+			tracePreview( "H51 after previewRoot.destroy" );
 		}
 
+		tracePreview( "H60 before super.hide" );
 		super.hide();
+		tracePreview( "H61 after super.hide" );
 	}
 }
