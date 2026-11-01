@@ -34,6 +34,8 @@ The builder starts from the known-good route-probe executable already included i
 
 The inline hook is placed at `0x0047DE25`, after the original `GameRef.getInfo(II)I` parser and receiver resolver have completed. It recognizes only query `0x584F4242`. Every other query replays the original `test eax,eax; jz 0x0047DEF8` behavior and continues at `0x0047DE2D`.
 
+The parser writes the first Java integer argument (query) to `[ESP+0x0C]` and the second (axis) to `[ESP+0x10]`. The hook compares and passes those slots in that order.
+
 The original integer and string native registrations and the known-good route thunk remain unchanged. This avoids the older full-wrapper approach that copied the parser/resolver path.
 
 The helper follows the `scaleMesh()` resource-resolution sequence, validates resource type `5`, obtains the visual root payload, and scans all groups and VertexData child wrappers. It accepts both visual-root factory variants: type 3 (`0x005F2D00`) and type 4 (`0x005F2CE8`). The VertexData wrapper vtable is `0x005F2C08`.
@@ -59,7 +61,7 @@ Run from this folder in PowerShell. GNU binutils (`as`, `ld`) with ELF32/i386 su
 ```powershell
 python .\native\build_partpreview_aabb_experimental.py `
   .\StreetLegal_Redline_native_getinfo_route_probe.exe `
-  .\StreetLegal_Redline_native_aabb_getter_diagnostics.exe
+  .\StreetLegal_Redline_native_aabb_getter_axisfix.exe
 ```
 
 The builder pins the input SHA-256, refuses to overwrite the input, verifies the native registration/dispatcher bytes, and requires the candidate `.text` padding to be zero. It writes a separate executable and verifies that changes are restricted to the `.text` VirtualSize field, the two code caves, and the eight-byte dispatch site.
@@ -68,8 +70,10 @@ No DLL, injected process hook, external process-memory access, or new Java nativ
 
 ## Test sequence
 
+This build fixes the native hook's argument order. SHA-256: `8fead7213ff6ef3f11ce3461812db6ce77cb433bd33c83a274eb4d259f37fc53`.
+
 1. Keep the route-probe executable and original game executable untouched.
-2. Build the separate `StreetLegal_Redline_native_aabb_getter_diagnostics.exe`.
+2. Build the separate `StreetLegal_Redline_native_aabb_getter_axisfix.exe`.
 3. Test in a copied game installation.
 4. First confirm garage entry and catalog category loading.
 5. Open a part preview and inspect `PartPreviewTrace.txt` in the game's temp-save directory. Axes `0..5` are the fresh CPU-vertex bounds; axes `6..11` are the loader's stored root bounds. Compare them on an unmodified mesh.
@@ -77,7 +81,7 @@ No DLL, injected process hook, external process-memory access, or new Java nativ
 7. Verify that the old `GII_SIZE` camera framing remains intact, including previously invisible or oversized parts.
 8. After basic tests pass, use a mesh changed by `scaleMesh()` and verify that fresh axes `0..5` change while stored axes `6..11` remain stale.
 
-The user confirmed that the previous integrated build starts and enters the game, but some preview pivots still shift incorrectly and some parts are not visible. The current branch adds the second root type, restores legacy `GII_SIZE` camera fitting, and exposes comparison/transform diagnostics. These latest changes still require runtime testing. If garage entry, catalog loading, or preview creation crashes, stop testing and restore the known-good route-probe executable. Do not replace the main game executable with this test build.
+The user confirmed that the previous integrated build starts and enters the game, but some preview pivots still shift incorrectly and some parts are not visible. The current branch adds the second root type, restores legacy `GII_SIZE` camera fitting, exposes comparison/transform diagnostics, and fixes the query/axis argument order in the native hook. These latest changes still require runtime testing. If garage entry, catalog loading, or preview creation crashes, stop testing and restore the known-good route-probe executable. Do not replace the main game executable with this test build.
 
 ## Legacy experiments
 
