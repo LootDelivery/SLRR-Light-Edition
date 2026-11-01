@@ -11,15 +11,21 @@ import java.game.parts.*;
 /**
  * Experimental purchase confirmation with an interactive 3D part preview.
  *
- * Default control mapping from this Light Edition tree:
- * SysMouse = device 1; mouse X/Y = axes 0/1; wheel = axis 2;
- * left button = axis 3. These physical IDs still require runtime testing.
+ * The preview is a separately-created instance of the catalog part. It must
+ * never rotate or otherwise modify the InventoryItem's original Part.
+ *
+ * Mouse position is read from MouseCursor.getPos(); physical mouse X/Y axes
+ * are relative movement inputs and must not be treated as absolute cursor
+ * coordinates.
  */
 public class BuyPartPreviewDialog extends PartPreviewDialogBase
 {
 	InventoryItem item;
-	Part part;
+	Part sourcePart;
+	Part previewPart;
 
+	Dummy previewRoot;
+	RenderRef previewLight;
 	Viewport previewViewport;
 	Camera previewCamera;
 
@@ -40,11 +46,14 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	int dragging;
 
+	final static int RID_PREVIEW_LIGHT = misc.garage:0x00000024r;
+
 	final static float AUTO_ROTATION_SPEED = 0.32;
 	final static float DRAG_YAW_SCALE = 2.8;
 	final static float DRAG_PITCH_SCALE = 2.2;
 	final static float MIN_ZOOM = 0.65;
 	final static float MAX_ZOOM = 2.25;
+	final static float MOUSE_DEAD_ZONE = 0.0005;
 
 	public BuyPartPreviewDialog( Controller ctrl, int myFlags, InventoryItem sourceItem, int price )
 	{
@@ -52,7 +61,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		item = sourceItem;
 		if( item instanceof InventoryItem_Part )
-			part = ((InventoryItem_Part)item).getPart();
+			sourcePart = ((InventoryItem_Part)item).getPart();
 
 		Osd ui = getPreviewOsd();
 		ui.createText( "PART SPECIFICATIONS", Frontend.mediumFont, Text.ALIGN_LEFT, 0.16, -0.72 );
@@ -93,7 +102,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	private int cursorOverPreview( float x, float y )
 	{
-		// Mouse axes are normalized to [-1,1]. Preview viewport is the left panel.
+		// MouseCursor.getPos() uses the normalized OSD coordinate space.
 		if( x > -0.92 && x < -0.03 && y > -0.82 && y < 0.72 )
 			return 1;
 		return 0;
@@ -101,16 +110,41 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	private void createPreview()
 	{
-		if( !part )
+		if( !sourcePart )
 			return;
 
-		savedPosition = part.getPos();
+		int partTypeID = sourcePart.getInfo( GameType.GII_TYPE );
+		if( !partTypeID )
+			return;
+
+		// Build an independent scene root and instantiate the same part type
+		// under it. The catalog's InventoryItem and its Part remain untouched.
+		previewRoot = new Dummy( GameType.WORLDTREEROOT );
+		GameRef factory = new GameRef();
+		previewPart = factory.create(
+			previewRoot,
+			new GameRef( partTypeID ),
+			"0,0,0,0,0,0",
+			"part_purchase_preview"
+		);
+
+		if( !previewPart )
+		{
+			previewRoot.destroy();
+			previewRoot = null;
+			return;
+		}
+
+		previewPart.setMatrix( null, null );
+		previewPart.refreshGlassOpacityPreview();
+
+		savedPosition = previewPart.getPos();
 		if( savedPosition )
 			savedPosition = new Vector3( savedPosition );
 		else
 			savedPosition = new Vector3( 0.0, 0.0, 0.0 );
 
-		savedOrientation = part.getOri();
+		savedOrientation = previewPart.getOri();
 		if( savedOrientation )
 			savedOrientation = new Ypr( savedOrientation );
 		else
@@ -120,18 +154,25 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		pitch = savedOrientation.p;
 		roll = savedOrientation.r;
 
-		modelSize = part.getInfo( GameType.GII_SIZE ) / 100.0;
+		modelSize = previewPart.getInfo( GameType.GII_SIZE ) / 100.0;
 		if( modelSize <= 0.0 )
 			modelSize = 1.0;
 
-		// Reuse the catalog inventory root and its existing preview light.
-		// The part is not cloned, removed or re-parented.
+		// Independent light: do not reuse the catalog panel's render root.
+		previewLight = new RenderRef( previewRoot, RID_PREVIEW_LIGHT, null );
+
 		previewViewport = new Viewport( getPreviewViewportPriority(), 0.05, 0.15, 0.43, 0.66 );
 		previewViewport.activate( Viewport.RENDERFLAG_CLEARDEPTH | Viewport.RENDERFLAG_CLEARTARGET );
-		previewCamera = new Camera( item.localroot, previewViewport, 1, 110, 0.001, 10.0 );
+		previewCamera = new Camera( previewRoot, previewViewport, 1, 110, 0.001, 10.0 );
 
 		updateCamera();
-		applyPartTransform();
+
+		Vector3 cursorPosition = Input.cursor.getPos();
+		if( cursorPosition )
+		{
+			lastMouseX = cursorPosition.x;
+			lastMouseY = cursorPosition.y;
+		}
 
 		lastFrameTime = System.currentTime();
 		lastWheel = Input.getAxis( 1, 2 );
@@ -141,8 +182,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	private void applyPartTransform()
 	{
-		if( part )
-			part.setMatrix( savedPosition, new Ypr( yaw, pitch, roll ) );
+		if( previewPart )
+			previewPart.setMatrix( savedPosition, new Ypr( yaw, pitch, roll ) );
 	}
 
 	private void updateCamera()
@@ -157,7 +198,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	public void animate()
 	{
-		if( !part || !previewCamera )
+		if( !previewPart || !previewCamera )
 			return;
 
 		float now = System.currentTime();
@@ -166,8 +207,13 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( delta <= 0.0 || delta > 0.1 )
 			delta = 0.016;
 
-		float mouseX = Input.getAxis( 1, 0 );
-		float mouseY = Input.getAxis( 1, 1 );
+		// Read the integrated cursor position, not raw DirectInput mouse deltas.
+		Vector3 cursorPosition = Input.cursor.getPos();
+		if( !cursorPosition )
+			return;
+
+		float mouseX = cursorPosition.x;
+		float mouseY = cursorPosition.y;
 		float leftButton = Input.getAxis( 1, 3 );
 		float wheel = Input.getAxis( 1, 2 );
 		int overPreview = cursorOverPreview( mouseX, mouseY );
@@ -184,10 +230,20 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			else
 			if( dragging )
 			{
-				yaw = yaw + (mouseX - lastMouseX) * DRAG_YAW_SCALE;
-				pitch = pitch + (mouseY - lastMouseY) * DRAG_PITCH_SCALE;
+				float mouseDeltaX = mouseX - lastMouseX;
+				float mouseDeltaY = mouseY - lastMouseY;
+
+				// Ignore tiny cursor noise instead of feeding it into rotation.
+				if( mouseDeltaX > -MOUSE_DEAD_ZONE && mouseDeltaX < MOUSE_DEAD_ZONE )
+					mouseDeltaX = 0.0;
+				if( mouseDeltaY > -MOUSE_DEAD_ZONE && mouseDeltaY < MOUSE_DEAD_ZONE )
+					mouseDeltaY = 0.0;
+
+				yaw = yaw + mouseDeltaX * DRAG_YAW_SCALE;
+				pitch = pitch + mouseDeltaY * DRAG_PITCH_SCALE;
 				if( pitch < -1.1 ) pitch = -1.1;
 				if( pitch > 1.1 ) pitch = 1.1;
+
 				lastMouseX = mouseX;
 				lastMouseY = mouseY;
 			}
@@ -200,7 +256,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			yaw = yaw + AUTO_ROTATION_SPEED * delta * autoResume;
 		}
 
-		// One zoom step per wheel-axis transition.
+		// Keep the existing one-step-per-wheel-transition zoom handling.
 		if( overPreview )
 		{
 			if( wheel > 0.2 && lastWheel <= 0.2 )
@@ -229,9 +285,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		disableAnimateHook();
 
-		if( part && savedPosition && savedOrientation )
-			part.setMatrix( savedPosition, savedOrientation );
-
 		if( previewCamera )
 		{
 			previewCamera.destroy();
@@ -243,6 +296,24 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			previewViewport.deactivate();
 			previewViewport.destroy();
 			previewViewport = null;
+		}
+
+		if( previewLight )
+		{
+			previewLight.destroy();
+			previewLight = null;
+		}
+
+		if( previewPart )
+		{
+			previewPart.destroy();
+			previewPart = null;
+		}
+
+		if( previewRoot )
+		{
+			previewRoot.destroy();
+			previewRoot = null;
 		}
 
 		super.hide();
