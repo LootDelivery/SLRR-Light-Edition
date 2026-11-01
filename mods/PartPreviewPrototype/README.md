@@ -97,3 +97,30 @@ The dump uses two separate native writer routines, at `0x007DE081` and
 `0x007DE4BF` is disabled separately. These patches prevent new writes but do not
 delete files left over from earlier runs: remove old `grefl.log` and
 `grefl_dump.bin` manually before verifying.
+
+
+## Experimental native Bounding Box probe
+
+This probe is built on top of the working
+`StreetLegal_Redline_native_silent_v2.exe` so the Reflection diagnostic file
+writers stay disabled. It uses the existing `GameRef.getInfo(int,int)`
+registration. The reserved query is `0x584F4242`; the second integer selects
+X/Y/Z (0/1/2). The returned coordinate is a signed fixed-point value:
+model-space units multiplied by 10000. Unsupported/non-AABB objects return
+`-2147483648`.
+
+Create a separate test EXE (do not overwrite the working silent_v2):
+
+```powershell
+python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_silent_v2.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native_bbox_test.exe"
+```
+
+The patcher is pinned to the exact silent_v2 SHA-256 and checks the original
+virtual-call bytes, both GameRef.getInfo registrations, the empty code cave,
+and all three disabled Reflection writer entry points. Ordinary
+`getInfo` calls replay the original virtual call. The preview source logs
+`[PartPreviewBBox]` but deliberately does not change the preview pivot yet.
+
+**Runtime validation is still required.** Test in a disposable game directory.
+If all three values are not the expected local-space center, do not enable
+rotation compensation.
