@@ -3,15 +3,14 @@
 .code32
 .global hook
 hook:
-    # Only intercept the reserved query; all other getInfo calls are replayed.
-    cmp dword ptr [esp+0x0c], 0x584f4242
-    jne passthrough
-
-    # The native callback's virtual target is the resolved resource object at [eax+0x0c].
-    # The second Java int is the X/Y/Z axis selector.
-    mov ecx, dword ptr [esp+0x10]
+    # The stock Part.getInfo(int) wrapper forwards a null String to the native method.
+    # Encode axis in three reserved query IDs: BBOX, BBOX+1 and BBOX+2.
+    mov ecx, dword ptr [esp+0x0c]
+    sub ecx, 0x584f4242
     cmp ecx, 2
-    ja unavailable
+    ja passthrough
+
+    # The callback's virtual target is the resolved resource object at [eax+0x0c].
     mov edx, dword ptr [eax+0x0c]
     cmp dword ptr [edx+0x80], 1
     jne unavailable
