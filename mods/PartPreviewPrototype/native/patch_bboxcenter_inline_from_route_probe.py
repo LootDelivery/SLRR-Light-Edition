@@ -50,7 +50,7 @@ def offset_for_va(data, va):
     table, rva = pe + 24 + opt_size, va - image_base
     for i in range(count):
         o = table + i * 40
-        name = data[o:o+8].split(b"\\0", 1)[0].decode("ascii", "replace")
+        name = data[o:o+8].split(bytes([0]), 1)[0].decode("ascii", "replace")
         vs, vaddr, raw_size, raw_ptr = struct.unpack_from("<IIII", data, o + 8)
         flags = u32(data, o + 36)
         if vaddr <= rva < vaddr + max(vs, raw_size):
@@ -67,7 +67,7 @@ def build(src, dst):
     digest = hashlib.sha256(data).hexdigest()
     if digest != INPUT_SHA256: raise ValueError(f"Wrong route-probe SHA-256: {digest}")
     pe = u32(data, 0x3c)
-    if data[:2] != b"MZ" or data[pe:pe+4] != b"PE\\0\\0": raise ValueError("Not a PE executable")
+    if data[:2] != b"MZ" or data[pe:pe+4] != bytes.fromhex("50 45 00 00"): raise ValueError("Not a PE executable")
     if u16(data, pe+4) != 0x14c or u16(data, pe+24) != 0x10b: raise ValueError("Expected x86 PE32")
     if u32(data, pe+24+28) != BASE: raise ValueError("Unexpected image base")
 
@@ -89,7 +89,7 @@ def build(src, dst):
     if len(code) != HOOK_SIZE: raise ValueError(f"Hook length is {len(code)}, expected {HOOK_SIZE}")
     code[NULL_DISP:NULL_DISP+4] = rel32(HOOK_VA + NULL_DISP - 1, NULL_TARGET)
     code[CONTINUE_DISP:CONTINUE_DISP+4] = rel32(HOOK_VA + CONTINUE_DISP - 1, CONTINUE_TARGET)
-    detour = b"\\xE9" + rel32(SITE_VA, HOOK_VA) + b"\\x90\\x90\\x90"
+    detour = bytes([0xE9]) + rel32(SITE_VA, HOOK_VA) + bytes([0x90]) * 3
 
     out = bytearray(data)
     out[hook:hook+HOOK_SIZE] = code
