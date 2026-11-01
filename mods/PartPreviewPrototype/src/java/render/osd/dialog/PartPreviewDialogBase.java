@@ -26,4 +26,9 @@ public class PartPreviewDialogBase extends Dialog
 	{
 		return osd;
 	}
+
+	protected int getPreviewViewportPriority()
+	{
+		return priority;
+	}
 }
