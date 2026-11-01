@@ -396,6 +396,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	public void show()
 	{
+		createPreview();
 		tracePreview( "40 before super.show" );
 		super.show();
 		tracePreview( "41 after super.show" );
