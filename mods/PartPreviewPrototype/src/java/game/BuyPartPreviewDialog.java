@@ -117,7 +117,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		// The catalog item already owns this root and its inventory preview light.
 		// Reuse it: the part is not cloned, removed or re-parented.
-		previewViewport = new Viewport( 12, 0.05, 0.15, 0.43, 0.66 );
+		previewViewport = new Viewport( getPreviewViewportPriority(), 0.05, 0.15, 0.43, 0.66 );
 		previewViewport.activate( Viewport.RENDERFLAG_CLEARDEPTH | Viewport.RENDERFLAG_CLEARTARGET );
 		previewCamera = new Camera( item.localroot, previewViewport, 1, 110.0, 0.001, 10.0 );
 
