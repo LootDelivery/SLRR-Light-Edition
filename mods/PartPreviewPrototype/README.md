@@ -1,54 +1,47 @@
 # Part Preview Prototype
 
-Experimental replacement for the part-purchase confirmation dialog in SLRR Light Edition.
+Experimental 3D part-preview purchase confirmation for SLRR Light Edition.
 
-## What it adds
+## Files are already in game-tree locations
 
-- A large 3D viewport on the left side of the confirmation window.
-- A part name, price, description and compatibility note on the right.
+This branch contains the mod sources and integration change at their final paths:
+
+- `sl/Scripts/game/src/BuyPartPreviewDialog.java`
+- `sl/Scripts/game/src/Catalog.java` — already changed to open the new dialog
+- `system/Scripts/render/osd/dialog/src/PartPreviewDialogBase.java`
+
+There is no separate patch to apply and no need to manually edit `Catalog.java`.
+
+## Features in this source prototype
+
+- Large 3D viewport on the left; part name, price, description and compatibility on the right.
 - Slow automatic rotation of the **part object**.
-- Left-button dragging to rotate the part on yaw and pitch.
-- Mouse-wheel zoom by changing camera distance.
-- Automatic rotation resumes gradually after manual dragging.
-- The original YES/NO result contract is preserved: YES returns `0`, NO/Escape returns `1`.
+- Left-button drag rotates the part on yaw and pitch.
+- Mouse wheel changes camera distance.
+- Automatic rotation resumes gradually after dragging.
+- Original purchase flow is preserved: YES returns `0`; NO/Escape returns `1`.
 
-## Important status
+## Status and limitations
 
-This is a source prototype, not a runtime-verified release. The source was written against the APIs present in the private `LootDelivery/SLRR-Light-Edition` repository. It has **not** been compiled in the user's installed game or tested in a running SLRR session.
+This is **not yet runtime-tested**. The sources have not been compiled against the user's installed game and have not been run in SLRR.
 
-Input polling currently assumes the stock default device order used by `ControlSet.java`: device 1 is `SysMouse`; physical axes 0/1 are cursor X/Y, axis 2 is wheel, and axis 3 is left mouse button. This matches the Light Edition's stock control defaults, but must be checked on the target installation.
+Input currently assumes the stock defaults from this branch's `system/Scripts/io/src/ControlSet.java`: mouse device 1; physical axes 0/1 for X/Y, 2 for wheel, and 3 for left button. Verify these in the target build.
 
-The preview camera uses the same `InventoryItem.localroot` that already contains the catalog part. It does not clone or reparent the part. It relies on the catalog inventory panel having already created the part's preview light.
+The preview reuses the part and inventory root created by the catalog. It creates its own camera and viewport, and restores the part's previous transform when the dialog closes. It does not clone or re-parent the part.
 
-## Source layout
+The viewport rectangle and mouse hit-test coordinates are provisional. They may need adjustment after the first in-game screenshot.
 
-- `src/java/render/osd/dialog/PartPreviewDialogBase.java` — small access bridge in the dialog package. It exposes the dialog's package-private OSD to a subclass without changing the stock `Dialog` class.
-- `src/java/game/BuyPartPreviewDialog.java` — the actual preview dialog.
-- `Catalog.integration.patch` — one-line replacement at the existing purchase-dialog call site.
+## Build
 
-## Build and install
+Use [SLRR-JVM-compiler](https://github.com/LootDelivery/SLRR-JVM-compiler), which requires Node.js 20+. This compiler emits SLRR TUFA `.class` files; it is not `javac`.
 
-Use a clean backup of the game directory. Keep compiled outputs outside the game root while building.
+Build in dependency order, using an output directory outside the game root:
 
-The compiler is [SLRR-JVM-compiler](https://github.com/LootDelivery/SLRR-JVM-compiler), not a standard Java compiler. It requires Node.js 20+.
+1. Compile `system/Scripts/render/osd/dialog/src/PartPreviewDialogBase.java`. Copy the generated `PartPreviewDialogBase.class` to `GAME/system/Scripts/render/osd/dialog/`.
+2. Compile `sl/Scripts/game/src/BuyPartPreviewDialog.java`. Copy the generated `BuyPartPreviewDialog.class` to `GAME/sl/Scripts/game/`.
+3. Compile the already-integrated `sl/Scripts/game/src/Catalog.java`. Copy the generated `Catalog.class` to `GAME/sl/Scripts/game/`.
 
-1. Copy `src/java/render/osd/dialog/PartPreviewDialogBase.java` to:
-   `GAME/system/Scripts/render/osd/dialog/src/PartPreviewDialogBase.java`
-2. Compile it with the SLRR compiler, using the game root as the declaration index. Copy the resulting:
-   `OUT/system/Scripts/render/osd/dialog/PartPreviewDialogBase.class`
-   to:
-   `GAME/system/Scripts/render/osd/dialog/PartPreviewDialogBase.class`
-3. Copy `src/java/game/BuyPartPreviewDialog.java` to:
-   `GAME/sl/Scripts/game/src/BuyPartPreviewDialog.java`
-4. Compile it. Copy:
-   `OUT/sl/Scripts/game/BuyPartPreviewDialog.class`
-   to:
-   `GAME/sl/Scripts/game/BuyPartPreviewDialog.class`
-5. Apply `Catalog.integration.patch` to the game's `sl/Scripts/game/src/Catalog.java`. The change replaces only the constructor used by `CatalogInventory.panelLeftClick()`.
-6. Compile the modified `Catalog.java` and copy the resulting `Catalog.class` output into `GAME/sl/Scripts/game/Catalog.class`.
-7. Start the game and test a cheap part first. Keep the original `Catalog.java` and `Catalog.class` backups so rollback is immediate.
-
-Example compiler invocation (PowerShell; adjust paths):
+Compile each file with the game directory as `--root` so the compiler can index stock class declarations. For example:
 
 ```powershell
 $Game = "D:\Games\SLRR"
@@ -58,18 +51,18 @@ $Compiler = "D:\Tools\SLRR-JVM-compiler\dist\src\cli.js"
 node $Compiler --root $Game --out $Out "$Game\system\Scripts\render\osd\dialog\src\PartPreviewDialogBase.java"
 ```
 
-Repeat the same command for `BuyPartPreviewDialog.java` and then the patched `Catalog.java`. Clear or use a fresh output directory between build stages so stale class files are not mistaken for new output. After building each dependency, copy its class into the game root before compiling the next dependent source; this allows `ClassIndex` to see the new declaration.
+After step 1, copy that class into the game tree before compiling step 2. After step 2, copy its class into the game tree before compiling step 3. This makes the new class declarations visible to the compiler. Use a fresh output directory or clear stale outputs between builds.
 
-## First test checklist
+**Keep backups** of the three original/generated target `.class` files and `Catalog.java`. Do not replace the originals until the compiler succeeds.
 
-- Dialog opens and closes with both YES and NO.
-- The part remains in the catalog after cancelling.
-- The preview camera renders the clicked part, not an empty root.
-- The model rotates without the camera orbiting it.
-- Dragging starts only when the left button is pressed over the preview.
-- Wheel zoom is one step per wheel notch and does not continue by itself.
-- Rotation resumes smoothly after release.
-- Purchase still deducts the same price and adds the same part to inventory.
-- Closing the dialog restores the part's original transform and destroys the temporary camera and viewport.
+## First in-game test
 
-If the mouse axes behave differently on the target build, adjust the four physical axis IDs in `animate()` after checking that build's control defaults. Do not add a DLL hook for this prototype.
+- Dialog opens and both buttons close it with the expected result.
+- Preview camera shows the selected part in the left viewport.
+- Model rotates while idle; camera does not orbit the model.
+- Dragging only starts over the preview area.
+- Wheel zoom responds once per notch and stays within limits.
+- Auto-rotation resumes smoothly after releasing the mouse.
+- Cancel leaves the catalog unchanged.
+- Confirmed purchase deducts the same price and adds the same item.
+- Closing the dialog restores the original part transform and destroys the temporary camera/viewport.
