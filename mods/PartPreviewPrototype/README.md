@@ -99,29 +99,28 @@ delete files left over from earlier runs: remove old `grefl.log` and
 `grefl_dump.bin` manually before verifying.
 
 
-## Experimental native Bounding Box probe
+## Experimental native Bounding Box probe — stage 0
 
-This probe is built on top of the working
-`StreetLegal_Redline_native_silent_v2.exe` so the Reflection diagnostic file
-writers stay disabled. It uses the existing `GameRef.getInfo(int,int)`
-registration. The reserved query is `0x584F4242`; the second integer selects
-X/Y/Z (0/1/2). The hook first uses the executable's existing `IsBadReadPtr` import to guard
-its bounds read. It then checks for AABB mode. The returned coordinate is a
-signed fixed-point value: model-space units multiplied by 10000.
-Unreadable/non-AABB objects return `-2147483648`.
+The current probe is deliberately limited to validating the interception path.
+It is built from the working `StreetLegal_Redline_native_silent_v2.exe`, so the
+Reflection diagnostic file writers remain disabled.
 
-Create a separate test EXE (do not overwrite the working silent_v2):
+The probe hooks the virtual-call tail at `0x0047DEDD`. For the reserved query
+family `0x584F4242`, `0x584F4243`, or `0x584F4244`, it returns the conspicuous
+test marker `0x42424242`. It checks both forwarded Java argument slots and
+does **not** dereference the native object, inspect the AABB, call
+`IsBadReadPtr`, or execute floating-point code. Every other call replays the
+original `mov / push / virtual call` instructions and continues at the original
+return site.
+
+Build a separate test executable (never overwrite the working silent_v2):
 
 ```powershell
-python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_silent_v2.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native_bbox_test.exe"
+python .\\native\\patch_bbox_center.py "D:\\Games\\SLRR\\StreetLegal_Redline_native_silent_v2.exe" "D:\\Games\\SLRR-test\\StreetLegal_Redline_native_bbox_probe.exe"
 ```
 
-The patcher is pinned to the exact silent_v2 SHA-256 and checks the original
-virtual-call bytes, both GameRef.getInfo registrations, the empty code cave,
-and all three disabled Reflection writer entry points. Ordinary
-`getInfo` calls replay the original virtual call. The preview source logs
-`[PartPreviewBBox]` but deliberately does not change the preview pivot yet.
-
-**Runtime validation is still required.** Test in a disposable game directory.
-If all three values are not the expected local-space center, do not enable
-rotation compensation.
+The Java preview source logs `[PartPreviewBBox]`. In this stage, seeing
+`1111638594` (`0x42424242`) in all three values proves that the custom query
+reached the hook. This stage is **not yet returning Bounding Box coordinates**.
+The purpose is to confirm stable garage/dealer entry and safe dispatch before
+we add any bounds memory reads.
