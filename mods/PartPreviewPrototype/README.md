@@ -105,9 +105,10 @@ This probe is built on top of the working
 `StreetLegal_Redline_native_silent_v2.exe` so the Reflection diagnostic file
 writers stay disabled. It uses the existing `GameRef.getInfo(int,int)`
 registration. The reserved query is `0x584F4242`; the second integer selects
-X/Y/Z (0/1/2). The returned coordinate is a signed fixed-point value:
-model-space units multiplied by 10000. Unsupported/non-AABB objects return
-`-2147483648`.
+X/Y/Z (0/1/2). The hook first uses the executable's existing `IsBadReadPtr` import to guard
+its bounds read. It then checks for AABB mode. The returned coordinate is a
+signed fixed-point value: model-space units multiplied by 10000.
+Unreadable/non-AABB objects return `-2147483648`.
 
 Create a separate test EXE (do not overwrite the working silent_v2):
 
