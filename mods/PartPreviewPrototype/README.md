@@ -34,6 +34,8 @@ The builder starts from the known-good route-probe executable already included i
 
 The inline hook is placed at `0x0047DE25`, after the original `GameRef.getInfo(II)I` parser and receiver resolver have completed. It recognizes only query `0x584F4242`. Every other query replays the original `test eax,eax; jz 0x0047DEF8` behavior and continues at `0x0047DE2D`.
 
+At this dispatch site, the parser's output-pointer order places the first Java integer argument (query) at `[ESP+0x10]` and the second argument (axis) at `[ESP+0x0C]`. The hook uses those exact slots and copies the axis to ECX before pushing call arguments.
+
 The parser writes the first Java integer argument (query) to `[ESP+0x0C]` and the second (axis) to `[ESP+0x10]`. The hook compares and passes those slots in that order.
 
 The original integer and string native registrations and the known-good route thunk remain unchanged. This avoids the older full-wrapper approach that copied the parser/resolver path.
@@ -70,7 +72,9 @@ No DLL, injected process hook, external process-memory access, or new Java nativ
 
 ## Test sequence
 
-This build fixes the native hook's argument order. SHA-256: `8fead7213ff6ef3f11ce3461812db6ce77cb433bd33c83a274eb4d259f37fc53`.
+The stack-order build uses query at `[ESP+0x10]` and axis at `[ESP+0x0C]`. SHA-256: `28b97110524556014bfae33e620b00100ce8f3d1e3bc1df8bcf6f10abed52877`.
+
+
 
 1. Keep the route-probe executable and original game executable untouched.
 2. Build the separate `StreetLegal_Redline_native_aabb_getter_axisfix.exe`.
@@ -81,7 +85,7 @@ This build fixes the native hook's argument order. SHA-256: `8fead7213ff6ef3f11c
 7. Verify that the old `GII_SIZE` camera framing remains intact, including previously invisible or oversized parts.
 8. After basic tests pass, use a mesh changed by `scaleMesh()` and verify that fresh axes `0..5` change while stored axes `6..11` remain stale.
 
-The user confirmed that the previous integrated build starts and enters the game, but some preview pivots still shift incorrectly and some parts are not visible. The current branch adds the second root type, restores legacy `GII_SIZE` camera fitting, exposes comparison/transform diagnostics, and fixes the query/axis argument order in the native hook. These latest changes still require runtime testing. If garage entry, catalog loading, or preview creation crashes, stop testing and restore the known-good route-probe executable. Do not replace the main game executable with this test build.
+The user confirmed that the previous integrated build starts and enters the game, but some preview pivots still shift incorrectly and some parts are not visible. The current branch adds the second root type, restores legacy `GII_SIZE` camera fitting, exposes comparison/transform diagnostics, and restores the parser-derived stack argument order in the native hook. These latest changes still require runtime testing. If garage entry, catalog loading, or preview creation crashes, stop testing and restore the known-good route-probe executable. Do not replace the main game executable with this test build.
 
 ## Legacy experiments
 
