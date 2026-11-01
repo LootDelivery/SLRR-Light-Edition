@@ -19,29 +19,11 @@ HOOK_SITE_VA = 0x0047DEDD
 HOOK_SITE_BYTES = bytes.fromhex("8B 57 4C 52 FF 50 3C")
 HOOK_CAVE_VA = 0x007DF972
 HOOK_BYTES = bytes.fromhex(
-    "66 90"
-    "81 3C 24 42 42 4F 58"
-    "75 3B"
-    "8B 54 24 04"
-    "83 FA 02"
-    "77 25"
-    "83 B9 80 00 00 00 01"
-    "75 1C"
-    "D9 84 91 84 00 00 00"
-    "D8 0D C4 F9 7D 00"
-    "83 EC 04"
-    "DB 1C 24"
-    "58"
-    "83 C4 08"
-    "E9 39 E5 C9 FF"
-    "B8 00 00 00 80"
-    "83 C4 08"
-    "E9 2C E5 C9 FF"
-    "8B 57 4C"
-    "52"
-    "FF 50 3C"
-    "E9 20 E5 C9 FF"
-    "00 40 1C 46"
+    "66 90 81 3C 24 42 42 4F 58 75 52 83 7C 24 04 02 77 3E 51 8D 81 80 00 00 00 6A 10"
+    "50 FF 15 24 71 5E 00 59 85 C0 75 29 83 B9 80 00 00 00 01 75 20 8B 54 24 04 D9"
+    "84 91 84 00 00 00 D8 0D DC F9 7D 00 83 EC 04 DB 1C 24 58 83 C4 08 E9 22 E5 C9 FF"
+    "B8 00 00 00 80 83 C4 08 E9 15 E5 C9 FF 8B 57 4C 52 FF 50 3C E9 09 E5 C9 FF 90 00"
+    "40 1C 46"
 )
 
 # The three Reflection diagnostic file writers disabled by the working silent_v2.
