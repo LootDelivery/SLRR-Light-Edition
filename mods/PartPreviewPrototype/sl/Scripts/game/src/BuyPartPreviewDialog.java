@@ -46,6 +46,20 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	int dragging;
 
+	String previewTraceData = "";
+
+	private void tracePreview( String marker )
+	{
+		previewTraceData = previewTraceData + marker + "\r\n";
+
+		File traceFile = new File( GameLogic.tempSaveDir + "PartPreviewTrace.txt" );
+		if( traceFile.open( File.MODE_WRITE ) )
+		{
+			traceFile.write( previewTraceData );
+			traceFile.close();
+		}
+	}
+
 	final static int RID_PREVIEW_LIGHT = misc.garage:0x00000024r;
 
 	final static float AUTO_ROTATION_SPEED = 0.32;
@@ -115,66 +129,113 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	private void createPreview()
 	{
-		if( !sourcePart )
-			return;
+		previewTraceData = "";
+		File.delete( GameLogic.tempSaveDir + "PartPreviewTrace.txt" );
+		tracePreview( "00 createPreview begin" );
 
-		int partTypeID = sourcePart.getInfo( GameType.GII_TYPE );
-		if( !partTypeID )
+		if( !sourcePart )
+		{
+			tracePreview( "01 sourcePart is null; preview aborted" );
 			return;
+		}
+
+		tracePreview( "02 before sourcePart.getInfo(GII_TYPE)" );
+		int partTypeID = sourcePart.getInfo( GameType.GII_TYPE );
+		tracePreview( "03 after sourcePart.getInfo(GII_TYPE) value=" + partTypeID );
+		if( !partTypeID )
+		{
+			tracePreview( "04 partTypeID is zero; preview aborted" );
+			return;
+		}
 
 		// Build an independent scene root and instantiate the same part type
 		// under it. The catalog's InventoryItem and its Part remain untouched.
+		tracePreview( "05 before previewRoot creation" );
 		previewRoot = new Dummy( GameType.WORLDTREEROOT );
+		tracePreview( "06 after previewRoot creation" );
+
 		GameRef factory = new GameRef();
+		tracePreview( "07 before factory.create" );
 		previewPart = factory.create(
 			previewRoot,
 			new GameRef( partTypeID ),
 			"0,0,0,0,0,0",
 			"part_purchase_preview"
 		);
+		tracePreview( "08 after factory.create" );
 
 		if( !previewPart )
 		{
+			tracePreview( "09 previewPart is null; destroying previewRoot" );
 			previewRoot.destroy();
 			previewRoot = null;
+			tracePreview( "0A preview creation aborted" );
 			return;
 		}
 
+		tracePreview( "0B before previewPart.setMatrix" );
 		previewPart.setMatrix( null, null );
+		tracePreview( "0C after previewPart.setMatrix" );
+		tracePreview( "0D before refreshGlassOpacityPreview" );
 		previewPart.refreshGlassOpacityPreview();
+		tracePreview( "0E after refreshGlassOpacityPreview" );
 
-		// Native BBox query probe. Use only with the matching query-probe EXE.
+		// Each native BBox call is bracketed separately. This trace is written
+		// to save/temp because System.log is not a reliable crash-boundary probe.
+		tracePreview( "10 before previewPart.getMesh" );
 		int previewMeshID = previewPart.getMesh();
+		tracePreview( "11 after previewPart.getMesh value=" + previewMeshID );
 		if( previewMeshID )
 		{
+			tracePreview( "12 before preview mesh GameRef construction" );
 			GameRef previewMeshRef = new GameRef( previewMeshID );
+			tracePreview( "13 after preview mesh GameRef construction" );
+
+			tracePreview( "14 before previewMeshRef.load" );
 			previewMeshRef.load();
+			tracePreview( "15 after previewMeshRef.load" );
 
+			tracePreview( "16 before previewMeshRef.type" );
 			int previewMeshType = previewMeshRef.type();
-			int previewCenterX = previewMeshRef.getInfo( 0x584F4242, 0 );
-			int previewCenterY = previewMeshRef.getInfo( 0x584F4242, 1 );
-			int previewCenterZ = previewMeshRef.getInfo( 0x584F4242, 2 );
+			tracePreview( "17 after previewMeshRef.type value=" + previewMeshType );
 
-			System.log(
-				"BBOX_QUERY meshID=" + previewMeshID +
+			tracePreview( "20 before BBOX query axis=0" );
+			int previewCenterX = previewMeshRef.getInfo( 0x584F4242, 0 );
+			tracePreview( "21 after BBOX query axis=0 value=" + previewCenterX );
+
+			tracePreview( "22 before BBOX query axis=1" );
+			int previewCenterY = previewMeshRef.getInfo( 0x584F4242, 1 );
+			tracePreview( "23 after BBOX query axis=1 value=" + previewCenterY );
+
+			tracePreview( "24 before BBOX query axis=2" );
+			int previewCenterZ = previewMeshRef.getInfo( 0x584F4242, 2 );
+			tracePreview( "25 after BBOX query axis=2 value=" + previewCenterZ );
+
+			tracePreview(
+				"26 BBOX results meshID=" + previewMeshID +
 				" type=" + previewMeshType +
 				" center_milli=" + previewCenterX + "," +
 				previewCenterY + "," + previewCenterZ
 			);
 
+			tracePreview( "27 before previewMeshRef.unload" );
 			previewMeshRef.unload();
+			tracePreview( "28 after previewMeshRef.unload" );
 		}
 		else
-			System.log( "BBOX_QUERY Part.getMesh returned 0" );
+			tracePreview( "19 previewPart.getMesh returned 0; BBOX skipped" );
 
-
+		tracePreview( "30 before previewPart.getPos" );
 		savedPosition = previewPart.getPos();
+		tracePreview( "31 after previewPart.getPos" );
 		if( savedPosition )
 			savedPosition = new Vector3( savedPosition );
 		else
 			savedPosition = new Vector3( 0.0, 0.0, 0.0 );
 
+		tracePreview( "32 before previewPart.getOri" );
 		savedOrientation = previewPart.getOri();
+		tracePreview( "33 after previewPart.getOri" );
 		if( savedOrientation )
 			savedOrientation = new Ypr( savedOrientation );
 		else
@@ -184,18 +245,27 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		pitch = savedOrientation.p;
 		roll = savedOrientation.r;
 
+		tracePreview( "34 before previewPart.getInfo(GII_SIZE)" );
 		modelSize = previewPart.getInfo( GameType.GII_SIZE ) / 100.0;
+		tracePreview( "35 after previewPart.getInfo(GII_SIZE) value=" + modelSize );
 		if( modelSize <= 0.0 )
 			modelSize = 1.0;
 
 		// Independent light: do not reuse the catalog panel's render root.
+		tracePreview( "36 before preview RenderRef creation" );
 		previewLight = new RenderRef( previewRoot, RID_PREVIEW_LIGHT, null );
+		tracePreview( "37 after preview RenderRef creation" );
 
+		tracePreview( "38 before preview Viewport creation" );
 		previewViewport = new Viewport( getPreviewViewportPriority(), 0.05, 0.15, 0.43, 0.66 );
+		tracePreview( "39 after preview Viewport creation" );
 		previewViewport.activate( Viewport.RENDERFLAG_CLEARDEPTH | Viewport.RENDERFLAG_CLEARTARGET );
+		tracePreview( "3A after preview Viewport.activate" );
 		previewCamera = new Camera( previewRoot, previewViewport, 1, 110, 0.001, 10.0 );
+		tracePreview( "3B after preview Camera creation" );
 
 		updateCamera();
+		tracePreview( "3C after updateCamera" );
 
 		Vector3 cursorPosition = Input.cursor.getPos();
 		if( cursorPosition )
@@ -208,6 +278,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		lastWheel = Input.getAxis( 1, 2 );
 		dragging = 0;
 		autoResume = 1.0;
+		tracePreview( "3D createPreview complete" );
 	}
 
 	private void applyPartTransform()
