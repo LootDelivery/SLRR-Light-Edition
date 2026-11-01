@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Create a minimal, non-dereferencing SLRR BBox interception probe.
+"""Create a flags-preserving, non-dereferencing SLRR BBox interception probe.
 
 The patch is based only on the verified, working silent_v2 executable.
 For the reserved BBox query family it returns 0x42424242 and does not read
-native object memory. Every other getInfo call replays the original virtual
-call exactly. The input is never overwritten.
+native object memory. For ordinary getInfo calls it restores EFLAGS, recreates
+the original stack layout and transfers to the same virtual method with the
+original return address. The input is never overwritten.
 """
 from __future__ import annotations
 import argparse
@@ -19,17 +20,20 @@ HOOK_SITE_VA = 0x0047DEDD
 HOOK_SITE_BYTES = bytes.fromhex("8B 57 4C 52 FF 50 3C")
 HOOK_CAVE_VA = 0x007DF972
 HOOK_BYTES = bytes.fromhex(
-    "8B 14 24"
-    "81 EA 42 42 4F 58"
-    "83 FA 02"
-    "76 0F"
+    "9C"
     "8B 54 24 04"
     "81 EA 42 42 4F 58"
     "83 FA 02"
-    "77 0D"
+    "76 0F"
+    "8B 54 24 08"
+    "81 EA 42 42 4F 58"
+    "83 FA 02"
+    "77 0E"
+    "9D"
     "B8 42 42 42 42"
     "83 C4 08"
-    "E9 48 E5 C9 FF"
+    "E9 45 E5 C9 FF"
+    "9D"
     "8B 57 4C"
     "52"
     "68 E4 DE 47 00"
