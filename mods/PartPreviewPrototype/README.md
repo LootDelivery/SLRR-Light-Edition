@@ -76,3 +76,22 @@ After step 1, make the generated bridge class visible in the game tree before co
 - Cancel leaves the catalog unchanged.
 - Confirmed purchase deducts the same price and adds the same item.
 - Closing the dialog restores the original part transform and destroys the temporary camera/viewport.
+
+
+## Experimental native Bounding Box probe
+
+The `native/patch_bbox_center.py` script creates a separate test EXE from the exact
+`StreetLegal_Redline_native.exe` build used during reverse engineering. It validates
+the input SHA-256 and PE layout, refuses unknown builds, and never overwrites its input.
+
+Run from PowerShell or a terminal with Python 3:
+
+```powershell
+python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native.exe"
+```
+
+The preview source issues the reserved `getInfo(0x584F4242, axis)` query and logs
+`[PartPreviewBBox]` with the three center coordinates multiplied by 10000. This is
+an **experimental static patch and diagnostic probe**, not a confirmed runtime
+feature. Test only in a disposable game folder and keep the original EXE backed up.
+Do not enable pivot compensation until the returned values have been checked in-game.
