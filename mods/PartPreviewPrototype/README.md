@@ -78,22 +78,15 @@ After step 1, make the generated bridge class visible in the game tree before co
 - Closing the dialog restores the original part transform and destroys the temporary camera/viewport.
 
 
-## Experimental native Bounding Box probe
+## Native Reflection diagnostics
 
-The `native/patch_bbox_center.py` script creates a separate test EXE from the exact
-`StreetLegal_Redline_native.exe` build used during reverse engineering. It validates
-the input SHA-256 and PE layout, refuses unknown builds, and never overwrites its input.
+The native Reflection hook remains enabled in `StreetLegal_Redline_native.exe`.
+The optional files `grefl.log` and `grefl_dump.bin` can be disabled without
+removing or changing the Reflection feature by using
+`native/disable_reflection_file_logs.py`.
 
-Run from PowerShell or a terminal with Python 3:
-
-```powershell
-python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native.exe"
-```
-
-The native hook assembly is kept in `native/bbox_hook.s` beside the Python patcher. The callback reads the AABB from the resolved native resource object, not from the outer Java wrapper.
-
-The preview source issues the reserved `getInfo(0x584F4242 + axis)` query and logs
-`[PartPreviewBBox]` with the three center coordinates multiplied by 10000. This is
-an **experimental static patch and diagnostic probe**, not a confirmed runtime
-feature. Test only in a disposable game folder and keep the original EXE backed up.
-Do not enable pivot compensation until the returned values have been checked in-game.
+The script is pinned to the exact native EXE SHA-256 used for reverse engineering.
+It creates a separate `*_silent.exe`, never overwrites the input, and changes
+only the text-log and binary-dump writer entry points. The `ResourceRef.set(I)V`
+handler and native method registration are left intact. Use a backup/test game
+folder for the first runtime test.
