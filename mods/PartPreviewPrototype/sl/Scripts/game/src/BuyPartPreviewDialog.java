@@ -33,6 +33,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	Ypr savedOrientation;
 
 	float modelSize = 1.0;
+	float boundsCenterX;
+	float boundsCenterY;
+	float boundsCenterZ;
 	float yaw;
 	float pitch;
 	float roll;
@@ -63,13 +66,18 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	final static int RID_PREVIEW_LIGHT = misc.garage:0x00000024r;
 
+	// Native query returns signed fixed-point coordinates (world units * 1000).
+	final static int AABB_QUERY = 0x584F4242;
+	final static int AABB_INVALID = 0x80000000;
+	final static float AABB_SCALE = 1000.0;
+
 	final static float AUTO_ROTATION_SPEED = 0.32;
 	// Mouse sensitivity: horizontal (yaw) is intentionally faster than vertical (pitch).
 	final static float DRAG_YAW_SCALE = 3.5;
 	final static float DRAG_PITCH_SCALE = 2.2;
 
 	// Lower the camera slightly so the model sits a little higher in the viewport.
-	// This changes framing only; the preview part's pivot and transform stay intact.
+	// Only the isolated preview transform is adjusted to center its runtime AABB.
 	final static float CAMERA_VERTICAL_OFFSET = 0.08;
 	final static float MIN_ZOOM = 0.65;
 	final static float MAX_ZOOM = 2.25;
@@ -132,6 +140,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		previewTraceData = "";
 		File.delete( GameLogic.tempSaveDir + "PartPreviewTrace.txt" );
+		boundsCenterX = 0.0;
+		boundsCenterY = 0.0;
+		boundsCenterZ = 0.0;
+		int hasRuntimeBounds = 0;
+		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
 
 		if( !sourcePart )
@@ -181,8 +194,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewPart.refreshGlassOpacityPreview();
 		tracePreview( "0E after refreshGlassOpacityPreview" );
 
-		// Each native BBox call is bracketed separately. This trace is written
-		// to save/temp because System.log is not a reliable crash-boundary probe.
+		// The preview instance owns this live mesh resource. Query its current
+		// CPU vertex buffers through the reserved GameRef.getInfo(II)I route.
 		tracePreview( "10 before previewPart.getMesh" );
 		int previewMeshID = previewPart.getMesh();
 		tracePreview( "11 after previewPart.getMesh value=" + previewMeshID );
@@ -191,39 +204,82 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			tracePreview( "12 before preview mesh GameRef construction" );
 			GameRef previewMeshRef = new GameRef( previewMeshID );
 			tracePreview( "13 after preview mesh GameRef construction" );
-
-			// previewPart already owns and uses this live mesh. Do not acquire
-			// or release a second load reference for the shared mesh resource.
-			tracePreview( "14 using mesh through live previewPart; no extra load" );
+			tracePreview( "14 using mesh owned by previewPart; no extra resource load" );
 
 			tracePreview( "16 before previewMeshRef.type" );
 			int previewMeshType = previewMeshRef.type();
 			tracePreview( "17 after previewMeshRef.type value=" + previewMeshType );
 
-			tracePreview( "20 before BBOX query axis=0" );
-			int previewCenterX = previewMeshRef.getInfo( 0x584F4242, 0 );
-			tracePreview( "21 after BBOX query axis=0 value=" + previewCenterX );
+			if( previewMeshType == 5 )
+			{
+				tracePreview( "20 before AABB query axis=0 MinX" );
+				int minXFixed = previewMeshRef.getInfo( AABB_QUERY, 0 );
+				tracePreview( "21 after AABB query axis=0 value=" + minXFixed );
 
-			tracePreview( "22 before BBOX query axis=1" );
-			int previewCenterY = previewMeshRef.getInfo( 0x584F4242, 1 );
-			tracePreview( "23 after BBOX query axis=1 value=" + previewCenterY );
+				tracePreview( "22 before AABB query axis=1 MinY" );
+				int minYFixed = previewMeshRef.getInfo( AABB_QUERY, 1 );
+				tracePreview( "23 after AABB query axis=1 value=" + minYFixed );
 
-			tracePreview( "24 before BBOX query axis=2" );
-			int previewCenterZ = previewMeshRef.getInfo( 0x584F4242, 2 );
-			tracePreview( "25 after BBOX query axis=2 value=" + previewCenterZ );
+				tracePreview( "24 before AABB query axis=2 MinZ" );
+				int minZFixed = previewMeshRef.getInfo( AABB_QUERY, 2 );
+				tracePreview( "25 after AABB query axis=2 value=" + minZFixed );
 
-			tracePreview(
-				"26 BBOX results meshID=" + previewMeshID +
-				" type=" + previewMeshType +
-				" center_milli=" + previewCenterX + "," +
-				previewCenterY + "," + previewCenterZ
-			);
+				tracePreview( "26 before AABB query axis=3 MaxX" );
+				int maxXFixed = previewMeshRef.getInfo( AABB_QUERY, 3 );
+				tracePreview( "27 after AABB query axis=3 value=" + maxXFixed );
 
-			// No explicit unload: the mesh lifetime is owned by previewPart.
-			tracePreview( "27 mesh handle released; no separate resource unload" );
+				tracePreview( "28 before AABB query axis=4 MaxY" );
+				int maxYFixed = previewMeshRef.getInfo( AABB_QUERY, 4 );
+				tracePreview( "29 after AABB query axis=4 value=" + maxYFixed );
+
+				tracePreview( "2A before AABB query axis=5 MaxZ" );
+				int maxZFixed = previewMeshRef.getInfo( AABB_QUERY, 5 );
+				tracePreview( "2B after AABB query axis=5 value=" + maxZFixed );
+
+				if( minXFixed != AABB_INVALID && minYFixed != AABB_INVALID && minZFixed != AABB_INVALID &&
+					maxXFixed != AABB_INVALID && maxYFixed != AABB_INVALID && maxZFixed != AABB_INVALID )
+				{
+					float minX = minXFixed / AABB_SCALE;
+					float minY = minYFixed / AABB_SCALE;
+					float minZ = minZFixed / AABB_SCALE;
+					float maxX = maxXFixed / AABB_SCALE;
+					float maxY = maxYFixed / AABB_SCALE;
+					float maxZ = maxZFixed / AABB_SCALE;
+
+					float sizeX = maxX - minX;
+					float sizeY = maxY - minY;
+					float sizeZ = maxZ - minZ;
+					runtimeModelSize = sizeX;
+					if( sizeY > runtimeModelSize ) runtimeModelSize = sizeY;
+					if( sizeZ > runtimeModelSize ) runtimeModelSize = sizeZ;
+
+					if( sizeX >= 0.0 && sizeY >= 0.0 && sizeZ >= 0.0 && runtimeModelSize > 0.001 )
+					{
+						boundsCenterX = (minX + maxX) * 0.5;
+						boundsCenterY = (minY + maxY) * 0.5;
+						boundsCenterZ = (minZ + maxZ) * 0.5;
+						hasRuntimeBounds = 1;
+						tracePreview(
+							"2C AABB valid meshID=" + previewMeshID +
+							" min=" + minXFixed + "," + minYFixed + "," + minZFixed +
+							" max=" + maxXFixed + "," + maxYFixed + "," + maxZFixed +
+							" size=" + runtimeModelSize
+						);
+					}
+					else
+						tracePreview( "2D AABB rejected: inconsistent or zero extent" );
+				}
+				else
+					tracePreview( "2E AABB query returned invalid sentinel" );
+			}
+			else
+				tracePreview( "1F AABB skipped: resource is not RESOURCE_MESH (type 5)" );
+
+			// No explicit unload: previewPart owns the mesh resource reference.
+			tracePreview( "2F mesh reference scope ended; no separate resource unload" );
 		}
 		else
-			tracePreview( "19 previewPart.getMesh returned 0; BBOX skipped" );
+			tracePreview( "19 previewPart.getMesh returned 0; AABB skipped" );
 
 		tracePreview( "30 before previewPart.getPos" );
 		savedPosition = previewPart.getPos();
@@ -245,11 +301,17 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		pitch = savedOrientation.p;
 		roll = savedOrientation.r;
 
-		tracePreview( "34 before previewPart.getInfo(GII_SIZE)" );
+		tracePreview( "34 before previewPart.getInfo(GII_SIZE) fallback" );
 		modelSize = previewPart.getInfo( GameType.GII_SIZE ) / 100.0;
-		tracePreview( "35 after previewPart.getInfo(GII_SIZE) value=" + modelSize );
+		tracePreview( "35 after previewPart.getInfo(GII_SIZE) fallback value=" + modelSize );
 		if( modelSize <= 0.0 )
 			modelSize = 1.0;
+		if( hasRuntimeBounds )
+			modelSize = runtimeModelSize;
+
+		// Center and fit the isolated preview, leaving the source catalog Part untouched.
+		applyPartTransform();
+		tracePreview( "35A after applying AABB-centered preview transform" );
 
 		// Independent light: do not reuse the catalog panel's render root.
 		tracePreview( "36 before preview RenderRef creation" );
@@ -284,7 +346,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	private void applyPartTransform()
 	{
 		if( previewPart )
-			previewPart.setMatrix( savedPosition, new Ypr( yaw, pitch, roll ) );
+		{
+			Vector3 rotatedCenter = new Vector3( boundsCenterX, boundsCenterY, boundsCenterZ );
+			rotatedCenter.rotate( new Ypr( yaw, pitch, roll ) );
+
+			Vector3 previewPosition = new Vector3( savedPosition );
+			previewPosition.x = savedPosition.x - rotatedCenter.x;
+			previewPosition.y = savedPosition.y - rotatedCenter.y;
+			previewPosition.z = savedPosition.z - rotatedCenter.z;
+			previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
+		}
 	}
 
 	private void updateCamera()
