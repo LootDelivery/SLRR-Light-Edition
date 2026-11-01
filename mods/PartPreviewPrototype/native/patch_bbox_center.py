@@ -17,31 +17,30 @@ EXPECTED_SHA256 = "0aca820d43a18e3c1559b6ba10f2ee158aad5f2b1577aea1a0c763d56ccf0
 IMAGE_BASE = 0x00400000
 ENTRY_VA = 0x0047DECE
 HOOK_VA = 0x007DF972
-SCALE_VA = 0x007DF9C4
+SCALE_VA = 0x007DF9C0
 EXPECTED_ENTRY = bytes.fromhex("8b54240c8b480c")
 HOOK_CODE = bytes.fromhex(
     "6690"
-    "817c240c42424f58"
-    "7538"
-    "8b4c2410"
+    "8b4c240c"
+    "81e942424f58"
     "83f902"
-    "7725"
+    "772f"
     "8b500c"
     "83ba8000000001"
     "7519"
     "d9848a84000000"
-    "d80dc4f97d00"
+    "d80dc0f97d00"
     "83ec04"
     "db1c24"
     "58"
-    "e938e5c9ff"
+    "e93ce5c9ff"
     "b800000080"
-    "e92ee5c9ff"
+    "e932e5c9ff"
     "8b54240c"
     "8b480c"
-    "e913e5c9ff"
+    "e917e5c9ff"
     "6690"
-    "00401c46"  # float32 10000.0 at VA 0x007DF9C4
+    "00401c46"  # float32 10000.0 at VA 0x007DF9C0
 )
 
 
