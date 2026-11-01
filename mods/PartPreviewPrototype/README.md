@@ -1,130 +1,25 @@
-# Part Preview Prototype
+## Native getInfo routing probe — isolated registration test
 
-Experimental 3D part-preview purchase confirmation for SLRR Light Edition.
+The earlier BBox probe builds (v1–v3) hooked the shared dispatcher body at
+`0x0047DEDD`. They all caused the garage-load crash and must no longer be used.
 
-## Folder layout
+This probe takes a narrower route. It redirects only the JNI registration of
+`java.util.resource.GameRef.getInfo(II)I` (registration code at
+`0x00489666`) to a five-byte pass-through thunk at `0x007DF972`. The thunk
+contains only a relative JMP to the original dispatcher at `0x0047DDF0`.
+The overloaded `getInfo(ILjava.lang.String;)I` registration remains unchanged.
+No shared dispatcher call site is modified; no arguments, flags, or object
+memory are inspected by the thunk. The working Reflection log/dump suppression
+from `native_silent_v2.exe` is retained.
 
-This mod is self-contained under `mods/PartPreviewPrototype/`. Its contents mirror the paths used by the game:
-
-```text
-mods/PartPreviewPrototype/
-├── sl/Scripts/game/src/
-│   ├── BuyPartPreviewDialog.java
-│   └── Catalog.java
-└── system/Scripts/render/osd/dialog/src/
-    └── PartPreviewDialogBase.java
-```
-
-Copy or compile the files from this folder into the matching locations in the game tree. The repository's normal `sl/` and `system/` directories are not modified by this prototype.
-
-## Features in this source prototype
-
-- Large 3D viewport on the left; part name, price, description and compatibility on the right.
-- Slow automatic rotation of an independent preview instance; the catalog model is not modified.
-- Left-button drag uses the integrated cursor position and rotates the independent preview on yaw and pitch.
-- Mouse wheel changes camera distance.
-- Automatic rotation resumes gradually after dragging.
-- Original purchase flow is preserved: YES returns `0`; NO/Escape returns `1`.
-
-## Status and limitations
-
-This is **not yet runtime-tested**. The sources have not been compiled against the user's installed game and have not been run in SLRR.
-
-Drag position is read from `Input.cursor.getPos()` so the code uses the cursor's integrated OSD coordinates. The left-button and wheel state still use stock mouse device 1, axes 3 and 2 respectively, based on this branch's `system/Scripts/io/src/ControlSet.java`. Verify these mappings in the target build.
-
-The preview creates a second instance from the same part type under its own `Dummy` scene root, with its own light, camera and viewport. It does not rotate, move, clone-over, or otherwise modify the catalog's original `InventoryItem_Part` instance. The temporary instance and scene root are destroyed when the dialog closes.
-
-The viewport rectangle and mouse hit-test coordinates are provisional. They may need adjustment after the first in-game screenshot.
-
-## Build
-
-Use [SLRR-JVM-compiler](https://github.com/LootDelivery/SLRR-JVM-compiler), which requires Node.js 20+. This compiler emits SLRR TUFA `.class` files; it is not `javac`.
-
-Set these paths in PowerShell:
+Build a separate executable from the exact known-good base:
 
 ```powershell
-$Game = "D:\Games\SLRR"
-$Mod = "D:\Path\To\SLRR-Light-Edition\mods\PartPreviewPrototype"
-$Out = "$env:TEMP\SLRR-PartPreview-Build"
-$Compiler = "D:\Tools\SLRR-JVM-compiler\dist\src\cli.js"
+python .\\native\\patch_bbox_center.py "D:\\Games\\SLRR\\StreetLegal_Redline_native_silent_v2.exe" "D:\\Games\\SLRR-test\\StreetLegal_Redline_native_getinfo_route_probe.exe"
 ```
 
-Compile in dependency order, using the game directory as `--root` so stock game classes can be indexed:
-
-1. Compile `$Mod\system\Scripts\render\osd\dialog\src\PartPreviewDialogBase.java`; install the resulting `PartPreviewDialogBase.class` in `$Game\system\Scripts\render\osd\dialog\`.
-2. Compile `$Mod\sl\Scripts\game\src\BuyPartPreviewDialog.java`; install the resulting `BuyPartPreviewDialog.class` in `$Game\sl\Scripts\game\`.
-3. Compile `$Mod\sl\Scripts\game\src\Catalog.java`; install the resulting `Catalog.class` in `$Game\sl\Scripts\game\`.
-
-Example for the first file:
-
-```powershell
-node $Compiler --root $Game --out $Out "$Mod\system\Scripts\render\osd\dialog\src\PartPreviewDialogBase.java"
-```
-
-After step 1, make the generated bridge class visible in the game tree before compiling step 2. Do the same with `BuyPartPreviewDialog.class` before compiling step 3. Use a fresh output directory or clear stale outputs between builds.
-
-**Keep backups** of the three original/generated target `.class` files and `Catalog.java`. Do not replace the originals until the compiler succeeds.
-
-## First in-game test
-
-- Dialog opens and both buttons close it with the expected result.
-- Preview camera shows the selected part in the left viewport.
-- Model rotates while idle; camera does not orbit the model.
-- Dragging only starts over the preview area.
-- Wheel zoom responds once per notch and stays within limits.
-- Auto-rotation resumes smoothly after releasing the mouse.
-- Cancel leaves the catalog unchanged.
-- Confirmed purchase deducts the same price and adds the same item.
-- Closing the dialog restores the original part transform and destroys the temporary camera/viewport.
-
-
-## Native Reflection diagnostics
-
-The native Reflection hook remains enabled in `StreetLegal_Redline_native.exe`.
-The optional files `grefl.log` and `grefl_dump.bin` can be disabled without
-removing or changing the Reflection feature by using
-`native/disable_reflection_file_logs.py`.
-
-The script is pinned to the exact native EXE SHA-256 used for reverse engineering.
-It creates a separate `*_silent.exe`, never overwrites the input, and changes
-only the text-log and binary-dump writer entry points. The `ResourceRef.set(I)V`
-handler and native method registration are left intact. Use a backup/test game
-folder for the first runtime test.
-
-
-The dump uses two separate native writer routines, at `0x007DE081` and
-`0x007DE2D4`; both are disabled by the current script. The log writer at
-`0x007DE4BF` is disabled separately. These patches prevent new writes but do not
-delete files left over from earlier runs: remove old `grefl.log` and
-`grefl_dump.bin` manually before verifying.
-
-
-## Experimental native Bounding Box probe — stage 0
-
-The current probe is deliberately limited to validating the interception path.
-It is built from the working `StreetLegal_Redline_native_silent_v2.exe`, so the
-Reflection diagnostic file writers remain disabled.
-
-The probe hooks the virtual-call tail at `0x0047DEDD`. For the reserved query
-family `0x584F4242`, `0x584F4243`, or `0x584F4244`, it returns the conspicuous
-test marker `0x42424242`. It checks both forwarded Java argument slots and
-does **not** dereference the native object, inspect the AABB, call
-`IsBadReadPtr`, or execute floating-point code. Every other call reproduces the original argument layout and uses
-`push 0x0047DEE4; jmp [eax+0x3c]`, so the callee sees the exact same return
-address it saw before interception.
-
-Build a separate test executable (never overwrite the working silent_v2):
-
-```powershell
-python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_silent_v2.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native_bbox_probe_v3.exe"
-```
-
-The Java preview source logs `[PartPreviewBBox]`. In this stage, seeing
-`1111638594` (`0x42424242`) in all three values proves that the custom query
-reached the hook. This stage is **not yet returning Bounding Box coordinates**.
-The previous probes have not yet passed the garage-load test. In addition to
-preserving the original return address, this revision now saves and restores
-EFLAGS around the query checks. The original displaced MOV/PUSH/CALL sequence
-does not modify flags, so ordinary calls now enter the virtual method with the
-same flags as before interception. The purpose remains to confirm stable
-garage/dealer entry and safe dispatch before we add any bounds memory reads.
+This stage is only a routing safety test. It does not query the Bounding Box,
+and the Java-side experimental marker calls have been removed. First validate
+normal garage and shop loading. Only after this registration-only route is
+stable should the thunk inspect the two Java integer arguments and handle the
+reserved BBox query.
