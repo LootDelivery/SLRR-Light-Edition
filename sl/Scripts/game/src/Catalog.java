@@ -2184,7 +2184,7 @@ public class CatalogInventory extends VisualInventory
 			int price = item.getPrice() * Catalog.PRICERATIO;
 			if( price <= player.money )
 			{
-				Dialog d = new BuyCatalogItemDialog( player.controller, Dialog.DF_MODAL|Dialog.DF_DEFAULTBG|Dialog.DF_WIDE, item, price );
+				Dialog d = new BuyPartPreviewDialog( player.controller, Dialog.DF_MODAL|Dialog.DF_DEFAULTBG|Dialog.DF_WIDE, item, price );
 
 				if( d.display() == 0 )
 				{
