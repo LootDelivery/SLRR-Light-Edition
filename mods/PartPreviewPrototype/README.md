@@ -109,9 +109,9 @@ The probe hooks the virtual-call tail at `0x0047DEDD`. For the reserved query
 family `0x584F4242`, `0x584F4243`, or `0x584F4244`, it returns the conspicuous
 test marker `0x42424242`. It checks both forwarded Java argument slots and
 does **not** dereference the native object, inspect the AABB, call
-`IsBadReadPtr`, or execute floating-point code. Every other call replays the
-original `mov / push / virtual call` instructions and continues at the original
-return site.
+`IsBadReadPtr`, or execute floating-point code. Every other call reproduces the original argument layout and uses
+`push 0x0047DEE4; jmp [eax+0x3c]`, so the callee sees the exact same return
+address it saw before interception.
 
 Build a separate test executable (never overwrite the working silent_v2):
 
@@ -122,5 +122,8 @@ python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_s
 The Java preview source logs `[PartPreviewBBox]`. In this stage, seeing
 `1111638594` (`0x42424242`) in all three values proves that the custom query
 reached the hook. This stage is **not yet returning Bounding Box coordinates**.
-The purpose is to confirm stable garage/dealer entry and safe dispatch before
-we add any bounds memory reads.
+The previous probe crashed while entering the garage. The fallback path was
+not fully equivalent: its indirect call returned to the code cave instead of
+the original call-site address. This revision preserves the original return
+address. The purpose remains to confirm stable garage/dealer entry and safe
+dispatch before we add any bounds memory reads.
