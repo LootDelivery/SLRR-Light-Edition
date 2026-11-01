@@ -32,8 +32,8 @@ HOOK_BYTES = bytes.fromhex(
     "E9 48 E5 C9 FF"
     "8B 57 4C"
     "52"
-    "FF 50 3C"
-    "E9 3C E5 C9 FF"
+    "68 E4 DE 47 00"
+    "FF 60 3C"
 )
 SILENT_WRITER_GUARDS = {
     0x007DE081: bytes.fromhex("C3 90 90 90"),
