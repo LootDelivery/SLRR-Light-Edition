@@ -140,6 +140,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			return;
 		}
 
+		// Experimental native AABB-center probe. This calls the existing
+		// GameRef.getInfo(int,int) overload with a reserved query and axis selector.
+		// Coordinates are returned as signed fixed-point values (model units * 10000).
+		// Do not use them for pivot compensation until verified in-game.
+		int bboxX = previewPart.getInfo( 0x584F4242, 0 );
+		int bboxY = previewPart.getInfo( 0x584F4242, 1 );
+		int bboxZ = previewPart.getInfo( 0x584F4242, 2 );
+		System.log( "[PartPreviewBBox] mesh=" + previewPart.getMesh() +
+			", center_fixed=" + bboxX + "," + bboxY + "," + bboxZ );
+
 		previewPart.setMatrix( null, null );
 		previewPart.refreshGlassOpacityPreview();
 
