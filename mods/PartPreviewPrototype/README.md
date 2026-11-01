@@ -116,7 +116,7 @@ return site.
 Build a separate test executable (never overwrite the working silent_v2):
 
 ```powershell
-python .\\native\\patch_bbox_center.py "D:\\Games\\SLRR\\StreetLegal_Redline_native_silent_v2.exe" "D:\\Games\\SLRR-test\\StreetLegal_Redline_native_bbox_probe.exe"
+python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_silent_v2.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native_bbox_probe.exe"
 ```
 
 The Java preview source logs `[PartPreviewBBox]`. In this stage, seeing
