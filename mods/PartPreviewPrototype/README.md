@@ -1,25 +1,31 @@
-## Native getInfo routing probe — isolated registration test
+## Native getInfo dispatcher clone — isolation test
 
-The earlier BBox probe builds (v1–v3) hooked the shared dispatcher body at
-`0x0047DEDD`. They all caused the garage-load crash and must no longer be used.
+The registration-only pass-through probe has been confirmed to enter the
+garage successfully. The next step clones the original native dispatcher
+instead of modifying its shared call site.
 
-This probe takes a narrower route. It redirects only the JNI registration of
-`java.util.resource.GameRef.getInfo(II)I` (registration code at
-`0x00489666`) to a five-byte pass-through thunk at `0x007DF972`. The thunk
-contains only a relative JMP to the original dispatcher at `0x0047DDF0`.
-The overloaded `getInfo(ILjava.lang.String;)I` registration remains unchanged.
-No shared dispatcher call site is modified; no arguments, flags, or object
-memory are inspected by the thunk. The working Reflection log/dump suppression
-from `native_silent_v2.exe` is retained.
+The patcher copies the complete function
+\`0x0047DDF0–0x0047DF3F\` to executable space at \`0x007DF972\`, redirects only
+the \`java.util.resource.GameRef.getInfo(II)I\` registration at \`0x00489666\`,
+and leaves the String overload registration at \`0x00489685\` unchanged.
+The clone's seven relative CALL instructions are recalculated to reach the
+same original helper functions. Its seven absolute-address HIGHLOW relocation
+entries are duplicated into a new PE base-relocation block. The original
+dispatcher and all other methods remain unchanged.
 
-Build a separate executable from the exact known-good base:
+This stage contains **no Bounding Box hook** and no special query handling.
+The Java-side marker calls are intentionally absent. Its only purpose is to
+check that the cloned dispatcher behaves like the original when used through
+the (II)I registration. The Reflection log/dump writer suppression from
+\`native_silent_v2.exe\` is retained.
 
-```powershell
-python .\\native\\patch_bbox_center.py "D:\\Games\\SLRR\\StreetLegal_Redline_native_silent_v2.exe" "D:\\Games\\SLRR-test\\StreetLegal_Redline_native_getinfo_route_probe.exe"
-```
+Build from the exact known-good base (do not patch the previous probe):
 
-This stage is only a routing safety test. It does not query the Bounding Box,
-and the Java-side experimental marker calls have been removed. First validate
-normal garage and shop loading. Only after this registration-only route is
-stable should the thunk inspect the two Java integer arguments and handle the
-reserved BBox query.
+\`\`\`powershell
+python .\\native\\patch_bbox_center.py "D:\\Games\\SLRR\\StreetLegal_Redline_native_silent_v2.exe" "D:\\Games\\SLRR-test\\StreetLegal_Redline_native_getinfo_clone_probe.exe"
+\`\`\`
+
+First test garage and shop loading. Do not test a BBox query in this stage.
+If the cloned dispatcher is stable, the next revision can add the reserved
+query branch inside this private clone without affecting the String overload
+or the original shared dispatcher.
