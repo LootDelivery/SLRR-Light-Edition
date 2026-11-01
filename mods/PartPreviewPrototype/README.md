@@ -60,6 +60,27 @@ Diagnostic return values for the reserved query:
 
 These sentinel values are diagnostic only; they are not valid center values.
 
+## Static verification of the BBox fields
+
+The offsets and mode used by the thunk are now verified from native code in
+the baseline executable, not inferred from a guessed C++ layout:
+
+- `ResourceRef.type()I` at `0x0047D210` resolves the native receiver and
+  returns the dword at `nativeResource + 0x4C`.
+- The type-name pointer table at `0x00618E20` maps index `5` to
+  `U_MESH`. Thus the thunk's `type == 5` check is confirmed.
+- The native bound-dump routine at `0x00545990` reads the bound mode from
+  `+0x80`, the center vector from `+0x84/+0x88/+0x8C`, and the radius data
+  after that.
+- The bound-mode dispatch table at `0x00545C90` maps `0=sphere`,
+  `1=AABB`, `2=#INF`, `3=planes`. Thus `boundmode == 1` is confirmed
+  as AABB, and the three center component offsets are confirmed.
+
+This establishes the queried fields and mesh type statically. It does **not**
+prove that the redirected native-call path is safe at runtime or that the Java
+diagnostic is compiled and running in the target installation. The query probe
+still needs the garage/shop smoke test followed by a preview test.
+
 ## Java diagnostic
 
 The updated `BuyPartPreviewDialog.java` obtains the mesh ID with
