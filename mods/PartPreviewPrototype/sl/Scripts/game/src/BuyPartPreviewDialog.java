@@ -236,6 +236,37 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				int maxZFixed = previewMeshRef.getInfo( AABB_QUERY, 5 );
 				tracePreview( "2B after AABB query axis=5 value=" + maxZFixed );
 
+				// Diagnostic: compare the live vertex scan against the root bounds
+				// accumulated by the original SCX loader at load time.
+				tracePreview( "30 before stored root AABB query axis=6 MinX" );
+				int rootMinXFixed = previewMeshRef.getInfo( AABB_QUERY, 6 );
+				tracePreview( "31 after stored root AABB query axis=6 value=" + rootMinXFixed );
+
+				tracePreview( "32 before stored root AABB query axis=7 MinY" );
+				int rootMinYFixed = previewMeshRef.getInfo( AABB_QUERY, 7 );
+				tracePreview( "33 after stored root AABB query axis=7 value=" + rootMinYFixed );
+
+				tracePreview( "34 before stored root AABB query axis=8 MinZ" );
+				int rootMinZFixed = previewMeshRef.getInfo( AABB_QUERY, 8 );
+				tracePreview( "35 after stored root AABB query axis=8 value=" + rootMinZFixed );
+
+				tracePreview( "36 before stored root AABB query axis=9 MaxX" );
+				int rootMaxXFixed = previewMeshRef.getInfo( AABB_QUERY, 9 );
+				tracePreview( "37 after stored root AABB query axis=9 value=" + rootMaxXFixed );
+
+				tracePreview( "38 before stored root AABB query axis=10 MaxY" );
+				int rootMaxYFixed = previewMeshRef.getInfo( AABB_QUERY, 10 );
+				tracePreview( "39 after stored root AABB query axis=10 value=" + rootMaxYFixed );
+
+				tracePreview( "3A before stored root AABB query axis=11 MaxZ" );
+				int rootMaxZFixed = previewMeshRef.getInfo( AABB_QUERY, 11 );
+				tracePreview( "3B after stored root AABB query axis=11 value=" + rootMaxZFixed );
+
+				tracePreview(
+					"3C stored loader AABB min=" + rootMinXFixed + "," + rootMinYFixed + "," + rootMinZFixed +
+					" max=" + rootMaxXFixed + "," + rootMaxYFixed + "," + rootMaxZFixed
+				);
+
 				if( minXFixed != AABB_INVALID && minYFixed != AABB_INVALID && minZFixed != AABB_INVALID &&
 					maxXFixed != AABB_INVALID && maxYFixed != AABB_INVALID && maxZFixed != AABB_INVALID )
 				{
@@ -260,9 +291,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						boundsCenterZ = (minZ + maxZ) * 0.5;
 						hasRuntimeBounds = 1;
 						tracePreview(
-							"2C AABB valid meshID=" + previewMeshID +
+							"3D AABB valid meshID=" + previewMeshID +
 							" min=" + minXFixed + "," + minYFixed + "," + minZFixed +
 							" max=" + maxXFixed + "," + maxYFixed + "," + maxZFixed +
+							" center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
 							" size=" + runtimeModelSize
 						);
 					}
@@ -288,6 +320,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			savedPosition = new Vector3( savedPosition );
 		else
 			savedPosition = new Vector3( 0.0, 0.0, 0.0 );
+		tracePreview( "31A savedPosition=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z );
 
 		tracePreview( "32 before previewPart.getOri" );
 		savedOrientation = previewPart.getOri();
@@ -296,6 +329,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			savedOrientation = new Ypr( savedOrientation );
 		else
 			savedOrientation = new Ypr( 0.0, 0.0, 0.0 );
+		tracePreview( "33A savedOrientation=" + savedOrientation.y + "," + savedOrientation.p + "," + savedOrientation.r );
 
 		yaw = savedOrientation.y;
 		pitch = savedOrientation.p;
@@ -306,8 +340,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		tracePreview( "35 after previewPart.getInfo(GII_SIZE) fallback value=" + modelSize );
 		if( modelSize <= 0.0 )
 			modelSize = 1.0;
-		if( hasRuntimeBounds )
-			modelSize = runtimeModelSize;
+
+		// Keep the proven legacy GII_SIZE camera scale. The AABB extent is not
+		// guaranteed to use the same fitting convention as GII_SIZE.
+		tracePreview( "35A camera modelSize keeps GII_SIZE=" + modelSize + " live AABB extent=" + runtimeModelSize + " hasBounds=" + hasRuntimeBounds );
 
 		// Center and fit the isolated preview, leaving the source catalog Part untouched.
 		applyPartTransform();
@@ -354,6 +390,18 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			previewPosition.x = savedPosition.x - rotatedCenter.x;
 			previewPosition.y = savedPosition.y - rotatedCenter.y;
 			previewPosition.z = savedPosition.z - rotatedCenter.z;
+
+			// Log the initial transform once; animateTraceFrames becomes non-zero
+			// before the per-frame update path runs.
+			if( animateTraceFrames == 0 )
+				tracePreview(
+					"T00 center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
+					" rotatedCenter=" + rotatedCenter.x + "," + rotatedCenter.y + "," + rotatedCenter.z +
+					" sourcePos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
+					" finalPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
+					" ypr=" + yaw + "," + pitch + "," + roll
+				);
+
 			previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
 		}
 	}
