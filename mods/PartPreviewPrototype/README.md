@@ -23,9 +23,9 @@ The later full-dispatcher clone test did **not** enter the garage and is
 rejected. Do not use `StreetLegal_Redline_native_getinfo_clone_probe.exe`
 or the old `patch_bbox_center.py` clone patcher.
 
-The current `bboxcenter_query` build is a new **experimental runtime probe**.
-It has been statically checked, but it has **not yet been tested in SLRR**.
-It must pass garage/shop loading before the preview query is tested.
+The first BBox query thunk built from the route-probe executable is also
+rejected after the user reported a garage-entry crash when a car is present.
+A corrected v2 is now available; it is still an **experimental runtime probe**.
 
 ## What the query does
 
@@ -36,7 +36,7 @@ The patcher redirects only the native registration pointer for
 The thunk repeats the original argument parsing and receiver-resolution setup.
 After that, ordinary `getInfo` requests jump into the original dispatcher at
 `0x0047DE25`, after its setup code. A reserved query value `0x584F4242`
-(ASCII `BBOX`) is handled by the private thunk instead.
+(ASCII `BBOX`) is intended to be handled by the private thunk instead.
 
 For the reserved query, the thunk obtains the resolved Java receiver's native
 resource pointer, then checks:
@@ -62,7 +62,7 @@ These sentinel values are diagnostic only; they are not valid center values.
 
 ## Static verification of the BBox fields
 
-The offsets and mode used by the thunk are now verified from native code in
+The offsets and mode used by the thunk are verified from native code in
 the baseline executable, not inferred from a guessed C++ layout:
 
 - `ResourceRef.type()I` at `0x0047D210` resolves the native receiver and
@@ -78,8 +78,40 @@ the baseline executable, not inferred from a guessed C++ layout:
 
 This establishes the queried fields and mesh type statically. It does **not**
 prove that the redirected native-call path is safe at runtime or that the Java
-diagnostic is compiled and running in the target installation. The query probe
-still needs the garage/shop smoke test followed by a preview test.
+diagnostic is compiled and running in the target installation.
+
+## Corrected argument order — v2
+
+The original native argument parser at `0x0045D910` decodes the two Java
+integer parameters into local stack slots in this order:
+
+- first Java argument (`query`) at `[ESP+0x10]`;
+- second Java argument (`axis`) at `[ESP+0x0C]`.
+
+The first route-based BBox thunk used these two slots in the opposite order.
+Consequently, `getInfo(0x584F4242, axis)` was not recognized as the reserved
+query and could fall through to the stock `getInfo` dispatcher as an unknown
+query. That is a concrete defect in v1; whether it fully explains the
+garage-entry crash remains to be confirmed in-game.
+
+Use the v2 patcher:
+
+```text
+native/patch_bboxcenter_query_from_route_probe_v2.py
+```
+
+It is pinned to the user's known-good route-probe executable:
+
+- Input SHA-256: `8e8cde4bcb09f83dd0888d9cdc3d58248d8f6cbb1d9499eb4593e42eccd88e0d`
+- Output SHA-256: `6b2d958d6b47629e8ae267793a89fd43ba1e2e240b3fcc2e054849ef190ac23d`
+- Output filename: `StreetLegal_Redline_native_bboxcenter_query_probe_v2.exe`
+
+V2 corrects only the query/axis stack-slot order in the existing 179-byte thunk.
+The native registration, String overload, Reflection writer guards and all
+bytes outside that thunk slot are unchanged from the known-good route probe.
+The patcher refuses to overwrite its input executable.
+
+This is a static correction, **not yet a confirmed runtime fix**.
 
 ## Java diagnostic
 
@@ -93,34 +125,23 @@ BBOX_QUERY meshID=... type=... center_milli=x,y,z
 ```
 
 The updated Java source must be compiled with the normal SLRR script compiler
-before testing. This Java source and the native probe EXE must be used as a
+before testing. This Java source and the v2 native probe EXE must be used as a
 matching pair.
-
-## Build
-
-Build from the exact known-good baseline, not from another probe:
-
-```powershell
-python .\\native\\patch_bboxcenter_query.py "D:\\Games\\SLRR\\StreetLegal_Redline_native_silent_v2.exe" "D:\\Games\\SLRR-test\\StreetLegal_Redline_native_bboxcenter_query_probe.exe"
-```
-
-The patcher verifies the base SHA-256, PE32 layout, native registration bytes
-and signatures, code cave, registration relocation, and Reflection writer
-guards. It refuses to overwrite the source executable.
 
 ## Test order
 
-1. Keep `StreetLegal_Redline_native_silent_v2.exe` untouched as fallback.
+1. Keep `StreetLegal_Redline_native_silent_v2.exe` and the working
+   `getinfo_route_probe.exe` untouched as fallbacks.
 2. Compile the updated `BuyPartPreviewDialog.java` using the usual SLRR script
    build process.
-3. Launch `StreetLegal_Redline_native_bboxcenter_query_probe.exe`.
-4. First verify the game launches and can enter the garage/shop.
-5. Only after that, open the Buy Part preview to trigger the BBox diagnostic.
-6. Check the game log for the `BBOX_QUERY` line.
+3. Launch `StreetLegal_Redline_native_bboxcenter_query_probe_v2.exe`.
+4. Test entering the garage with a car present.
+5. If garage entry works, open the Buy Part preview to trigger the BBox query.
+6. Check the game log for the `BBOX_QUERY` line and retain the complete line,
+   including `meshID`, `type` and `center_milli`.
 
-If the game crashes before opening the preview, revert to `silent_v2` and
-report the exact executable filename used. If a query line appears, retain
-the complete line including `meshID`, `type` and `center_milli`.
+If the game crashes before opening the preview, revert to the known-good
+route probe and report the exact executable filename used. Do not use v1.
 
 No automatic recentering or preview-rotation changes are included in this
 probe. Its only purpose is to establish whether the native mesh resource
