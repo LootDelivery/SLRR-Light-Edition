@@ -17,7 +17,7 @@ This branch replaces the old three-axis AABB-center experiment with a six-axis g
 
 The native helper returns a signed integer equal to `round(coordinate * 1000)`. Java divides by `1000.0`. This deliberately avoids `Float.intBitsToFloat()`, which is absent from SLRR's bundled `java.lang.Float.class`. `0x80000000` is the invalid-result sentinel.
 
-The preview computes the geometric center and the largest AABB extent. It moves only the isolated preview instance so the bounds center remains at the camera target while the model rotates. The catalog's source Part is not modified. When the query is invalid or the mesh is unsupported, the previous `GII_SIZE` camera-scale estimate remains as a fallback.
+The preview computes the geometric center from live bounds and offsets only the isolated preview instance. The catalog's source Part is not modified. Camera distance continues to use the existing `GII_SIZE` convention; the AABB extent is diagnostic only and is not assumed to be interchangeable with `GII_SIZE`.
 
 ## Native route
 
@@ -36,7 +36,7 @@ The inline hook is placed at `0x0047DE25`, after the original `GameRef.getInfo(I
 
 The original integer and string native registrations and the known-good route thunk remain unchanged. This avoids the older full-wrapper approach that copied the parser/resolver path.
 
-The helper follows the `scaleMesh()` resource-resolution sequence, validates resource type `5`, obtains the visual root payload, and scans all groups and VertexData child wrappers. The accepted visual-root vtable is `0x005F2D00`; the VertexData wrapper vtable is `0x005F2C08`.
+The helper follows the `scaleMesh()` resource-resolution sequence, validates resource type `5`, obtains the visual root payload, and scans all groups and VertexData child wrappers. It accepts both visual-root factory variants: type 3 (`0x005F2D00`) and type 4 (`0x005F2CE8`). The VertexData wrapper vtable is `0x005F2C08`.
 
 Confirmed VertexData descriptor fields used by the helper:
 
@@ -48,7 +48,9 @@ Confirmed VertexData descriptor fields used by the helper:
 | `+0x1C` | Position attribute byte offset |
 | `+0x60` | Vertex stride |
 
-The scan reads current CPU positions, so it can observe CPU-side vertex edits made by `scaleMesh()`. Each axis query scans the mesh independently; there is no cache. The other visual-root factory variant and GPU-only skinning/deformation are not covered yet.
+The scan reads current CPU positions, so it can observe CPU-side vertex edits made by `scaleMesh()`. Each live axis query scans the mesh independently; there is no cache. GPU-only skinning/deformation are not covered.
+
+For diagnostics, query axes `6..11` return the root's original loader-accumulated bounds at `+0xCC..+0xE0` (MinX/MinY/MinZ/MaxX/MaxY/MaxZ). These stored bounds are not refreshed by `scaleMesh()`. On an unmodified mesh, compare them with axes `0..5`: close values validate the scan and coordinate space; large differences indicate a vertex-layout or traversal problem.
 
 ## Build
 
@@ -70,11 +72,12 @@ No DLL, injected process hook, external process-memory access, or new Java nativ
 2. Build the separate `StreetLegal_Redline_native_aabb_getter_experimental.exe`.
 3. Test in a copied game installation.
 4. First confirm garage entry and catalog category loading.
-5. Open a part preview and inspect `PartPreviewTrace.txt` in the game's temp-save directory. Six integer results should be present; none should equal `0x80000000`, and each min must not exceed its corresponding max.
-6. Check that an off-center mesh appears centered and remains centered while rotating. Confirm that the camera fit is plausible.
-7. After basic tests pass, use a mesh changed by `scaleMesh()` and verify that the returned bounds reflect its current CPU vertices.
+5. Open a part preview and inspect `PartPreviewTrace.txt` in the game's temp-save directory. Axes `0..5` are the fresh CPU-vertex bounds; axes `6..11` are the loader's stored root bounds. Compare them on an unmodified mesh.
+6. Check `savedPosition`, `savedOrientation`, `center`, `rotatedCenter`, and `finalPos` in the trace to identify whether the offset is in the AABB or in the Part transform.
+7. Verify that the old `GII_SIZE` camera framing remains intact, including previously invisible or oversized parts.
+8. After basic tests pass, use a mesh changed by `scaleMesh()` and verify that fresh axes `0..5` change while stored axes `6..11` remain stale.
 
-This is still an experimental, runtime-unverified build. If garage entry, catalog loading, or preview creation crashes, stop testing and restore the known-good route-probe executable. Do not replace the main game executable with this test build.
+The user confirmed that the previous integrated build starts and enters the game, but some preview pivots still shift incorrectly and some parts are not visible. The current branch adds the second root type, restores legacy `GII_SIZE` camera fitting, and exposes comparison/transform diagnostics. These latest changes still require runtime testing. If garage entry, catalog loading, or preview creation crashes, stop testing and restore the known-good route-probe executable. Do not replace the main game executable with this test build.
 
 ## Legacy experiments
 
