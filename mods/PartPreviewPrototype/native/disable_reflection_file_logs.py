@@ -48,15 +48,15 @@ def main() -> int:
     digest = hashlib.sha256(original).hexdigest()
     if digest != EXPECTED_SHA256:
         raise SystemExit(
-            "Refusing to patch an unknown executable build.\\n"
-            f"Expected SHA-256: {EXPECTED_SHA256}\\n"
+            "Refusing to patch an unknown executable build.\n"
+            f"Expected SHA-256: {EXPECTED_SHA256}\n"
             f"Actual SHA-256:   {digest}"
         )
 
     if original[:2] != b"MZ":
         raise SystemExit("Input is not an MZ/PE executable")
     pe_offset = struct.unpack_from("<I", original, 0x3C)[0]
-    if original[pe_offset:pe_offset + 4] != b"PE\\0\\0":
+    if original[pe_offset:pe_offset + 4] != bytes((0x50, 0x45, 0, 0)):
         raise SystemExit("PE signature is missing")
     machine = struct.unpack_from("<H", original, pe_offset + 4)[0]
     magic = struct.unpack_from("<H", original, pe_offset + 24)[0]
