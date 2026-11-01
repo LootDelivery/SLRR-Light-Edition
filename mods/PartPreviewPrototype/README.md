@@ -20,8 +20,8 @@ Copy or compile the files from this folder into the matching locations in the ga
 ## Features in this source prototype
 
 - Large 3D viewport on the left; part name, price, description and compatibility on the right.
-- Slow automatic rotation of the **part object**.
-- Left-button drag rotates the part on yaw and pitch.
+- Slow automatic rotation of an independent preview instance; the catalog model is not modified.
+- Left-button drag uses the integrated cursor position and rotates the independent preview on yaw and pitch.
 - Mouse wheel changes camera distance.
 - Automatic rotation resumes gradually after dragging.
 - Original purchase flow is preserved: YES returns `0`; NO/Escape returns `1`.
@@ -30,9 +30,9 @@ Copy or compile the files from this folder into the matching locations in the ga
 
 This is **not yet runtime-tested**. The sources have not been compiled against the user's installed game and have not been run in SLRR.
 
-Input currently assumes the stock defaults from this branch's `system/Scripts/io/src/ControlSet.java`: mouse device 1; physical axes 0/1 for X/Y, 2 for wheel, and 3 for left button. Verify these in the target build.
+Drag position is read from `Input.cursor.getPos()` so the code uses the cursor's integrated OSD coordinates. The left-button and wheel state still use stock mouse device 1, axes 3 and 2 respectively, based on this branch's `system/Scripts/io/src/ControlSet.java`. Verify these mappings in the target build.
 
-The preview reuses the part and inventory root created by the catalog. It creates its own camera and viewport, and restores the part's previous transform when the dialog closes. It does not clone or re-parent the part.
+The preview creates a second instance from the same part type under its own `Dummy` scene root, with its own light, camera and viewport. It does not rotate, move, clone-over, or otherwise modify the catalog's original `InventoryItem_Part` instance. The temporary instance and scene root are destroyed when the dialog closes.
 
 The viewport rectangle and mouse hit-test coordinates are provisional. They may need adjustment after the first in-game screenshot.
 
