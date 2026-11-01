@@ -54,10 +54,30 @@ aabb_helper:
     mov eax, dword ptr [eax+0x18]
     test eax, eax
     jz .invalid
+    # Both visual root factory variants share the common group/bounds layout.
+    # Type 3 uses vtable 0x005F2D00; type 4 uses vtable 0x005F2CE8.
     cmp dword ptr [eax], 0x005f2d00
+    je .root_supported
+    cmp dword ptr [eax], 0x005f2ce8
     jne .invalid
 
+.root_supported:
     mov dword ptr [ebp-0x08], eax
+
+    # Diagnostic axes 6..11 return the loader's original root AABB at +0xCC..+0xE0.
+    # These stored values are not updated by scaleMesh(); compare them with the
+    # freshly scanned CPU-vertex bounds to validate the coordinate frame.
+    mov ecx, dword ptr [ebp+0x0c]
+    cmp ecx, 6
+    jb .scan_vertex_bounds
+    cmp ecx, 11
+    ja .invalid
+    sub ecx, 6
+    lea edx, [eax+ecx*4+0xcc]
+    fld dword ptr [edx]
+    jmp .return_scaled
+
+.scan_vertex_bounds:
     mov ecx, dword ptr [eax+0x4c]
     test ecx, ecx
     jle .invalid
