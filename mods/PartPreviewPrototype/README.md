@@ -116,14 +116,15 @@ address it saw before interception.
 Build a separate test executable (never overwrite the working silent_v2):
 
 ```powershell
-python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_silent_v2.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native_bbox_probe.exe"
+python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native_silent_v2.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native_bbox_probe_v3.exe"
 ```
 
 The Java preview source logs `[PartPreviewBBox]`. In this stage, seeing
 `1111638594` (`0x42424242`) in all three values proves that the custom query
 reached the hook. This stage is **not yet returning Bounding Box coordinates**.
-The previous probe crashed while entering the garage. The fallback path was
-not fully equivalent: its indirect call returned to the code cave instead of
-the original call-site address. This revision preserves the original return
-address. The purpose remains to confirm stable garage/dealer entry and safe
-dispatch before we add any bounds memory reads.
+The previous probes have not yet passed the garage-load test. In addition to
+preserving the original return address, this revision now saves and restores
+EFLAGS around the query checks. The original displaced MOV/PUSH/CALL sequence
+does not modify flags, so ordinary calls now enter the virtual method with the
+same flags as before interception. The purpose remains to confirm stable
+garage/dealer entry and safe dispatch before we add any bounds memory reads.
