@@ -2,15 +2,20 @@
 
 Experimental 3D part-preview purchase confirmation for SLRR Light Edition.
 
-## Files are already in game-tree locations
+## Folder layout
 
-This branch contains the mod sources and integration change at their final paths:
+This mod is self-contained under `mods/PartPreviewPrototype/`. Its contents mirror the paths used by the game:
 
-- `sl/Scripts/game/src/BuyPartPreviewDialog.java`
-- `sl/Scripts/game/src/Catalog.java` — already changed to open the new dialog
-- `system/Scripts/render/osd/dialog/src/PartPreviewDialogBase.java`
+```text
+mods/PartPreviewPrototype/
+├── sl/Scripts/game/src/
+│   ├── BuyPartPreviewDialog.java
+│   └── Catalog.java
+└── system/Scripts/render/osd/dialog/src/
+    └── PartPreviewDialogBase.java
+```
 
-There is no separate patch to apply and no need to manually edit `Catalog.java`.
+Copy or compile the files from this folder into the matching locations in the game tree. The repository's normal `sl/` and `system/` directories are not modified by this prototype.
 
 ## Features in this source prototype
 
@@ -35,23 +40,28 @@ The viewport rectangle and mouse hit-test coordinates are provisional. They may 
 
 Use [SLRR-JVM-compiler](https://github.com/LootDelivery/SLRR-JVM-compiler), which requires Node.js 20+. This compiler emits SLRR TUFA `.class` files; it is not `javac`.
 
-Build in dependency order, using an output directory outside the game root:
-
-1. Compile `system/Scripts/render/osd/dialog/src/PartPreviewDialogBase.java`. Copy the generated `PartPreviewDialogBase.class` to `GAME/system/Scripts/render/osd/dialog/`.
-2. Compile `sl/Scripts/game/src/BuyPartPreviewDialog.java`. Copy the generated `BuyPartPreviewDialog.class` to `GAME/sl/Scripts/game/`.
-3. Compile the already-integrated `sl/Scripts/game/src/Catalog.java`. Copy the generated `Catalog.class` to `GAME/sl/Scripts/game/`.
-
-Compile each file with the game directory as `--root` so the compiler can index stock class declarations. For example:
+Set these paths in PowerShell:
 
 ```powershell
 $Game = "D:\Games\SLRR"
+$Mod = "D:\Path\To\SLRR-Light-Edition\mods\PartPreviewPrototype"
 $Out = "$env:TEMP\SLRR-PartPreview-Build"
 $Compiler = "D:\Tools\SLRR-JVM-compiler\dist\src\cli.js"
-
-node $Compiler --root $Game --out $Out "$Game\system\Scripts\render\osd\dialog\src\PartPreviewDialogBase.java"
 ```
 
-After step 1, copy that class into the game tree before compiling step 2. After step 2, copy its class into the game tree before compiling step 3. This makes the new class declarations visible to the compiler. Use a fresh output directory or clear stale outputs between builds.
+Compile in dependency order, using the game directory as `--root` so stock game classes can be indexed:
+
+1. Compile `$Mod\system\Scripts\render\osd\dialog\src\PartPreviewDialogBase.java`; install the resulting `PartPreviewDialogBase.class` in `$Game\system\Scripts\render\osd\dialog\`.
+2. Compile `$Mod\sl\Scripts\game\src\BuyPartPreviewDialog.java`; install the resulting `BuyPartPreviewDialog.class` in `$Game\sl\Scripts\game\`.
+3. Compile `$Mod\sl\Scripts\game\src\Catalog.java`; install the resulting `Catalog.class` in `$Game\sl\Scripts\game\`.
+
+Example for the first file:
+
+```powershell
+node $Compiler --root $Game --out $Out "$Mod\system\Scripts\render\osd\dialog\src\PartPreviewDialogBase.java"
+```
+
+After step 1, make the generated bridge class visible in the game tree before compiling step 2. Do the same with `BuyPartPreviewDialog.class` before compiling step 3. Use a fresh output directory or clear stale outputs between builds.
 
 **Keep backups** of the three original/generated target `.class` files and `Catalog.java`. Do not replace the originals until the compiler succeeds.
 
