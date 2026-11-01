@@ -26,8 +26,12 @@ _start:
     jmp 0x0047DEE4
 
 .Lpass:
-    # Replay the original call-site instructions unchanged.
+    # Preserve the exact original call-site return address and argument layout.
+    # Equivalent to the displaced call at 0x0047DEE1:
+    #   mov edx, [edi+0x4c]
+    #   push edx
+    #   call [eax+0x3c]    ; pushes 0x0047DEE4 as the return address
     mov edx, DWORD PTR [edi+0x4c]
     push edx
-    call DWORD PTR [eax+0x3c]
-    jmp 0x0047DEE4
+    push 0x0047DEE4
+    jmp DWORD PTR [eax+0x3c]
