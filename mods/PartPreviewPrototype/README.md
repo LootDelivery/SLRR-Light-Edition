@@ -90,3 +90,10 @@ It creates a separate `*_silent.exe`, never overwrites the input, and changes
 only the text-log and binary-dump writer entry points. The `ResourceRef.set(I)V`
 handler and native method registration are left intact. Use a backup/test game
 folder for the first runtime test.
+
+
+The dump uses two separate native writer routines, at `0x007DE081` and
+`0x007DE2D4`; both are disabled by the current script. The log writer at
+`0x007DE4BF` is disabled separately. These patches prevent new writes but do not
+delete files left over from earlier runs: remove old `grefl.log` and
+`grefl_dump.bin` manually before verifying.
