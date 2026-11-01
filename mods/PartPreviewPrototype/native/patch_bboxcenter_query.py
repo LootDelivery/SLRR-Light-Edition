@@ -31,7 +31,7 @@ def va_to_offset(b, va):
     table = pe + 24 + opt_size
     for i in range(count):
         o = table + i * 40
-        name = b[o:o+8].split(b"\\0", 1)[0].decode("ascii", "replace")
+        name = b[o:o+8].split(b"\0", 1)[0].decode("ascii", "replace")
         vs, va0, rs, rp = struct.unpack_from("<IIII", b, o + 8)
         flags = u32(b, o + 36)
         if va0 <= rva < va0 + max(vs, rs):
@@ -57,7 +57,7 @@ def has_highlow_reloc(b, target_rva):
 
 def cstr(b, va):
     o, _, _, _ = va_to_offset(b, va)
-    e = b.find(b"\\0", o)
+    e = b.find(b"\0", o)
     if e < 0: raise ValueError(f"Unterminated string at {va:#x}")
     return b[o:e].decode("ascii", "replace")
 
@@ -74,7 +74,7 @@ def main():
     if hashlib.sha256(THUNK).hexdigest() != THUNK_SHA256: raise SystemExit("Embedded thunk hash mismatch")
     if u32(original, 0x3C) <= 0 or original[:2] != b"MZ": raise SystemExit("Not a PE file")
     pe = u32(original, 0x3C)
-    if original[pe:pe+4] != b"PE\\0\\0" or u16(original, pe+4) != 0x014C or u16(original, pe+24) != 0x010B:
+    if original[pe:pe+4] != b"PE\0\0" or u16(original, pe+4) != 0x014C or u16(original, pe+24) != 0x010B:
         raise SystemExit("Expected x86 PE32")
     if u32(original, pe+24+28) != BASE: raise SystemExit("Unexpected image base")
 
