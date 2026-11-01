@@ -18,13 +18,18 @@ SECTION_VA = 0x007C2000
 SECTION_RAW = 0x0024E000
 
 # Confirmed from the exact native EXE's x86 disassembly:
-# 0x7DE2D4 opens/writes grefl_dump.bin.
-# 0x7DE4BF opens/writes grefl.log.
+# Both 0x7DE081 and 0x7DE2D4 open/write grefl_dump.bin via the same path buffer.
+# 0x7DE4BF is the separate grefl.log writer.
 PATCHES = {
+    0x007DE081: (
+        bytes.fromhex("53 56 57 55"),
+        bytes.fromhex("C3 90 90 90"),
+        "grefl_dump.bin primary writer",
+    ),
     0x007DE2D4: (
         bytes.fromhex("53 56 57 55"),
         bytes.fromhex("C3 90 90 90"),
-        "grefl_dump.bin writer",
+        "grefl_dump.bin secondary writer",
     ),
     0x007DE4BF: (
         bytes.fromhex("53 56 57 89 C6"),
