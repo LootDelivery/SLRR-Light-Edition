@@ -90,7 +90,7 @@ Run from PowerShell or a terminal with Python 3:
 python .\native\patch_bbox_center.py "D:\Games\SLRR\StreetLegal_Redline_native.exe" "D:\Games\SLRR-test\StreetLegal_Redline_native.exe"
 ```
 
-The native hook assembly is kept in `native/bbox_hook.s` beside the Python patcher. The callback reads the AABB from the resolved native resource object, not from the outer Java wrapper.\n\nThe preview source issues the reserved `getInfo(0x584F4242, axis)` query and logs
+The native hook assembly is kept in `native/bbox_hook.s` beside the Python patcher. The callback reads the AABB from the resolved native resource object, not from the outer Java wrapper.\n\nThe preview source issues the reserved `getInfo(0x584F4242 + axis)` query and logs
 `[PartPreviewBBox]` with the three center coordinates multiplied by 10000. This is
 an **experimental static patch and diagnostic probe**, not a confirmed runtime
 feature. Test only in a disposable game folder and keep the original EXE backed up.
