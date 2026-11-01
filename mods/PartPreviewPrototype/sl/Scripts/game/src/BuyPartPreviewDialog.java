@@ -140,15 +140,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			return;
 		}
 
-		// Stage-0 native BBox probe. The EXE returns 0x42424242 for this reserved
-		// query family; it deliberately does not read object fields yet.
-		// This confirms that the native interception is safe before AABB access.
-		int bboxX = previewPart.getInfo( 0x584F4242, 0 );
-		int bboxY = previewPart.getInfo( 0x584F4242, 1 );
-		int bboxZ = previewPart.getInfo( 0x584F4242, 2 );
-		System.log( "[PartPreviewBBox] mesh=" + previewPart.getMesh() +
-			", center_fixed=" + bboxX + "," + bboxY + "," + bboxZ );
-
 		previewPart.setMatrix( null, null );
 		previewPart.refreshGlassOpacityPreview();
 
