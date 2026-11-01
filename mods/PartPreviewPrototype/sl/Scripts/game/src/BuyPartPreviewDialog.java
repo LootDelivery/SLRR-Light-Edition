@@ -49,8 +49,13 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	final static int RID_PREVIEW_LIGHT = misc.garage:0x00000024r;
 
 	final static float AUTO_ROTATION_SPEED = 0.32;
-	final static float DRAG_YAW_SCALE = 2.8;
+	// Mouse sensitivity: horizontal (yaw) is intentionally faster than vertical (pitch).
+	final static float DRAG_YAW_SCALE = 3.5;
 	final static float DRAG_PITCH_SCALE = 2.2;
+
+	// Lower the camera slightly so the model sits a little higher in the viewport.
+	// This changes framing only; the preview part's pivot and transform stay intact.
+	final static float CAMERA_VERTICAL_OFFSET = 0.08;
 	final static float MIN_ZOOM = 0.65;
 	final static float MAX_ZOOM = 2.25;
 	final static float MOUSE_DEAD_ZONE = 0.0005;
@@ -190,7 +195,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		if( previewCamera )
 		{
-			Vector3 cameraPosition = new Vector3( 0.0, modelSize * zoom, modelSize * zoom );
+			Vector3 cameraPosition = new Vector3( 0.0, modelSize * zoom - modelSize * CAMERA_VERTICAL_OFFSET, modelSize * zoom );
 			cameraPosition.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			previewCamera.setMatrix( cameraPosition, new Ypr( -2.5, -0.7, 0.0 ) );
 		}
