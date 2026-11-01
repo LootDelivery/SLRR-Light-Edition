@@ -7,8 +7,8 @@
  * Inline dispatch hook at 0x0047DE25, after the stock GameRef.getInfo(II)I
  * parser and receiver resolver have completed.
  *
- * [ESP+0x10] = first Java int argument (query)
- * [ESP+0x0C] = second Java int argument (axis 0..5)
+ * [ESP+0x0C] = first Java int argument (query)
+ * [ESP+0x10] = second Java int argument (axis 0..11)
  * EAX        = resolved native GameRef wrapper
  *
  * BBOX only: call aabb_helper(nativeGameRef, axis), which returns the
@@ -17,7 +17,8 @@
  * at the original dispatcher continuation.
  */
 aabb_inline_hook:
-    cmp DWORD PTR [esp+0x10], 0x584F4242
+    /* Parser outputs Java arguments in declaration order: query at +0x0C, axis at +0x10. */
+    cmp DWORD PTR [esp+0x0c], 0x584F4242
     jne .Lnormal_path
 
     test eax, eax
@@ -26,7 +27,7 @@ aabb_inline_hook:
     je .Linvalid_reference
 
     /* stdcall args: push axis first, then native GameRef wrapper. */
-    push DWORD PTR [esp+0x0c]
+    push DWORD PTR [esp+0x10]
     push eax
     call 0x005E6900
     jmp .Lreturn_from_native
