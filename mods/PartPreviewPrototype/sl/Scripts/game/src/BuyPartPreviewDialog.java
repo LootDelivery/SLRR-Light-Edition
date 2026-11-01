@@ -45,6 +45,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float autoResume = 1.0;
 
 	int dragging;
+	int animateTraceFrames;
 
 	String previewTraceData = "";
 
@@ -302,7 +303,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( !previewPart || !previewCamera )
 			return;
 
+		int traceFrame = 0;
+		if( animateTraceFrames < 3 )
+		{
+			animateTraceFrames++;
+			traceFrame = 1;
+			tracePreview( "A0 animate begin frame=" + animateTraceFrames );
+		}
+
 		float now = System.currentTime();
+		if( traceFrame ) tracePreview( "A1 after System.currentTime" );
 		float delta = now - lastFrameTime;
 		lastFrameTime = now;
 		if( delta <= 0.0 || delta > 0.1 )
@@ -310,13 +320,19 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		// Read the integrated cursor position, not raw DirectInput mouse deltas.
 		Vector3 cursorPosition = Input.cursor.getPos();
+		if( traceFrame ) tracePreview( "A2 after Input.cursor.getPos" );
 		if( !cursorPosition )
+		{
+			if( traceFrame ) tracePreview( "A3 cursorPosition is null; animate returned" );
 			return;
+		}
 
 		float mouseX = cursorPosition.x;
 		float mouseY = cursorPosition.y;
 		float leftButton = Input.getAxis( 1, 3 );
+		if( traceFrame ) tracePreview( "A4 after left mouse Input.getAxis" );
 		float wheel = Input.getAxis( 1, 2 );
+		if( traceFrame ) tracePreview( "A5 after wheel Input.getAxis" );
 		int overPreview = cursorOverPreview( mouseX, mouseY );
 
 		if( leftButton > 0.5 )
@@ -371,15 +387,22 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( zoom < MIN_ZOOM ) zoom = MIN_ZOOM;
 		if( zoom > MAX_ZOOM ) zoom = MAX_ZOOM;
 
+		if( traceFrame ) tracePreview( "A6 before applyPartTransform" );
 		applyPartTransform();
+		if( traceFrame ) tracePreview( "A7 after applyPartTransform" );
 		updateCamera();
+		if( traceFrame ) tracePreview( "A8 after updateCamera" );
 	}
 
 	public void show()
 	{
-		createPreview();
+		tracePreview( "40 before super.show" );
 		super.show();
+		tracePreview( "41 after super.show" );
+
+		tracePreview( "42 before enableAnimateHook" );
 		enableAnimateHook();
+		tracePreview( "43 after enableAnimateHook" );
 	}
 
 	public void hide()
