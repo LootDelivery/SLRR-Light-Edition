@@ -140,6 +140,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			return;
 		}
 
+		// Temporary native AABB probe. The reserved getInfo(II) query returns
+		// center coordinates as signed fixed-point integers (world units * 10000).
+		// Keep preview rotation unchanged until these values are verified in-game.
+		int bboxX = previewPart.getInfo( 0x584F4242, 0 );
+		int bboxY = previewPart.getInfo( 0x584F4242, 1 );
+		int bboxZ = previewPart.getInfo( 0x584F4242, 2 );
+		System.log( "[PartPreviewBBox] mesh=" + previewPart.getMesh() +
+			", center_fixed=" + bboxX + "," + bboxY + "," + bboxZ );
+
 		previewPart.setMatrix( null, null );
 		previewPart.refreshGlassOpacityPreview();
 
