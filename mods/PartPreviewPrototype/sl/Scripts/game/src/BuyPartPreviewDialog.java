@@ -23,6 +23,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	InventoryItem item;
 	Part sourcePart;
 	Part previewPart;
+	GameRef previewMeshRef;
 
 	Dummy previewRoot;
 	RenderRef previewLight;
@@ -189,7 +190,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( previewMeshID )
 		{
 			tracePreview( "12 before preview mesh GameRef construction" );
-			GameRef previewMeshRef = new GameRef( previewMeshID );
+			previewMeshRef = new GameRef( previewMeshID );
 			tracePreview( "13 after preview mesh GameRef construction" );
 
 			tracePreview( "14 before previewMeshRef.load" );
@@ -219,9 +220,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				previewCenterY + "," + previewCenterZ
 			);
 
-			tracePreview( "27 before previewMeshRef.unload" );
-			previewMeshRef.unload();
-			tracePreview( "28 after previewMeshRef.unload" );
+			// Keep the mesh resource loaded while previewPart may render it.
+			// It is released only after previewPart is destroyed in hide().
+			tracePreview( "27 mesh resource retained for preview lifetime" );
 		}
 		else
 			tracePreview( "19 previewPart.getMesh returned 0; BBOX skipped" );
@@ -433,6 +434,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		{
 			previewPart.destroy();
 			previewPart = null;
+		}
+
+		if( previewMeshRef )
+		{
+			previewMeshRef.unload();
+			previewMeshRef = null;
 		}
 
 		if( previewRoot )
