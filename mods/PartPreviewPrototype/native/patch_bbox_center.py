@@ -132,7 +132,7 @@ def main() -> int:
     patched[site_off:site_off+len(detour)] = detour
     patched[cave_off:cave_off+len(HOOK_BYTES)] = HOOK_BYTES
 
-    out = args.output.resolve() if args.output else src.with_name(src.stem + "_bbox_probe.exe")
+    out = args.output.resolve() if args.output else src.with_name(src.stem + "_bbox_probe_v3.exe")
     if out == src:
         raise SystemExit("Output must not overwrite input")
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -146,9 +146,10 @@ def main() -> int:
     print(f"Output SHA-256: {hashlib.sha256(check).hexdigest()}")
     print(f"Hook site: VA {HOOK_SITE_VA:#010x}, file {site_off:#x}, section {site_sec}")
     print(f"Hook cave: VA {HOOK_CAVE_VA:#010x}, file {cave_off:#x}, {len(HOOK_BYTES)} bytes")
-    print("Other getInfo calls replay the original virtual call.")
+    print("Ordinary getInfo calls restore EFLAGS and replay the original virtual call stack.")
     print("Reserved BBox calls return test marker 0x42424242; no native object fields are read.")
     print("Reflection log and dump writer patches are retained.")
+    print("Stage 0 only: reserved BBox calls return a marker; native object memory is not read.")
     print("Runtime validation in SLRR is still required.")
     return 0
 
