@@ -84,6 +84,8 @@ render_diag_dispatch:
     je .resource_collection_pointer
     cmp ecx, 488
     jbe .resource_collection_header
+    cmp ecx, 502
+    jbe .nested_mesh_center
     jmp .invalid
 
 .f4_pointer_fields:
@@ -285,6 +287,199 @@ render_diag_dispatch:
     je .invalid
     sub ecx, 473
     mov eax, dword ptr [edx+ecx*4]
+    jmp 0x005e6ec5
+
+# Axes 500..502 return the runtime center of the embedded mesh in world
+# coordinates, fixed-point * 1000. The nested RESOURCE_MESH AABB is read via
+# the existing helper; no Java float-bit decoding or object writes are used.
+.nested_mesh_center:
+    push ebx
+    push edi
+    sub esp, 0x50
+    mov dword ptr [esp+0x4c], ecx
+
+    # Resolve embedded ResourceRef(type 14) -> child ResourceRef(type 5).
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .nested_center_fail
+    mov edx, dword ptr [edx+0x98]
+    test edx, edx
+    je .nested_center_fail
+    cmp dword ptr [edx+0x4c], 5
+    jne .nested_center_fail
+
+    # Build a temporary GameRef-shaped receiver for the existing AABB helper.
+    # Only +0x08 and +0x0C are read by aabb_helper.
+    mov dword ptr [esp+0x08], 1
+    mov dword ptr [esp+0x0c], edx
+
+    # Read the six stored root-AABB coordinates (axes 6..11) in fixed-point.
+    push 6
+    lea eax, [esp+4]
+    push eax
+    call 0x005e6900
+    cmp eax, 0x80000000
+    je .nested_center_fail
+    mov dword ptr [esp+0x10], eax
+
+    push 7
+    lea eax, [esp+4]
+    push eax
+    call 0x005e6900
+    cmp eax, 0x80000000
+    je .nested_center_fail
+    mov dword ptr [esp+0x14], eax
+
+    push 8
+    lea eax, [esp+4]
+    push eax
+    call 0x005e6900
+    cmp eax, 0x80000000
+    je .nested_center_fail
+    mov dword ptr [esp+0x18], eax
+
+    push 9
+    lea eax, [esp+4]
+    push eax
+    call 0x005e6900
+    cmp eax, 0x80000000
+    je .nested_center_fail
+    mov dword ptr [esp+0x1c], eax
+
+    push 10
+    lea eax, [esp+4]
+    push eax
+    call 0x005e6900
+    cmp eax, 0x80000000
+    je .nested_center_fail
+    mov dword ptr [esp+0x20], eax
+
+    push 11
+    lea eax, [esp+4]
+    push eax
+    call 0x005e6900
+    cmp eax, 0x80000000
+    je .nested_center_fail
+    mov dword ptr [esp+0x24], eax
+
+    # Midpoints remain in the same fixed-point scale (*1000).
+    mov eax, dword ptr [esp+0x10]
+    add eax, dword ptr [esp+0x1c]
+    jo .nested_center_fail
+    sar eax, 1
+    mov dword ptr [esp+0x28], eax
+
+    mov eax, dword ptr [esp+0x14]
+    add eax, dword ptr [esp+0x20]
+    jo .nested_center_fail
+    sar eax, 1
+    mov dword ptr [esp+0x2c], eax
+
+    mov eax, dword ptr [esp+0x18]
+    add eax, dword ptr [esp+0x24]
+    jo .nested_center_fail
+    sar eax, 1
+    mov dword ptr [esp+0x30], eax
+
+    # This is the same bone-list fallback selected by 0x5433E0 when F4=0
+    # and the auxiliary list at +0x134 is empty.
+    cmp dword ptr [esi+0xf4], 0
+    jne .nested_center_fail
+    lea ecx, [esi+0x134]
+    call 0x00429390
+    test eax, eax
+    jz .nested_center_fail
+    lea ecx, [esi+0x1fc]
+    call 0x004293a0
+    test eax, eax
+    jz .nested_center_fail
+    mov edi, eax
+
+    # Scale each local AABB-center component by INSTANCE_RENDER scale.
+    fild dword ptr [esp+0x28]
+    push 1000
+    fidiv dword ptr [esp]
+    add esp, 4
+    fmul dword ptr [esi+0x90]
+    fstp dword ptr [esp+0x34]
+
+    fild dword ptr [esp+0x2c]
+    push 1000
+    fidiv dword ptr [esp]
+    add esp, 4
+    fmul dword ptr [esi+0x94]
+    fstp dword ptr [esp+0x38]
+
+    fild dword ptr [esp+0x30]
+    push 1000
+    fidiv dword ptr [esp]
+    add esp, 4
+    fmul dword ptr [esi+0x98]
+    fstp dword ptr [esp+0x3c]
+
+    # WorldCenter = INSTANCE_RENDER.position + boneMatrix * scaledLocalCenter.
+    # bone00 is the first node consumed by 0x5433E0 in this fallback branch.
+    fld dword ptr [esp+0x34]
+    fmul dword ptr [edi+0xb0]
+    fld dword ptr [esp+0x38]
+    fmul dword ptr [edi+0xc0]
+    faddp st(1), st(0)
+    fld dword ptr [esp+0x3c]
+    fmul dword ptr [edi+0xd0]
+    faddp st(1), st(0)
+    fadd dword ptr [esi+0x84]
+    push 1000
+    fimul dword ptr [esp]
+    add esp, 4
+    fistp dword ptr [esp+0x40]
+
+    fld dword ptr [esp+0x34]
+    fmul dword ptr [edi+0xb4]
+    fld dword ptr [esp+0x38]
+    fmul dword ptr [edi+0xc4]
+    faddp st(1), st(0)
+    fld dword ptr [esp+0x3c]
+    fmul dword ptr [edi+0xd4]
+    faddp st(1), st(0)
+    fadd dword ptr [esi+0x88]
+    push 1000
+    fimul dword ptr [esp]
+    add esp, 4
+    fistp dword ptr [esp+0x44]
+
+    fld dword ptr [esp+0x34]
+    fmul dword ptr [edi+0xb8]
+    fld dword ptr [esp+0x38]
+    fmul dword ptr [edi+0xc8]
+    faddp st(1), st(0)
+    fld dword ptr [esp+0x3c]
+    fmul dword ptr [edi+0xd8]
+    faddp st(1), st(0)
+    fadd dword ptr [esi+0x8c]
+    push 1000
+    fimul dword ptr [esp]
+    add esp, 4
+    fistp dword ptr [esp+0x48]
+
+    mov ecx, dword ptr [esp+0x4c]
+    cmp ecx, 500
+    je .nested_center_return_x
+    cmp ecx, 501
+    je .nested_center_return_y
+    mov eax, dword ptr [esp+0x48]
+    jmp .nested_center_return
+.nested_center_return_x:
+    mov eax, dword ptr [esp+0x40]
+    jmp .nested_center_return
+.nested_center_return_y:
+    mov eax, dword ptr [esp+0x44]
+    jmp .nested_center_return
+.nested_center_fail:
+    mov eax, 0x80000000
+.nested_center_return:
+    add esp, 0x50
+    pop edi
+    pop ebx
     jmp 0x005e6ec5
 
 .embedded_list:
