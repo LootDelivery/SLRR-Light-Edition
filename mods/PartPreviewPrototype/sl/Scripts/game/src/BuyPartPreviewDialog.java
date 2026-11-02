@@ -1323,8 +1323,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							" previewPartID=" + previewPart.id() +
 							" previewRootID=" + previewRoot.id() +
 							" transform=" + parentTransform +
-							" livePartPos=" + previewPart.getPos().x + "," +
-							previewPart.getPos().y + "," + previewPart.getPos().z +
 							" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
 							" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
 						);
