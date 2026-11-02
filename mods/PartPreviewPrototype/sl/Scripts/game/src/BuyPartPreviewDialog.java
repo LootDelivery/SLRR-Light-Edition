@@ -387,13 +387,14 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			Vector3 rotatedCenter = new Vector3( boundsCenterX, boundsCenterY, boundsCenterZ );
 			rotatedCenter.rotate( new Ypr( yaw, pitch, roll ) );
 
-			// Preserve the Part's known-good mount/install position. The AABB
-			// correction is applied relative to that position, in the same way
-			// the original preview kept savedPosition for every rotation update.
+			// The Part already inherits its mount translation from the parent slot.
+			// GameRef.setMatrix() receives the local offset here, not that inherited
+			// position. Passing savedPosition again doubles the slot translation.
+			// Keep only the rotated AABB-center compensation in local space.
 			Vector3 previewPosition = new Vector3(
-				savedPosition.x - rotatedCenter.x,
-				savedPosition.y - rotatedCenter.y,
-				savedPosition.z - rotatedCenter.z
+				-rotatedCenter.x,
+				-rotatedCenter.y,
+				-rotatedCenter.z
 			);
 
 			if( animateTraceFrames == 0 )
