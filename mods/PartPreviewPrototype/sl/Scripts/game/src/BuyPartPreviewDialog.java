@@ -582,6 +582,36 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					);
 				else
 					tracePreview( "T03 frame=" + animateTraceFrames + " readback returned null" );
+
+				// Once the tenth transform sample has been applied, read the
+				// first real linked render-record matrix again. The list's second
+				// node is a terminator when its +0x04 field is zero; do not treat
+				// that terminal node as another matrix record.
+				if( transformTraceCount == 10 )
+				{
+					int liveRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+					if( liveRenderInstance )
+					{
+						GameRef liveRenderRef = new GameRef( liveRenderInstance );
+						int firstRecord = liveRenderRef.getInfo( AABB_QUERY, 120 );
+						int firstKey = liveRenderRef.getInfo( AABB_QUERY, 121 );
+						int terminalNode = liveRenderRef.getInfo( AABB_QUERY, 122 );
+						int terminalNext = liveRenderRef.getInfo( AABB_QUERY, 140 );
+						tracePreview(
+							"T04 afterTransform renderRecord=" + firstRecord +
+							" key=" + firstKey +
+							" terminalNode=" + terminalNode +
+							" terminalNext=" + terminalNext
+						);
+						for( int matrixIndex = 0; matrixIndex < 16; matrixIndex++ )
+						{
+							int matrixValue = liveRenderRef.getInfo( AABB_QUERY, 123 + matrixIndex );
+						tracePreview( "T04 renderMatrix[" + matrixIndex + "]=" + matrixValue );
+						}
+					}
+					else
+						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
+				}
 			}
 		}
 	}
