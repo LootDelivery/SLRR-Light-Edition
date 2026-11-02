@@ -169,6 +169,40 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			" GII_RENDER=" + renderInfo
 		);
 
+		if( renderInstance )
+		{
+			// GII_RENDERINSTANCE identifies the actual INSTANCE_RENDER child.
+			// Re-wrap that same runtime ID to query its own GameType information
+			// and RenderRef transform without changing the instance.
+			GameRef renderGameRef = new GameRef( renderInstance );
+			tracePreview(
+				"R02 render GameRef type=" + renderGameRef.type() +
+				" id=" + renderGameRef.id() +
+				" parentID=" + renderGameRef.getParentID()
+			);
+
+			int renderChildMesh = renderGameRef.getInfo( GameType.GII_RENDER );
+			int renderChildInstance = renderGameRef.getInfo( GameType.GII_RENDERINSTANCE );
+			int renderChildSize = renderGameRef.getInfo( GameType.GII_SIZE );
+			int renderChildType = renderGameRef.getInfo( GameType.GII_TYPE );
+			tracePreview(
+				"R03 render-child info GII_RENDER=" + renderChildMesh +
+				" GII_RENDERINSTANCE=" + renderChildInstance +
+				" GII_SIZE=" + renderChildSize +
+				" GII_TYPE=" + renderChildType
+			);
+
+			RenderRef renderRef = new RenderRef( renderInstance );
+			Vector3 renderLocalPosition = renderRef.getPos();
+			if( renderLocalPosition )
+				tracePreview(
+					"R04 RenderRef.getPos=" + renderLocalPosition.x + "," +
+					renderLocalPosition.y + "," + renderLocalPosition.z
+				);
+			else
+				tracePreview( "R04 RenderRef.getPos=null" );
+		}
+
 		// ResourceRef exposes a generic child/sibling traversal API. Dump only
 		// a bounded portion of the preview Part tree; this is read-only.
 		ResourceRef child = previewPart.getFirstChild();
