@@ -217,8 +217,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			}
 		}
 
-		// VStanced uses "Bone00" (uppercase B). Probe it independently so the
-		// existing lowercase lookup and native center selection remain untouched.
+		// Probe the exact uppercase spelling independently. Do not assume it
+		// exists: the tested VStanced preview currently exposes lowercase bone00.
 		int bone00UpperNode = renderRef.getInfo( AABB_QUERY, 489 );
 		if( bone00UpperNode == AABB_INVALID )
 			tracePreview( prefix + " Bone00-uppercase-node=INVALID" );
