@@ -1141,20 +1141,25 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			return;
 
 		float previousModelSize = modelSize;
-		modelSize = radius * CAMERA_FIT_DISTANCE_RATIO /
+		float fittedModelSize = radius * CAMERA_FIT_DISTANCE_RATIO /
 			( 10.0 * cameraOffsetLength );
-		if( modelSize <= 0.0001 )
-		{
-			modelSize = previousModelSize;
+		if( fittedModelSize <= 0.0001 )
 			return;
-		}
+
+		// GII_SIZE is the legacy minimum framing distance. AABB may move the
+		// camera farther away for large/off-center meshes, but must never pull
+		// it closer for tiny details such as mirrors, springs or small hardware.
+		if( fittedModelSize > previousModelSize )
+			modelSize = fittedModelSize;
 
 		cameraFitApplied = 1;
 		tracePreview(
-			"CAMERA_FIT applied radiusNative=" + radius +
+			"CAMERA_FIT evaluated radiusNative=" + radius +
 			" scale=" + scaleX + "," + scaleY + "," + scaleZ +
 			" previousGII_SIZE=" + previousModelSize +
-			" fittedModelSize=" + modelSize +
+			" requiredModelSize=" + fittedModelSize +
+			" finalModelSize=" + modelSize +
+			" decision=" + (fittedModelSize > previousModelSize ? "moved-camera-back" : "kept-GII_SIZE-minimum") +
 			" targetDistanceRatio=" + CAMERA_FIT_DISTANCE_RATIO
 		);
 	}
