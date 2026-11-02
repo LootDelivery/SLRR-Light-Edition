@@ -852,10 +852,20 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( !orbitRenderRef )
 			return;
 
-		int nodeTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 308 );
+		int auxiliaryListEmpty = orbitRenderRef.getInfo( AABB_QUERY, 273 );
+		int nodeTranslationY = AABB_INVALID;
+		if( auxiliaryListEmpty == 1 )
+			nodeTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 291 );
+		else
+		if( auxiliaryListEmpty == 0 )
+			nodeTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 308 );
+
 		int instancePositionY = orbitRenderRef.getInfo( AABB_QUERY, 174 );
 		int instanceScaleY = orbitRenderRef.getInfo( AABB_QUERY, 177 );
 		int renderRecordTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 136 );
+		String nodeTranslationText = "" + nodeTranslationY;
+		if( nodeTranslationY == AABB_INVALID )
+			nodeTranslationText = "INVALID";
 
 		int changed = 0;
 		if( !renderTransformTraceReady )
@@ -871,7 +881,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			tracePreview(
 				"TRANSFORM_TIMELINE frame=" + renderTransformTraceFrames +
 				" recordTyRaw=" + renderRecordTranslationY +
-				" bone00TyRaw=" + nodeTranslationY +
+				" selectedNodeTyRaw=" + nodeTranslationText + " auxListEmpty=" + auxiliaryListEmpty +
 				" instancePosYRaw=" + instancePositionY +
 				" instanceScaleYRaw=" + instanceScaleY
 			);
