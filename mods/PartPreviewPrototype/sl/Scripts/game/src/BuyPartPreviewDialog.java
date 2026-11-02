@@ -338,6 +338,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		);
 		if( firstNode && firstNode != AABB_INVALID )
 		{
+			for( int axis = 275; axis <= 277; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( "CAMERA_ORBIT_DIAG firstNode header axis=" + axis + " raw=" + value );
+			}
 			for( int axis = 278; axis <= 293; axis++ )
 			{
 				int value = renderRef.getInfo( AABB_QUERY, axis );
@@ -351,7 +356,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			tracePreview( "CAMERA_ORBIT_DIAG firstNode matrix unavailable" );
 
 		int bone00Node = renderRef.getInfo( AABB_QUERY, 294 );
-		tracePreview( "CAMERA_ORBIT_DIAG lowercase bone00 node=" + bone00Node );
+		int selectedNode = 0;
+		if( auxiliaryListEmpty )
+			selectedNode = firstNode;
+		else
+			selectedNode = bone00Node;
+		tracePreview(
+			"CAMERA_ORBIT_DIAG lowercase bone00 node=" + bone00Node +
+			" selectedNode=" + selectedNode
+		);
 		if( bone00Node && bone00Node != AABB_INVALID )
 		{
 			for( int axis = 295; axis <= 310; axis++ )
