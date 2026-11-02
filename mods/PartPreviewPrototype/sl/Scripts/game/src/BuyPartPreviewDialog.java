@@ -56,6 +56,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	int nestedCenterVerifyPending;
 	int nestedCenterVerifyInitialDone;
 	int nestedCenterVerifyRotationDone;
+	int nestedCenterApplyLogged;
 	float yaw;
 	float pitch;
 	float roll;
@@ -497,6 +498,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		nestedCenterVerifyPending = 0;
 		nestedCenterVerifyInitialDone = 0;
 		nestedCenterVerifyRotationDone = 0;
+		nestedCenterApplyLogged = 0;
 		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
@@ -875,9 +877,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							if( !currentPartOrientation )
 								currentPartOrientation = new Ypr( savedOrientation );
 
-							nestedCenterOffsetX = centerXFixed / AABB_SCALE - currentPartPosition.x;
-							nestedCenterOffsetY = centerYFixed / AABB_SCALE - currentPartPosition.y;
-							nestedCenterOffsetZ = centerZFixed / AABB_SCALE - currentPartPosition.z;
+							float nativeCenterX = centerXFixed / AABB_SCALE;
+							float nativeCenterY = centerYFixed / AABB_SCALE;
+							float nativeCenterZ = centerZFixed / AABB_SCALE;
+							nestedCenterOffsetX = nativeCenterX - currentPartPosition.x;
+							nestedCenterOffsetY = nativeCenterY - currentPartPosition.y;
+							nestedCenterOffsetZ = nativeCenterZ - currentPartPosition.z;
 							nestedCenterBaseYaw = currentPartOrientation.y;
 							nestedCenterBasePitch = currentPartOrientation.p;
 							nestedCenterBaseRoll = currentPartOrientation.r;
@@ -887,7 +892,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 								"NESTED_CENTER captured offset=" +
 								nestedCenterOffsetX + "," + nestedCenterOffsetY + "," + nestedCenterOffsetZ +
 								" baseYpr=" + nestedCenterBaseYaw + "," +
-								nestedCenterBasePitch + "," + nestedCenterBaseRoll
+								nestedCenterBasePitch + "," + nestedCenterBaseRoll +
+								" nativeWorldCenter=" + nativeCenterX + "," + nativeCenterY + "," + nativeCenterZ +
+								" currentPartPos=" + currentPartPosition.x + "," + currentPartPosition.y + "," + currentPartPosition.z
 							);
 						}
 						else
@@ -931,6 +938,23 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			);
 
 			previewPart.setMatrix( previewPosition, targetOrientation );
+
+			// One-shot trace of the exact parent transform requested by Java.
+			// This helps distinguish the calculated center from any later native
+			// transform or visual-origin discrepancy.
+			if( nestedCenterOffsetReady && !nestedCenterApplyLogged )
+			{
+				Vector3 appliedPartPosition = previewPart.getPos();
+				if( !appliedPartPosition )
+					appliedPartPosition = new Vector3( 0.0, 0.0, 0.0 );
+				tracePreview(
+					"NESTED_CENTER_APPLY savedPosition=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
+					" pivot=" + previewPivot.x + "," + previewPivot.y + "," + previewPivot.z +
+					" requestedPartPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
+					" actualPartPos=" + appliedPartPosition.x + "," + appliedPartPosition.y + "," + appliedPartPosition.z
+				);
+				nestedCenterApplyLogged = 1;
+			}
 
 			// Read-only verification on the following render frame. This does
 			// not feed the measured result back into the Part transform.
