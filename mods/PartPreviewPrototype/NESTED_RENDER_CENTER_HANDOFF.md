@@ -274,3 +274,29 @@ Only the Java preview script changed in this diagnostic commit. No EXE update is
 - `NESTED_CENTER_VERIFY_ROTATED ...`
 
 The full GD/raw pointer dump is no longer needed for these two known resource paths.
+
+## Latest transform trace interpretation (2026-11-02)
+
+The user's exact `NESTED_CENTER_APPLY` logs resolve the earlier apparent requested-vs-actual position mismatch.
+
+For OCA:
+- saved Part position: `(0.557,-0.012,-0.006)`
+- requested position passed to `setMatrix`: `(-0.601,0.413,-0.047)`
+- immediately read-back Part position: `(-0.043,0.400,-0.054)`
+
+The difference `actualPartPos - requestedPartPos` is approximately `(0.558,-0.013,-0.007)`, matching savedPosition within about 0.001 on each axis. This strongly indicates that `Part.setMatrix` applies the supplied translation relative to the Part's original/base translation, rather than treating it as an absolute world-space position. Thus the existing Java subtraction of savedPosition is intentional; do not remove savedPosition from the nested centering formula.
+
+The actual OCA Part position is approximately the negative captured local center:
+`(-0.043,0.400,-0.054)` versus captured offset `(0.044,-0.400,0.054)`.
+The native verification then reports worldCenter `(0,0,0)` at base and after rotation.
+
+For SR20, savedPosition is zero, so requested and actual positions nearly match:
+- requested `(-0.010,-1.917,0.682)`
+- actual `(-0.009,-1.917,0.682)`
+- native center remains zero at base and after rotation.
+
+### Conclusion and next investigation
+
+The current nested AABB centering and transform compensation are numerically consistent for both known meshes. The user's remaining visual impression (OCA pivot low; SR20 belt pivot laterally offset) is not explained by a failed translation or rotation compensation.
+
+Do not add arbitrary positional offsets or change the current formula. The next useful investigation is whether the AABB midpoint is the desired visual/functional center for these particular meshes, or whether the visible geometry contains disconnected/weighted features that make the bounding-box midpoint visually misleading. Any alternative center definition (for example, an area-weighted triangle centroid) needs independent validation against the visible mesh data before implementation. This is a different measurement problem from the already-validated world-space AABB center.
