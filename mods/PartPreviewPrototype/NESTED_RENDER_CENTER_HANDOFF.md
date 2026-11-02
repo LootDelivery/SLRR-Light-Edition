@@ -2,6 +2,17 @@
 
 Updated: 2026-11-02
 
+## Current status — centroid experiment retired
+
+The experimental surface-centroid path (native axes 503..505 and its Java
+queries) has been removed from the active diagnostic branch. Do not use its
+builder or centroid assembly. The active center query is the transform-aware
+AABB center on axes 500..502. Bone-name probes on axes 489..498 are separate
+read-only diagnostics and do not affect the center calculation.
+
+The detailed centroid section below is retained only as historical experiment
+notes. It is not part of the current EXE or Java path.
+
 Current branch: `feature/part-preview-live-aabb`
 
 Current Java integration commit:
