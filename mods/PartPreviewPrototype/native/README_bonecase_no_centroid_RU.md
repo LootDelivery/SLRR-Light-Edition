@@ -39,6 +39,22 @@ VStanced-пружина:
 - `489..498` — дополнительный exact-case `Bone00` lookup и его 3×3 matrix.
 - `500..502` — преобразованный midpoint live CPU-vertex AABB (геометрический центр).
 - `510..512` — native `INSTANCE_RENDER.position XYZ`, fixed-point world units ×1000.
+- `513..515` — `INSTANCE_RENDER.scale XYZ`, fixed-point ×1000.
+
+## Фит камеры по фактической геометрии
+
+Для каждой найденной render-компоненты Java:
+1. читает transformed live-AABB center через `500..502`;
+2. получает ID вложенного `RESOURCE_MESH` через axis `439`;
+3. читает live local mesh AABB по осям `0..5`;
+4. получает scale по осям `513..515`;
+5. строит консервативный bounding-sphere radius из scaled half-diagonal.
+
+Центр предпросмотра вычисляется по общему конверту сфер компонент. Камерный размер становится не меньше максимального расстояния от общего центра до каждой компоненты плюс её радиус. Это исправляет прежнюю проблему, когда `GII_SIZE` оставался маленьким при фактически длинной/смещённой геометрии (например, приводная цепь, ремень, пайп, сборка из нескольких мешей).
+
+Если native render instance отсутствует, остаётся fallback: direct Part mesh AABB extent / 2 и прежний `GII_SIZE`. Это не решает отсутствие самого рендера у деталей без render instance, но не оставляет камеру на заведомо слишком короткой дистанции.
+
+**Ограничение:** bounding sphere консервативен и может дать немного больший отступ, чем точный union AABB. Вращение render-record не меняет радиус сферы; центр по-прежнему берётся из native transformed-AABB center. Сложные render-record с собственной трансляцией требуют отдельной проверки.
 
 Centroid удалён: нет surface-centroid handler, triangle scan или cache. Запросы 503..505 не используются. Live AABB берётся по axes 0..5; axes 6..11 — старые loader bounds.
 
