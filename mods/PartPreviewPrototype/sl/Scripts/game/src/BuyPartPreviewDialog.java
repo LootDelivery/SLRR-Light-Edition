@@ -987,7 +987,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	}
 
 	// Add one render component to the current assembly bounds. This uses no
-	// Java arrays: the SLRR script parser treats int[] signatures inconsistently.
+	// Java arrays: the SLRR script parser treats array signatures inconsistently.
 	private void addCameraRenderComponent( int renderInstanceID, int rootRenderInstance )
 	{
 		if( !renderInstanceID )
