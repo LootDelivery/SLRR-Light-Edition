@@ -74,6 +74,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	final static int AABB_QUERY = 0x584F4242;
 	final static int AABB_INVALID = 0x80000000;
 	final static float AABB_SCALE = 1000.0;
+	// Read-only native handle dump for the type-3 GII_RENDERINSTANCE child.
+	final static int RENDER_RAW_QUERY_BASE = 100;
 
 	final static float AUTO_ROTATION_SPEED = 0.32;
 	// Mouse sensitivity: horizontal (yaw) is intentionally faster than vertical (pitch).
@@ -204,6 +206,13 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			else
 				tracePreview( "R04 GameRef transform contains null" );
 
+			// The custom native query returns raw DWORDs from the type-3
+			// render-instance handle. No native pointer is dereferenced here.
+			for( int rawField = 0; rawField < 20; rawField++ )
+			{
+				int rawValue = renderGameRef.getInfo( AABB_QUERY, RENDER_RAW_QUERY_BASE + rawField );
+				tracePreview( "R05 render-handle raw offset=" + (rawField * 4) + " value=" + rawValue );
+			}
 		}
 
 		// ResourceRef exposes a generic child/sibling traversal API. Dump only
