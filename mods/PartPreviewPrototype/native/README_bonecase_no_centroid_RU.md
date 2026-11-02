@@ -96,5 +96,12 @@ SHA-256:
 SHA-256:
 `ebc2b46a976e00914f624f6937070bdac1d8dc8f6bb8e2538f74bd204244c0f8`
 
-Для пересборки используется `build_bonecase_component_fit.py` и `bone_upper_query.S`.
-Статическая PE/route/cave/patch-scope проверка пройдена. Runtime-проверка нового EXE в SLRR ещё не выполнена. Проверять только в отдельной копии игры.
+Для первоначальной сборки используется `build_bonecase_component_fit.py` и `bone_upper_query.S`.
+
+Для обновления поверх уже проверенного EXE F947 (без повторной сборки от старой базы) добавлен `patch_second_bone_probe.py`:
+
+```powershell
+python patch_second_bone_probe.py "StreetLegal_Redline_native_live_aabb_component_scale.exe" "StreetLegal_Redline_native_live_aabb_second_bone_probe.exe"
+```
+
+Скрипт принимает только входной SHA-256 F947, проверяет существующий jump в code cave и заменяет байты только внутри cave. Новые оси `516..535` доступны только в полученном новом EXE. Сборка выполняется в отдельную копию; runtime-проверка в SLRR ещё не выполнена.
