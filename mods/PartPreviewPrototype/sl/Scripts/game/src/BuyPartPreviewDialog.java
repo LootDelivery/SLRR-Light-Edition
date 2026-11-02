@@ -776,9 +776,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( modelSize <= 0.0 )
 			modelSize = 1.0;
 
-		// Keep the proven legacy GII_SIZE camera scale. The AABB extent is not
-		// guaranteed to use the same fitting convention as GII_SIZE.
-		tracePreview( "35A camera modelSize keeps GII_SIZE=" + modelSize + " live AABB extent=" + runtimeModelSize + " hasBounds=" + hasRuntimeBounds );
+		// GII_SIZE is only a fallback. captureCameraOrbitCenter() will enlarge
+		// modelSize when the transformed component bounds prove it is too small.
+		tracePreview( "35A camera modelSize initial GII_SIZE=" + modelSize + " live local AABB extent=" + runtimeModelSize + " hasBounds=" + hasRuntimeBounds );
 
 		// Keep the preview Part at its original origin. Rotation is applied to the camera.
 		tracePreview( "35A preview Part remains unchanged; camera orbit will control rotation" );
@@ -1030,14 +1030,52 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		return count;
 	}
 
-	// Query the center of every render component, not only the root
-	// GII_RENDERINSTANCE. The current native axes return each component's
-	// transformed live-AABB midpoint in previewRoot coordinates.
-	//
-	// Until every discovered component is ready, keep polling. If one child
-	// never publishes bounds, use the valid components after a bounded timeout.
-	// The envelope of component centers is an assembly-level target estimate;
-	// it is intentionally not called the exact union AABB of all vertices.
+	// Return a conservative sphere radius for one render component. The native
+	// query exposes its embedded RESOURCE_MESH ID (axis 439) and INSTANCE_RENDER
+	// scale (axes 513..515). A sphere around the scaled local AABB encloses the
+	// mesh even when its render-record applies an additional rotation.
+	private float queryRenderComponentRadius( GameRef componentRenderRef )
+	{
+		int meshID = componentRenderRef.getInfo( AABB_QUERY, 439 );
+		if( !meshID || meshID == AABB_INVALID )
+			return -1.0;
+
+		GameRef meshRef = new GameRef( meshID );
+		if( meshRef.type() != 5 )
+			return -1.0;
+
+		int minXFixed = meshRef.getInfo( AABB_QUERY, 0 );
+		int minYFixed = meshRef.getInfo( AABB_QUERY, 1 );
+		int minZFixed = meshRef.getInfo( AABB_QUERY, 2 );
+		int maxXFixed = meshRef.getInfo( AABB_QUERY, 3 );
+		int maxYFixed = meshRef.getInfo( AABB_QUERY, 4 );
+		int maxZFixed = meshRef.getInfo( AABB_QUERY, 5 );
+
+		int scaleXFixed = componentRenderRef.getInfo( AABB_QUERY, 513 );
+		int scaleYFixed = componentRenderRef.getInfo( AABB_QUERY, 514 );
+		int scaleZFixed = componentRenderRef.getInfo( AABB_QUERY, 515 );
+
+		if( minXFixed == AABB_INVALID || minYFixed == AABB_INVALID || minZFixed == AABB_INVALID ||
+			maxXFixed == AABB_INVALID || maxYFixed == AABB_INVALID || maxZFixed == AABB_INVALID ||
+			scaleXFixed == AABB_INVALID || scaleYFixed == AABB_INVALID || scaleZFixed == AABB_INVALID )
+			return -1.0;
+
+		float scaleX = scaleXFixed / AABB_SCALE;
+		float scaleY = scaleYFixed / AABB_SCALE;
+		float scaleZ = scaleZFixed / AABB_SCALE;
+		float halfX = (maxXFixed - minXFixed) / 2000.0 * scaleX;
+		float halfY = (maxYFixed - minYFixed) / 2000.0 * scaleY;
+		float halfZ = (maxZFixed - minZFixed) / 2000.0 * scaleZ;
+		float radius = (float)Math.sqrt(
+			halfX * halfX + halfY * halfY + halfZ * halfZ
+		);
+		return radius;
+	}
+
+	// Query every render component, not only the root GII_RENDERINSTANCE.
+	// Component AABBs are enclosed by spheres; the envelope of those spheres
+	// gives the assembly target, and the enclosing radius becomes the camera
+	// fit distance. This avoids GII_SIZE underestimating long/off-center meshes.
 	private int captureCameraOrbitCenter()
 	{
 		if( cameraOrbitCenterReady )
@@ -1066,7 +1104,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			int centerXFixed = componentRenderRef.getInfo( AABB_QUERY, 500 );
 			int centerYFixed = componentRenderRef.getInfo( AABB_QUERY, 501 );
 			int centerZFixed = componentRenderRef.getInfo( AABB_QUERY, 502 );
-
 			if( centerXFixed == AABB_INVALID ||
 				centerYFixed == AABB_INVALID ||
 				centerZFixed == AABB_INVALID )
@@ -1081,28 +1118,39 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			float centerX = centerXFixed / AABB_SCALE;
 			float centerY = centerYFixed / AABB_SCALE;
 			float centerZ = centerZFixed / AABB_SCALE;
+			float componentRadius = queryRenderComponentRadius( componentRenderRef );
+			if( componentRadius < 0.0 )
+			{
+				tracePreview(
+					"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
+					" radius unavailable; center-only fallback"
+				);
+				componentRadius = 0.0;
+			}
+
 			tracePreview(
 				"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
-				" center=" + centerX + "," + centerY + "," + centerZ
+				" center=" + centerX + "," + centerY + "," + centerZ +
+				" radius=" + componentRadius
 			);
 
 			if( validCount == 0 )
 			{
-				minX = centerX;
-				minY = centerY;
-				minZ = centerZ;
-				maxX = centerX;
-				maxY = centerY;
-				maxZ = centerZ;
+				minX = centerX - componentRadius;
+				minY = centerY - componentRadius;
+				minZ = centerZ - componentRadius;
+				maxX = centerX + componentRadius;
+				maxY = centerY + componentRadius;
+				maxZ = centerZ + componentRadius;
 			}
 			else
 			{
-				if( centerX < minX ) minX = centerX;
-				if( centerY < minY ) minY = centerY;
-				if( centerZ < minZ ) minZ = centerZ;
-				if( centerX > maxX ) maxX = centerX;
-				if( centerY > maxY ) maxY = centerY;
-				if( centerZ > maxZ ) maxZ = centerZ;
+				if( centerX - componentRadius < minX ) minX = centerX - componentRadius;
+				if( centerY - componentRadius < minY ) minY = centerY - componentRadius;
+				if( centerZ - componentRadius < minZ ) minZ = centerZ - componentRadius;
+				if( centerX + componentRadius > maxX ) maxX = centerX + componentRadius;
+				if( centerY + componentRadius > maxY ) maxY = centerY + componentRadius;
+				if( centerZ + componentRadius > maxZ ) maxZ = centerZ + componentRadius;
 			}
 			validCount++;
 
@@ -1116,10 +1164,43 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOrbitCenterX = (minX + maxX) * 0.5;
 			cameraOrbitCenterY = (minY + maxY) * 0.5;
 			cameraOrbitCenterZ = (minZ + maxZ) * 0.5;
+
+			float assemblyRadius = 0.0;
+			for( int i = 0; i < renderInstanceCount; i++ )
+			{
+				GameRef componentRenderRef = new GameRef( renderInstanceIDs[i] );
+				int centerXFixed = componentRenderRef.getInfo( AABB_QUERY, 500 );
+				int centerYFixed = componentRenderRef.getInfo( AABB_QUERY, 501 );
+				int centerZFixed = componentRenderRef.getInfo( AABB_QUERY, 502 );
+				if( centerXFixed == AABB_INVALID ||
+					centerYFixed == AABB_INVALID ||
+					centerZFixed == AABB_INVALID )
+					continue;
+
+				float centerX = centerXFixed / AABB_SCALE;
+				float centerY = centerYFixed / AABB_SCALE;
+				float centerZ = centerZFixed / AABB_SCALE;
+				float componentRadius = queryRenderComponentRadius( componentRenderRef );
+				if( componentRadius < 0.0 )
+					componentRadius = 0.0;
+
+				float dx = centerX - cameraOrbitCenterX;
+				float dy = centerY - cameraOrbitCenterY;
+				float dz = centerZ - cameraOrbitCenterZ;
+				float enclosingRadius = (float)Math.sqrt( dx * dx + dy * dy + dz * dz ) + componentRadius;
+				if( enclosingRadius > assemblyRadius )
+					assemblyRadius = enclosingRadius;
+			}
+
+			float previousModelSize = modelSize;
+			if( assemblyRadius > modelSize )
+				modelSize = assemblyRadius;
 			tracePreview(
-				"CAMERA_ORBIT_CENTER finalized component-center envelope=" +
-				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-				" valid=" + validCount + " discovered=" + renderInstanceCount
+				"CAMERA_FIT assemblyCenter=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+				" assemblyRadius=" + assemblyRadius +
+			" oldGII_SIZE=" + previousModelSize +
+			" cameraModelSize=" + modelSize +
+			" valid=" + validCount + " discovered=" + renderInstanceCount
 			);
 			cameraOrbitCenterReady = 1;
 			return 1;
@@ -1127,83 +1208,17 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		if( cameraOrbitCenterWaitFrames >= 60 )
 		{
+			if( hasRuntimeBounds && runtimeModelSize * 0.5 > modelSize )
+				modelSize = runtimeModelSize * 0.5;
 			tracePreview(
-				"CAMERA_ORBIT_CENTER timeout; using cached root fallback valid=" +
-				validCount + " discovered=" + renderInstanceCount
+				"CAMERA_FIT timeout; fallback modelSize=" + modelSize +
+				" valid=" + validCount + " discovered=" + renderInstanceCount
 			);
 			cameraOrbitCenterReady = 1;
 			return 1;
 		}
 
 		return 0;
-	}
-	{
-		if( cameraOrbitCenterReady )
-			return 1;
-
-		cameraOrbitCenterWaitFrames++;
-		if( cameraOrbitCenterWaitFrames < 30 )
-			return 0;
-
-		if( !orbitRenderRef )
-		{
-			int renderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-			if( renderInstance )
-			{
-				orbitRenderRef = new GameRef( renderInstance );
-				tracePreview( "CAMERA_ORBIT_CENTER renderInstance=" + renderInstance );
-			}
-		}
-
-		// This is the only native center sample for this preview instance.
-		// The camera uses AABB-center axes 500..502 only; this Java path does
-		// not request the removed surface-centroid axes 503..505.
-		int nativeCenterCaptured = 0;
-		if( orbitRenderRef )
-		{
-			traceRenderNativePose( orbitRenderRef, "CAMERA_ORBIT_CENTER" );
-
-			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 500 );
-			int centerYFixed = orbitRenderRef.getInfo( AABB_QUERY, 501 );
-			int centerZFixed = orbitRenderRef.getInfo( AABB_QUERY, 502 );
-
-			if( centerXFixed != AABB_INVALID &&
-				centerYFixed != AABB_INVALID &&
-				centerZFixed != AABB_INVALID )
-			{
-				cameraOrbitCenterX = centerXFixed / AABB_SCALE;
-				cameraOrbitCenterY = centerYFixed / AABB_SCALE;
-				cameraOrbitCenterZ = centerZFixed / AABB_SCALE;
-				nativeCenterCaptured = 1;
-				tracePreview(
-					"CAMERA_ORBIT_CENTER captured native world=" +
-					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
-				);
-			}
-			else
-				tracePreview(
-					"CAMERA_ORBIT_CENTER native sample invalid=" +
-					centerXFixed + "," + centerYFixed + "," + centerZFixed
-				);
-		}
-
-		// Keep the cached root AABB center if the single native sample failed.
-		if( nativeCenterCaptured )
-			tracePreview(
-				"CAMERA_ORBIT_CENTER finalized native world=" +
-				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
-			);
-		else
-		if( hasRuntimeBounds )
-			tracePreview(
-				"CAMERA_ORBIT_CENTER finalized cached root AABB=" +
-				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
-			);
-		else
-			tracePreview( "CAMERA_ORBIT_CENTER finalized previewRoot origin; no AABB available" );
-
-		cameraOrbitCenterReady = 1;
-		return 1;
 	}
 
 	private void updateCamera()
