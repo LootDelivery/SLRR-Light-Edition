@@ -195,3 +195,24 @@ Java now performs two read-only checks:
 Each line reports native world-space AABB center, Part.getPos(), and Part.getOri(). The measured center is logged only; it is never fed back into the transform. These two values will tell whether the parent translation keeps the geometric center at world origin both before and after rotation.
 
 No native EXE change is required; continue using the v2 EXE. Runtime result of the new probes is pending.
+
+
+## Direct-mesh precedence correction (2026-11-02)
+
+Latest user measurements:
+- spring: captured offset `(0.000, +0.257, 0.000)`; native verification center is `(0,0,0)` both at base and after rotation;
+- hood: captured `(0.000, -0.021, +0.074)`; verified center remains `(0,0,0)`;
+- OCA bumper: captured `(+0.044, -0.400, +0.054)`; verified center remains `(0,0,0)`;
+- Vstanced arm: captured `(-0.954, -0.020, -0.733)`; verified center remains within 0.001 after rotation.
+
+These prove the native world-center query and fixed captured-offset rotation are numerically consistent for those render paths. They do not alone prove that every visible submesh in a compound Part uses that same render transform.
+
+A bug was identified in Java selection: `traceRenderPayloadDiagnostics()` can discover a nested type-5 mesh even when `Part.getMesh()` already supplies a valid direct mesh AABB. Previously, `hasNestedMeshBounds` then overrode the direct AABB center unconditionally. This can shift compound engine parts (e.g. belts) using a secondary nested submesh's bounds rather than the Part's direct mesh.
+
+Commit `135e4dacaff518f3392b43051115df59fb0bf4e6` fixes precedence:
+- valid direct `Part.getMesh()` AABB always wins;
+- nested render-child center is used only as a fallback when direct mesh bounds are unavailable;
+- spring path (`getMesh()==0`) remains eligible for nested centering;
+- no native EXE change.
+
+Runtime retest is pending. If engine belts return to their original pivot, this confirms the precedence bug. Spring still reports a mathematically centered AABB; if its visible rotation pivot remains at the mounting point, the remaining issue is likely a mismatch between the nested resource AABB and the actual spring render transform or an additional transform in its render hierarchy, not a failure of the measured center compensation. Do not add more compensation based solely on the existing zero-center verification.
