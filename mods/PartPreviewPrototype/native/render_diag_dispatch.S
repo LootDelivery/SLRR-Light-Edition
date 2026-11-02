@@ -177,7 +177,7 @@ render_diag_dispatch:
     # Inline name at node+0x14 must be "bone00".
     cmp dword ptr [eax+0x14], 0x656e6f62
     jne .bone00_next
-    cmp dword ptr [eax+0x18], 0x00003030
+    cmp word ptr [eax+0x18], 0x3030
     je .bone00_found
 
 .bone00_next:
@@ -314,7 +314,7 @@ render_diag_dispatch:
     # Inline name "Bone00" at node+0x14 / node+0x18.
     cmp dword ptr [eax+0x14], 0x656e6f42
     jne .bone_upper_next
-    cmp dword ptr [eax+0x18], 0x00003030
+    cmp word ptr [eax+0x18], 0x3030
     je .bone_upper_found
 
 .bone_upper_next:
@@ -499,7 +499,7 @@ render_diag_dispatch:
 .nested_find_bone00:
     cmp dword ptr [edi+0x14], 0x656e6f62
     jne .nested_next_bone
-    cmp dword ptr [edi+0x18], 0x00003030
+    cmp word ptr [edi+0x18], 0x3030
     je .nested_node_ready
 .nested_next_bone:
     mov ecx, edi
