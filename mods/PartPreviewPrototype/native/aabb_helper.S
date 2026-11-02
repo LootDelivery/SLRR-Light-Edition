@@ -25,7 +25,22 @@ aabb_helper:
     test esi, esi
     jz .invalid
 
-    # GameRef(meshRID) must resolve to RESOURCE_MESH (type 5).
+    # The preview Part's GII_RENDERINSTANCE child resolves as runtime type 3.
+    # For that object only, expose a bounded read-only dump of its first 20 DWORDs.
+    # This deliberately returns raw values; it does not dereference any field.
+    mov ecx, dword ptr [ebp+0x0c]
+    cmp dword ptr [esi+0x4c], 3
+    jne .require_mesh
+    cmp ecx, 100
+    jb .invalid
+    cmp ecx, 119
+    ja .invalid
+    sub ecx, 100
+    mov eax, dword ptr [esi+ecx*4]
+    jmp .return_raw
+
+.require_mesh:
+    # All ordinary AABB queries still require RESOURCE_MESH (type 5).
     cmp dword ptr [esi+0x4c], 5
     jne .invalid
 
