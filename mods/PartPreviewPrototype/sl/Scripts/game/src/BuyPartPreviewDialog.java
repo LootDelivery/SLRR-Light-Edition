@@ -831,18 +831,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		{
 			Ypr inversePartOrientation = buildInversePreviewOrientation();
 
-			// Start with the old camera position, expressed as an offset from
-			// the captured AABB center. Rotate that offset, then restore the
-			// center so the camera travels on an orbit around the mesh.
+			// Keep the legacy camera vector as a radius from the orbit center.
+			// Translate the camera's base pose to the AABB center, then rotate
+			// that radius around the center without moving the preview Part.
 			Vector3 cameraOffset = new Vector3(
 				0.0,
 				modelSize * zoom - modelSize * CAMERA_VERTICAL_OFFSET,
 				modelSize * zoom
 			);
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
-			cameraOffset.x = cameraOffset.x - cameraOrbitCenterX;
-			cameraOffset.y = cameraOffset.y - cameraOrbitCenterY;
-			cameraOffset.z = cameraOffset.z - cameraOrbitCenterZ;
 			cameraOffset.rotate( inversePartOrientation );
 
 			Vector3 cameraPosition = new Vector3(
