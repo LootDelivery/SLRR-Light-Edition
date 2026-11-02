@@ -293,8 +293,9 @@ render_diag_dispatch:
     mov eax, dword ptr [edx+ecx*4]
     jmp 0x005e6ec5
 
-# Read-only exact-case probe for the VStanced BON spelling "Bone00".
-# Axis 489 returns the matching node pointer.
+# Read-only exact-case probe for the inline spelling "Bone00".
+# Axis 489 returns the matching node pointer when that exact spelling exists.
+# AABB_INVALID means this node list does not contain an inline uppercase match.
 # Axes 490..498 return the nine matrix terms used by the center transform:
 # [b0,c0,d0,b1,c1,d1,b2,c2,d2] at node offsets B0,C0,D0,B4,C4,D4,B8,C8,D8.
 # The existing lowercase "bone00" lookup at axes 294..310 is unchanged.
