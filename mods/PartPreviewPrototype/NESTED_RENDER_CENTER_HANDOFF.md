@@ -9,6 +9,7 @@ Current Java integration commit:
 
 Native source/builder commits:
 - `d20ad367a4473050651ed0ff41f943eadb1fc535` — native axes 500..502
+- `0b4990f53dc865390118d2e050cb869dea90dd13` — restricts the new dispatch range strictly to axes 500..502
 - `44e0d811121ea1dda5f44607c2540f51520ddffb` — pinned EXE builder
 
 ## Goal
@@ -63,6 +64,8 @@ The updated `render_diag_dispatch.S` adds:
 
 It resolves the embedded type-5 resource, reads the stored root bounds through the existing AABB helper (axes 6..11), computes their midpoint, finds the native-selected first bone-list node, applies per-axis render scale and the matrix 3x3, adds the instance position, and returns signed fixed-point coordinates. It does not write to the render tree.
 
+The dispatcher handles only axes 500..502; unused axes 489..499 continue to return AABB_INVALID.
+
 The first implementation intentionally supports the observed fallback branch only:
 - INSTANCE_RENDER +0xF4 must be zero.
 - auxiliary list at +0x134 must be empty.
@@ -76,7 +79,7 @@ It requires the known-good payload-diagnostic EXE as input and verifies its SHA-
 
 Built test EXE:
 - `StreetLegal_Redline_native_aabb_rendercenter_diag.exe`
-- SHA-256: `8839dd8ff76b04767da8ddc8498b5e4cdf84efa12c225fed0dcb9af48894d668`
+- SHA-256: `8b3e85af7001e404da176b97aecb6956efef2839d980117f33b5cab7ff10428c`
 - base EXE SHA-256: `38e09d0dbdd1c8d8afa1f3d0365b8a629b91e0fa8968c91ec53ccbc69bacdc88`
 
 Static PE patch verification passed. The new query has not yet been runtime-tested in SLRR.
