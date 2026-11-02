@@ -373,3 +373,9 @@ Native source and builder are committed:
 - [build_surface_centroid_diag.py](https://github.com/LootDelivery/SLRR-Light-Edition/blob/ba7060afff4c726686527f473a46e153318ee839/mods/PartPreviewPrototype/native/build_surface_centroid_diag.py)
 
 The centroid extension performs one full mesh scan for axis 503 and stores the resulting world X/Y/Z triple in its own writable `.reloc` scratch fields. The immediately following axis 504/505 calls for the same INSTANCE_RENDER handle read Y/Z from that scratch cache rather than rescanning the triangles. Axis 500..502 calls and invalid requests clear the pending cache sequence. No game object/resource fields are written by the query; only the extension's own scratch area is updated.
+
+Current Java integration (surface-centroid selection + AABB fallback + dual verification):
+- [BuyPartPreviewDialog.java](https://github.com/LootDelivery/SLRR-Light-Edition/blob/eec34b7184eb339efcbe999668603955559f71d8/mods/PartPreviewPrototype/sl/Scripts/game/src/BuyPartPreviewDialog.java)
+- Commit: `eec34b7184eb339efcbe999668603955559f71d8`
+
+Capture and verification traces now print both AABB and surface-centroid coordinates in world units, not raw fixed-point integers.
