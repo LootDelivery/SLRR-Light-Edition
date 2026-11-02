@@ -76,7 +76,10 @@ bone_upper_gate:
     mov eax, dword ptr [eax+0x18]
     jmp .second_bone_return
 .second_bone_next:
-    mov eax, dword ptr [eax+0x04]
+    mov ecx, eax
+    call 0x0040CFC0
+    test eax, eax
+    je .not_found
 .second_bone_return:
     pop edi
     pop ebx
