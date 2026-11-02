@@ -50,6 +50,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	int dragging;
 	int animateTraceFrames;
 	int transformTraceCount;
+	float transformTraceYaw;
+	float transformTracePitch;
+	float transformTraceRoll;
 
 	String previewTraceData = "";
 
@@ -384,18 +387,26 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		if( previewPart )
 		{
+			// The native Part transform composes the source mount offset through
+			// the rotation before adding the supplied position:
+			// readbackPos = R(savedPosition) + requestedOffset.
+			// The mesh AABB center is local to the mesh, so its preview-space
+			// position is R(savedPosition + boundsCenter) + requestedOffset.
+			// Cancel that complete rotated pivot to place the AABB center at 0.
+			Vector3 previewPivot = new Vector3(
+				savedPosition.x + boundsCenterX,
+				savedPosition.y + boundsCenterY,
+				savedPosition.z + boundsCenterZ
+			);
+			previewPivot.rotate( new Ypr( yaw, pitch, roll ) );
+
 			Vector3 rotatedCenter = new Vector3( boundsCenterX, boundsCenterY, boundsCenterZ );
 			rotatedCenter.rotate( new Ypr( yaw, pitch, roll ) );
 
-			// setMatrix's Part position is additive to the original mount offset
-			// (confirmed by getPos() readback). Make the rotated AABB center land
-			// at the preview origin: effectivePos + R(localBoundsCenter) = 0.
-			// Therefore effectivePos = -R(center), and the requested offset must
-			// also cancel the Part's original savedPosition.
 			Vector3 previewPosition = new Vector3(
-				-rotatedCenter.x - savedPosition.x,
-				-rotatedCenter.y - savedPosition.y,
-				-rotatedCenter.z - savedPosition.z
+				-previewPivot.x,
+				-previewPivot.y,
+				-previewPivot.z
 			);
 
 			if( animateTraceFrames == 0 )
@@ -403,7 +414,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					"T00 center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
 					" rotatedCenter=" + rotatedCenter.x + "," + rotatedCenter.y + "," + rotatedCenter.z +
 					" sourcePos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
-					" targetEffectivePos=" + (-rotatedCenter.x) + "," + (-rotatedCenter.y) + "," + (-rotatedCenter.z) +
+					" rotatedSourcePlusCenter=" + previewPivot.x + "," + previewPivot.y + "," + previewPivot.z +
 					" requestedOffset=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
 					" ypr=" + yaw + "," + pitch + "," + roll
 				);
@@ -414,9 +425,28 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 			// During the first animated frames, compare requested YPR with the
 			// orientation read back from the Part after setMatrix().
-			if( animateTraceFrames > 0 && animateTraceFrames <= 3 && transformTraceCount < 3 )
+			int traceTransform = 0;
+			if( animateTraceFrames > 0 && transformTraceCount < 3 )
+				traceTransform = 1;
+			else
+			if( animateTraceFrames > 0 && transformTraceCount < 10 )
+			{
+				float yawDelta = yaw - transformTraceYaw;
+				float pitchDelta = pitch - transformTracePitch;
+				float rollDelta = roll - transformTraceRoll;
+				if( yawDelta < 0.0 ) yawDelta = -yawDelta;
+				if( pitchDelta < 0.0 ) pitchDelta = -pitchDelta;
+				if( rollDelta < 0.0 ) rollDelta = -rollDelta;
+				if( yawDelta > 0.25 || pitchDelta > 0.25 || rollDelta > 0.25 )
+					traceTransform = 1;
+			}
+
+			if( traceTransform )
 			{
 				transformTraceCount++;
+				transformTraceYaw = yaw;
+				transformTracePitch = pitch;
+				transformTraceRoll = roll;
 				Vector3 readbackPosition = previewPart.getPos();
 				Ypr readbackOrientation = previewPart.getOri();
 				if( readbackPosition && readbackOrientation )
@@ -425,7 +455,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						" requestedPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
 						" requestedYpr=" + yaw + "," + pitch + "," + roll +
 						" readbackYpr=" + readbackOrientation.y + "," + readbackOrientation.p + "," + readbackOrientation.r +
-						" readbackPos=" + readbackPosition.x + "," + readbackPosition.y + "," + readbackPosition.z
+						" readbackPos=" + readbackPosition.x + "," + readbackPosition.y + "," + readbackPosition.z +
+						" centerResidual=" + (readbackPosition.x + rotatedCenter.x) + "," +
+						(readbackPosition.y + rotatedCenter.y) + "," + (readbackPosition.z + rotatedCenter.z)
 					);
 				else
 					tracePreview( "T03 frame=" + animateTraceFrames + " readback returned null" );
