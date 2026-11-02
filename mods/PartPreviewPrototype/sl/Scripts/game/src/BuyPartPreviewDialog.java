@@ -1359,16 +1359,17 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			cameraOffset.rotate( inversePartOrientation );
 
-			// RenderRef.setMatrix scales its input translation by 10 in native
-			// SetBoneMatrixParentLink (Mat3x4_setBasis_posScaled10). The orbit
-			// center comes from INSTANCE_RENDER in native scene coordinates, so
-			// convert only that absolute center back to Java setMatrix units.
-			// Keep the camera radius in its existing Java units: setMatrix scales
-			// cameraOffset by 10, preserving the legacy GII_SIZE framing.
+			// Axes 500..502 return the center in the same Java/world units as
+			// INSTANCE_RENDER.position. RenderRef.setMatrix accepts those units
+			// and applies the native *10 conversion internally when it writes
+			// the bone matrix (Mat3x4_setBasis_posScaled10). Do NOT divide the
+			// orbit center by 10 here: doing so makes the camera aim at a point
+			// one tenth of the actual render-matrix translation.
+			// cameraOffset is also in Java units and receives the same native *10.
 			Vector3 cameraPosition = new Vector3(
-				cameraOrbitCenterX / 10.0 + cameraOffset.x,
-				cameraOrbitCenterY / 10.0 + cameraOffset.y,
-				cameraOrbitCenterZ / 10.0 + cameraOffset.z
+				cameraOrbitCenterX + cameraOffset.x,
+				cameraOrbitCenterY + cameraOffset.y,
+				cameraOrbitCenterZ + cameraOffset.z
 			);
 
 			// In native coordinates:
@@ -1385,7 +1386,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			if( cameraOrbitCenterReady && !cameraAimDiagnosticsLogged )
 			{
 				tracePreview(
-					"CAMERA_AIM targetNative=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					"CAMERA_AIM targetRenderJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" targetRenderMatrixNative=" + (cameraOrbitCenterX * 10.0) + "," +
+					(cameraOrbitCenterY * 10.0) + "," + (cameraOrbitCenterZ * 10.0) +
 					" cameraJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
 					" cameraNativeExpected=" + (cameraPosition.x * 10.0) + "," +
 					(cameraPosition.y * 10.0) + "," + (cameraPosition.z * 10.0) +
