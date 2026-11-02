@@ -863,9 +863,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		int instancePositionY = orbitRenderRef.getInfo( AABB_QUERY, 174 );
 		int instanceScaleY = orbitRenderRef.getInfo( AABB_QUERY, 177 );
 		int renderRecordTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 136 );
-		String nodeTranslationText = "" + nodeTranslationY;
-		if( nodeTranslationY == AABB_INVALID )
-			nodeTranslationText = "INVALID";
+		String nodeTranslationText = "INVALID";
+		if( nodeTranslationY != AABB_INVALID )
+			nodeTranslationText = "" + nodeTranslationY;
 
 		int changed = 0;
 		if( !renderTransformTraceReady )
