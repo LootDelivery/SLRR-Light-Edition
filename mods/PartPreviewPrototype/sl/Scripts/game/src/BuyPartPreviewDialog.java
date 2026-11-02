@@ -52,6 +52,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	int nestedCenterOffsetReady;
 	int nestedCenterWaitFrames;
 	int nestedCenterWaitLogged;
+	int nestedCenterVerifyPending;
+	int nestedCenterVerifyInitialDone;
+	int nestedCenterVerifyRotationDone;
 	float yaw;
 	float pitch;
 	float roll;
@@ -487,6 +490,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		nestedCenterOffsetReady = 0;
 		nestedCenterWaitFrames = 0;
 		nestedCenterWaitLogged = 0;
+		nestedCenterVerifyPending = 0;
+		nestedCenterVerifyInitialDone = 0;
+		nestedCenterVerifyRotationDone = 0;
 		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
@@ -765,6 +771,51 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		);
 	}
 
+	private void verifyNestedCenterAfterRender( String label )
+	{
+		if( !previewPart )
+			return;
+
+		int nestedRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+		if( !nestedRenderInstance )
+		{
+			tracePreview( label + " render-instance missing" );
+			return;
+		}
+
+		GameRef nestedRenderRef = new GameRef( nestedRenderInstance );
+		int centerXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
+		int centerYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
+		int centerZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
+
+		Vector3 partPosition = previewPart.getPos();
+		Ypr partOrientation = previewPart.getOri();
+		if( !partPosition )
+			partPosition = new Vector3( 0.0, 0.0, 0.0 );
+		if( !partOrientation )
+			partOrientation = new Ypr( 0.0, 0.0, 0.0 );
+
+		if( centerXFixed == AABB_INVALID ||
+			centerYFixed == AABB_INVALID ||
+			centerZFixed == AABB_INVALID )
+		{
+			tracePreview(
+				label + " invalid=" + centerXFixed + "," + centerYFixed + "," + centerZFixed +
+				" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z
+			);
+			return;
+		}
+
+		tracePreview(
+			label + " worldCenter=" +
+			(centerXFixed / AABB_SCALE) + "," +
+			(centerYFixed / AABB_SCALE) + "," +
+			(centerZFixed / AABB_SCALE) +
+			" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z +
+			" partYpr=" + partOrientation.y + "," + partOrientation.p + "," + partOrientation.r
+		);
+	}
+
 	private void applyPartTransform()
 	{
 		if( previewPart )
@@ -861,6 +912,27 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			);
 
 			previewPart.setMatrix( previewPosition, targetOrientation );
+
+			// Read-only verification on the following render frame. This does
+			// not feed the measured result back into the Part transform.
+			if( nestedCenterOffsetReady )
+			{
+				if( !nestedCenterVerifyInitialDone && !nestedCenterVerifyPending )
+					nestedCenterVerifyPending = 1;
+				else
+				if( nestedCenterVerifyInitialDone && !nestedCenterVerifyRotationDone &&
+					!nestedCenterVerifyPending )
+				{
+					float yawDelta = yaw - nestedCenterBaseYaw;
+					float pitchDelta = pitch - nestedCenterBasePitch;
+					float rollDelta = roll - nestedCenterBaseRoll;
+					if( yawDelta < 0.0 ) yawDelta = -yawDelta;
+					if( pitchDelta < 0.0 ) pitchDelta = -pitchDelta;
+					if( rollDelta < 0.0 ) rollDelta = -rollDelta;
+					if( yawDelta > 0.25 || pitchDelta > 0.25 || rollDelta > 0.25 )
+						nestedCenterVerifyPending = 2;
+				}
+			}
 		}
 	}
 
@@ -878,6 +950,22 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		if( !previewPart || !previewCamera )
 			return;
+
+		// Verify the result after the previous render pass has consumed
+		// setMatrix(). One check at the base pose, one after a meaningful turn.
+		if( nestedCenterVerifyPending == 1 )
+		{
+			verifyNestedCenterAfterRender( "NESTED_CENTER_VERIFY_BASE" );
+			nestedCenterVerifyPending = 0;
+			nestedCenterVerifyInitialDone = 1;
+		}
+		else
+		if( nestedCenterVerifyPending == 2 )
+		{
+			verifyNestedCenterAfterRender( "NESTED_CENTER_VERIFY_ROTATED" );
+			nestedCenterVerifyPending = 0;
+			nestedCenterVerifyRotationDone = 1;
+		}
 
 		int traceFrame = 0;
 		if( animateTraceFrames < 3 )
