@@ -140,6 +140,61 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		return 0;
 	}
 
+	private void traceResourceNode( ResourceRef node, String label )
+	{
+		if( !node )
+		{
+			tracePreview( label + " null" );
+			return;
+		}
+
+		tracePreview(
+			label + " id=" + node.id() +
+			" type=" + node.type() +
+			" parentID=" + node.getParentID()
+		);
+	}
+
+	private void tracePartResourceTree()
+	{
+		tracePreview(
+			"R00 Part id=" + previewPart.id() +
+			" type=" + previewPart.type()
+		);
+
+		int renderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+		int renderInfo = previewPart.getInfo( GameType.GII_RENDER );
+		tracePreview(
+			"R01 GII_RENDERINSTANCE=" + renderInstance +
+			" GII_RENDER=" + renderInfo
+		);
+
+		// ResourceRef exposes a generic child/sibling traversal API. Dump only
+		// a bounded portion of the preview Part tree; this is read-only.
+		ResourceRef child = previewPart.getFirstChild();
+		int childIndex = 0;
+		while( child && childIndex < 32 )
+		{
+			traceResourceNode( child, "R10 child[" + childIndex + "]" );
+
+			ResourceRef nested = child.getFirstChild();
+			int nestedIndex = 0;
+			while( nested && nestedIndex < 8 )
+			{
+				traceResourceNode( nested, "R20 child[" + childIndex + "." + nestedIndex + "]" );
+				nested = nested.getNextChild();
+				nestedIndex++;
+			}
+
+			tracePreview(
+				"R21 child[" + childIndex + "] nestedCountLogged=" + nestedIndex
+			);
+			child = child.getNextChild();
+			childIndex++;
+		}
+		tracePreview( "R30 directChildCountLogged=" + childIndex );
+	}
+
 	private void createPreview()
 	{
 		previewTraceData = "";
@@ -197,6 +252,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		tracePreview( "0D before refreshGlassOpacityPreview" );
 		previewPart.refreshGlassOpacityPreview();
 		tracePreview( "0E after refreshGlassOpacityPreview" );
+		tracePartResourceTree();
 
 		// The preview instance owns this live mesh resource. Query its current
 		// CPU vertex buffers through the reserved GameRef.getInfo(II)I route.
