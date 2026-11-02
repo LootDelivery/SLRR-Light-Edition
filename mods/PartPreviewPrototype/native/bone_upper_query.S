@@ -31,7 +31,7 @@ bone_upper_gate:
 .scan:
     cmp dword ptr [eax+0x14], 0x656E6F42
     jne .next
-    cmp dword ptr [eax+0x18], 0x00003030
+    cmp word ptr [eax+0x18], 0x3030
     je .found
 
 .next:
