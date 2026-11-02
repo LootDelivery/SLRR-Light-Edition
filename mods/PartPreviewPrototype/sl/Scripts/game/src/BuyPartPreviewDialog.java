@@ -1096,30 +1096,38 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			cameraOffset.rotate( inversePartOrientation );
 
+			// RenderRef.setMatrix scales its input translation by 10 in native
+			// SetBoneMatrixParentLink (Mat3x4_setBasis_posScaled10). The orbit
+			// center comes from INSTANCE_RENDER in native scene coordinates, so
+			// convert only that absolute center back to Java setMatrix units.
+			// Keep the camera radius in its existing Java units: setMatrix scales
+			// cameraOffset by 10, preserving the legacy GII_SIZE framing.
 			Vector3 cameraPosition = new Vector3(
-				cameraOrbitCenterX + cameraOffset.x,
-				cameraOrbitCenterY + cameraOffset.y,
-				cameraOrbitCenterZ + cameraOffset.z
+				cameraOrbitCenterX / 10.0 + cameraOffset.x,
+				cameraOrbitCenterY / 10.0 + cameraOffset.y,
+				cameraOrbitCenterZ / 10.0 + cameraOffset.z
 			);
 
-			// The old fixed orientation (-2.5,-0.7,0) always looked toward
-			// previewRoot origin. Once the orbit center can be offset from origin,
-			// derive the camera aim from its actual position to the captured center.
-			// cameraOffset already contains inversePartOrientation, so this
-			// direction rotates with the orbit without another Ypr multiplication.
+			// In native coordinates:
+			// cameraPosition*10 = orbitCenter + cameraOffset*10.
+			// Therefore the exact direction toward the orbit center is simply
+			// -cameraOffset. It is already rotated by inversePartOrientation.
 			Vector3 cameraDirection = new Vector3(
-				cameraOrbitCenterX - cameraPosition.x,
-				cameraOrbitCenterY - cameraPosition.y,
-				cameraOrbitCenterZ - cameraPosition.z
+				-cameraOffset.x,
+				-cameraOffset.y,
+				-cameraOffset.z
 			);
 			Ypr cameraOrientation = new Ypr( cameraDirection );
 
 			if( cameraOrbitCenterReady && !cameraAimDiagnosticsLogged )
 			{
 				tracePreview(
-					"CAMERA_AIM target=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-					" position=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
-					" direction=" + cameraDirection.x + "," + cameraDirection.y + "," + cameraDirection.z +
+					"CAMERA_AIM targetNative=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" cameraJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
+					" cameraNativeExpected=" + (cameraPosition.x * 10.0) + "," +
+					(cameraPosition.y * 10.0) + "," + (cameraPosition.z * 10.0) +
+					" directionNative=" + (cameraDirection.x * 10.0) + "," +
+					(cameraDirection.y * 10.0) + "," + (cameraDirection.z * 10.0) +
 					" ypr=" + cameraOrientation.y + "," + cameraOrientation.p + "," + cameraOrientation.r
 				);
 				cameraAimDiagnosticsLogged = 1;
