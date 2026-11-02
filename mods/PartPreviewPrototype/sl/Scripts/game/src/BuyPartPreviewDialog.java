@@ -1286,8 +1286,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				if( cameraCenterSamplesMatch( centerXFixed, centerYFixed, centerZFixed ) )
 				{
 					// The native center is expressed in the render instance's parent space.
-// Different part resources attach that instance either directly to previewRoot
-// or beneath previewPart. Compose only when the actual parent is previewPart.
+					// Different part resources attach that instance either directly to previewRoot
+					// or beneath previewPart. Compose only when the actual parent is previewPart.
 					int renderParentID = orbitRenderRef.getParentID();
 					Vector3 renderParentCenter = new Vector3(
 						centerXFixed / AABB_SCALE,
