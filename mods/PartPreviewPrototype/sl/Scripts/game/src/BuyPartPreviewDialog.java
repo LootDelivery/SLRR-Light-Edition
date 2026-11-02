@@ -814,10 +814,13 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		int previewMeshID = previewPart.getMesh();
 		previewMeshResourceID = previewMeshID;
 		tracePreview( "11 after previewPart.getMesh value=" + previewMeshID );
+		int directNestedMatch = 0;
+		if( previewMeshResourceID && previewMeshResourceID == nestedMeshResourceID )
+			directNestedMatch = 1;
 		tracePreview(
 			"MESH_IDENTITY direct=" + previewMeshResourceID +
 			" nested=" + nestedMeshResourceID +
-			" directNestedMatch=" + (previewMeshResourceID && previewMeshResourceID == nestedMeshResourceID)
+			" directNestedMatch=" + directNestedMatch
 		);
 		if( previewMeshID )
 		{
