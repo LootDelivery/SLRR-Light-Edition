@@ -259,10 +259,32 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		GameRef cameraGameRef = new GameRef( cameraResourceID );
 		int cameraType = cameraGameRef.type();
+		int cameraParentID = cameraGameRef.getParentID();
 		tracePreview(
 			"CAMERA_NATIVE wrapperID=" + cameraGameRef.id() +
 			" type=" + cameraType +
-			" parentID=" + cameraGameRef.getParentID()
+			" parentID=" + cameraParentID +
+			" expectedRootID=" + previewRoot.id()
+		);
+
+		// The camera's setMatrix position is local to previewRoot. The orbit
+		// center from the render instance is in root/world coordinates, so
+		// record the parent transform before comparing those coordinate spaces.
+		Vector3 rootPosition = previewRoot.getPos();
+		Ypr rootOrientation = previewRoot.getOri();
+		tracePreview(
+			"CAMERA_NATIVE_ROOT pos=" +
+			rootPosition.x + "," + rootPosition.y + "," + rootPosition.z +
+			" ypr=" + rootOrientation.y + "," +
+			rootOrientation.p + "," + rootOrientation.r
+		);
+		Vector3 partPosition = previewPart.getPos();
+		Ypr partOrientation = previewPart.getOri();
+		tracePreview(
+			"CAMERA_NATIVE_PART pos=" +
+			partPosition.x + "," + partPosition.y + "," + partPosition.z +
+			" ypr=" + partOrientation.y + "," +
+			partOrientation.p + "," + partOrientation.r
 		);
 		if( cameraType != 3 )
 		{
@@ -1220,7 +1242,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			// Record the exact Java-side values supplied to setMatrix. The second
 			// sample is reserved for an actual mouse drag, not automatic spin.
 			if( cameraOrbitCenterReady &&
-				( !cameraNativePoseInitialLogged || cameraNativePoseChangePending ) )
+				( !cameraNativePoseInitialLogged ||
+					( cameraNativePoseChangePending && !cameraNativePoseChangeLogged ) ) )
 			{
 				String phase = "initial";
 				if( cameraNativePoseInitialLogged )
@@ -1335,7 +1358,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 				yaw = yaw + mouseDeltaX * DRAG_YAW_SCALE;
 				pitch = pitch + mouseDeltaY * DRAG_PITCH_SCALE;
-				if( mouseDeltaX != 0.0 || mouseDeltaY != 0.0 )
+				if( !cameraNativePoseChangeLogged &&
+					( mouseDeltaX != 0.0 || mouseDeltaY != 0.0 ) )
 					cameraNativePoseChangePending = 1;
 				if( pitch < -1.1 ) pitch = -1.1;
 				if( pitch > 1.1 ) pitch = 1.1;
