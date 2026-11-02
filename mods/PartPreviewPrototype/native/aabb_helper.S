@@ -441,6 +441,7 @@ aabb_helper:
     jmp .return_scaled
 .return_max_z:
     fld dword ptr [ebp-0x50]
+    jmp .return_scaled
 .return_raw:
     jmp .epilogue
 .return_scaled:
