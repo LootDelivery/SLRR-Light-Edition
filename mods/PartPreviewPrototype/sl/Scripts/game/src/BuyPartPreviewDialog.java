@@ -199,6 +199,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			}
 		}
 
+		int firstName0 = renderRef.getInfo( AABB_QUERY, 275 );
+		int firstName1 = renderRef.getInfo( AABB_QUERY, 276 );
+		tracePreview( prefix + " first-node nameRaw=" + firstName0 + "," + firstName1 );
+
 		int bone00Node = renderRef.getInfo( AABB_QUERY, 294 );
 		tracePreview( prefix + " bone00-node=" + bone00Node );
 		if( bone00Node && bone00Node != AABB_INVALID )
@@ -207,6 +211,19 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			{
 				int value = renderRef.getInfo( AABB_QUERY, axis );
 				tracePreview( prefix + " bone00 axis=" + axis + " raw=" + value );
+			}
+		}
+
+		// VStanced uses "Bone00" (uppercase B). Probe it independently so the
+		// existing lowercase lookup and native center selection remain untouched.
+		int bone00UpperNode = renderRef.getInfo( AABB_QUERY, 489 );
+		tracePreview( prefix + " Bone00-uppercase-node=" + bone00UpperNode );
+		if( bone00UpperNode && bone00UpperNode != AABB_INVALID )
+		{
+			for( int axis = 490; axis <= 498; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " Bone00-uppercase matrix axis=" + axis + " raw=" + value );
 			}
 		}
 	}
