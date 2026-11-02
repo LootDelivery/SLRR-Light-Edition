@@ -63,6 +63,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float nestedMeshSizeZ;
 	int hasNestedMeshBounds;
 	int nestedMeshResourceID;
+	int cameraFitApplied;
 	float yaw;
 	float pitch;
 	float roll;
@@ -97,6 +98,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	final static int AABB_QUERY = 0x584F4242;
 	final static int AABB_INVALID = 0x80000000;
 	final static float AABB_SCALE = 1000.0;
+	// Target camera distance: 1.5 times the native scaled-AABB bounding-sphere radius.
+	final static float CAMERA_FIT_DISTANCE_RATIO = 1.50;
 	// Read-only native handle dump for the type-3 GII_RENDERINSTANCE child.
 	final static int RENDER_RAW_QUERY_BASE = 100;
 
@@ -742,6 +745,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		hasRuntimeBounds = 0;
 		hasNestedMeshBounds = 0;
 		nestedMeshResourceID = 0;
+		cameraFitApplied = 0;
 		orbitRenderRef = null;
 		cameraOrbitCenterX = 0.0;
 		cameraOrbitCenterY = 0.0;
@@ -989,9 +993,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( modelSize <= 0.0 )
 			modelSize = 1.0;
 
-		// Keep the proven GII_SIZE framing independent from the orbit-center AABB.
-		// Bounds may move the orbit target, but must never enlarge camera distance.
-		tracePreview( "35A camera modelSize fixed from GII_SIZE=" + modelSize + " live local AABB extent=" + runtimeBoundsExtent + " hasBounds=" + hasRuntimeBounds );
+		// GII_SIZE is provisional. Once native pose is initialized, the live nested
+		// mesh AABB and native scale replace it with a geometry-based camera fit.
+		tracePreview( "35A camera modelSize provisional GII_SIZE fallback=" + modelSize + " live local AABB extent=" + runtimeBoundsExtent + " hasBounds=" + hasRuntimeBounds );
 
 		// Keep the preview Part at its original origin. Rotation is applied to the camera.
 		tracePreview( "35A preview Part remains unchanged; camera orbit will control rotation" );
@@ -1072,6 +1076,72 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	// Replace the provisional GII_SIZE camera distance with a fit derived from
+	// the actual nested mesh bounds and the initialized native INSTANCE_RENDER
+	// scale. The half-diagonal is invariant under a rigid node rotation.
+	// Axes 513..515 are provided by the already-installed component-scale EXE.
+	private void fitCameraDistanceFromNestedBounds( GameRef renderRef )
+	{
+		if( cameraFitApplied || !hasNestedMeshBounds )
+			return;
+
+		int scaleXFixed = renderRef.getInfo( AABB_QUERY, 513 );
+		int scaleYFixed = renderRef.getInfo( AABB_QUERY, 514 );
+		int scaleZFixed = renderRef.getInfo( AABB_QUERY, 515 );
+
+		if( scaleXFixed == AABB_INVALID ||
+			scaleYFixed == AABB_INVALID ||
+			scaleZFixed == AABB_INVALID )
+		{
+			tracePreview( "CAMERA_FIT scale axes unavailable; keeping GII_SIZE fallback" );
+			return;
+		}
+
+		float scaleX = scaleXFixed / AABB_SCALE;
+		float scaleY = scaleYFixed / AABB_SCALE;
+		float scaleZ = scaleZFixed / AABB_SCALE;
+		if( scaleX < 0.0 ) scaleX = -scaleX;
+		if( scaleY < 0.0 ) scaleY = -scaleY;
+		if( scaleZ < 0.0 ) scaleZ = -scaleZ;
+
+		if( scaleX <= 0.0001 || scaleY <= 0.0001 || scaleZ <= 0.0001 )
+			return;
+
+		float halfX = nestedMeshSizeX * scaleX * 0.5;
+		float halfY = nestedMeshSizeY * scaleY * 0.5;
+		float halfZ = nestedMeshSizeZ * scaleZ * 0.5;
+		float radiusSquared = halfX * halfX + halfY * halfY + halfZ * halfZ;
+		if( radiusSquared <= 0.000001 )
+			return;
+
+		float radius = (float)Math.sqrt( radiusSquared );
+		float cameraOffsetY = zoom - CAMERA_VERTICAL_OFFSET;
+		float cameraOffsetZ = zoom;
+		float cameraOffsetLength = (float)Math.sqrt(
+			cameraOffsetY * cameraOffsetY + cameraOffsetZ * cameraOffsetZ
+		);
+		if( cameraOffsetLength <= 0.0001 )
+			return;
+
+		float previousModelSize = modelSize;
+		modelSize = radius * CAMERA_FIT_DISTANCE_RATIO /
+			( 10.0 * cameraOffsetLength );
+		if( modelSize <= 0.0001 )
+		{
+			modelSize = previousModelSize;
+			return;
+		}
+
+		cameraFitApplied = 1;
+		tracePreview(
+			"CAMERA_FIT applied radiusNative=" + radius +
+			" scale=" + scaleX + "," + scaleY + "," + scaleZ +
+			" previousGII_SIZE=" + previousModelSize +
+			" fittedModelSize=" + modelSize +
+			" targetDistanceRatio=" + CAMERA_FIT_DISTANCE_RATIO
+		);
+	}
+
 	// Compare fixed-point native center samples. One unit equals 0.001 world unit.
 	private int cameraCenterSamplesMatch( int x, int y, int z )
 	{
@@ -1143,6 +1213,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				centerYFixed != AABB_INVALID &&
 				centerZFixed != AABB_INVALID )
 			{
+				// A valid native center also proves that render scale is initialized.
+				// Fit the camera once, before the first stable-center capture completes.
+				fitCameraDistanceFromNestedBounds( orbitRenderRef );
+
 				if( !cameraOrbitCandidateReady )
 				{
 					cameraOrbitCandidateXFixed = centerXFixed;
