@@ -49,6 +49,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	int dragging;
 	int animateTraceFrames;
+	int transformTraceCount;
 
 	String previewTraceData = "";
 
@@ -410,13 +411,14 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 			// During the first animated frames, compare requested YPR with the
 			// orientation read back from the Part after setMatrix().
-			if( animateTraceFrames > 0 && animateTraceFrames <= 3 )
+			if( animateTraceFrames > 0 && animateTraceFrames <= 3 && transformTraceCount < 3 )
 			{
+				transformTraceCount++;
 				Vector3 readbackPosition = previewPart.getPos();
 				Ypr readbackOrientation = previewPart.getOri();
 				if( readbackPosition && readbackOrientation )
 					tracePreview(
-						"T03 frame=" + animateTraceFrames +
+						"T03 sample=" + transformTraceCount + " frame=" + animateTraceFrames +
 						" requestedYpr=" + yaw + "," + pitch + "," + roll +
 						" readbackYpr=" + readbackOrientation.y + "," + readbackOrientation.p + "," + readbackOrientation.r +
 						" readbackPos=" + readbackPosition.x + "," + readbackPosition.y + "," + readbackPosition.z
