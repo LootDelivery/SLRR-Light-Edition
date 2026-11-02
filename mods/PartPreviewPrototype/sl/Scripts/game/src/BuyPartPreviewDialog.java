@@ -708,10 +708,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					float sizeY = maxY - minY;
 					float sizeZ = maxZ - minZ;
 					runtimeBoundsExtent = sizeX;
-					if( sizeY > runtimeModelSize ) runtimeModelSize = sizeY;
-					if( sizeZ > runtimeModelSize ) runtimeModelSize = sizeZ;
+					if( sizeY > runtimeBoundsExtent ) runtimeBoundsExtent = sizeY;
+					if( sizeZ > runtimeBoundsExtent ) runtimeBoundsExtent = sizeZ;
 
-					if( sizeX >= 0.0 && sizeY >= 0.0 && sizeZ >= 0.0 && runtimeModelSize > 0.001 )
+					if( sizeX >= 0.0 && sizeY >= 0.0 && sizeZ >= 0.0 && runtimeBoundsExtent > 0.001 )
 					{
 						boundsCenterX = (minX + maxX) * 0.5;
 						boundsCenterY = (minY + maxY) * 0.5;
@@ -722,7 +722,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							" min=" + minXFixed + "," + minYFixed + "," + minZFixed +
 							" max=" + maxXFixed + "," + maxYFixed + "," + maxZFixed +
 							" center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
-							" size=" + runtimeModelSize
+							" size=" + runtimeBoundsExtent
 						);
 					}
 					else
@@ -787,7 +787,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		// GII_SIZE is only a fallback. captureCameraOrbitCenter() will enlarge
 		// modelSize when the transformed component bounds prove it is too small.
-		tracePreview( "35A camera modelSize initial GII_SIZE=" + modelSize + " live local AABB extent=" + runtimeModelSize + " hasBounds=" + hasRuntimeBounds );
+		tracePreview( "35A camera modelSize initial GII_SIZE=" + modelSize + " live local AABB extent=" + runtimeBoundsExtent + " hasBounds=" + hasRuntimeBounds );
 
 		// Keep the preview Part at its original origin. Rotation is applied to the camera.
 		tracePreview( "35A preview Part remains unchanged; camera orbit will control rotation" );
