@@ -551,6 +551,10 @@ render_diag_dispatch:
     fmul dword ptr [esi+0x98]
     fstp dword ptr [esp+0x3c]
 
+    # Native 0x5433E0 first calls 0x541FE0, then converts the selected node's
+    # matrix translation (m[12..14]) to INSTANCE_RENDER.position (+0x84..0x8c)
+    # using the native 0.1 scale constant. Add that position exactly once;
+    # applying the node translation again here would double-count it.
     # WorldCenter = INSTANCE_RENDER.position + selectedNodeMatrix * scaledLocalCenter.
     # selectedNode follows the same branch and name selection as 0x5433E0.
     fld dword ptr [esp+0x34]
