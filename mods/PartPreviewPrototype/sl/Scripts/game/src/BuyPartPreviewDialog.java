@@ -1285,15 +1285,28 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				else
 				if( cameraCenterSamplesMatch( centerXFixed, centerYFixed, centerZFixed ) )
 				{
-					cameraOrbitCenterX = centerXFixed / AABB_SCALE;
-					cameraOrbitCenterY = centerYFixed / AABB_SCALE;
-					cameraOrbitCenterZ = centerZFixed / AABB_SCALE;
-					cameraOrbitCenterReady = 1;
-					tracePreview(
-						"CAMERA_ORBIT_CENTER captured stable native world=" +
-						cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-						" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
-						" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
+					// The queried render instance is a child of previewPart. Its
+					// transformed mesh center is therefore Part-local, not yet in
+					// previewRoot space. Compose it with the Part pose captured after
+					// setMatrix(null,null), exactly like the direct-AABB fallback.
+					Vector3 partLocalCenter = new Vector3(
+						centerXFixed / AABB_SCALE,
+						centerYFixed / AABB_SCALE,
+						centerZFixed / AABB_SCALE
+					);
+				partLocalCenter.rotate( savedOrientation );
+				cameraOrbitCenterX = savedPosition.x + partLocalCenter.x;
+				cameraOrbitCenterY = savedPosition.y + partLocalCenter.y;
+				cameraOrbitCenterZ = savedPosition.z + partLocalCenter.z;
+				cameraOrbitCenterReady = 1;
+				tracePreview(
+					"CAMERA_ORBIT_CENTER captured root world=" +
+					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" partLocal=" + (centerXFixed / AABB_SCALE) + "," +
+					(centerYFixed / AABB_SCALE) + "," + (centerZFixed / AABB_SCALE) +
+					" partPos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
+					" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
+					" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
 					);
 					return 1;
 				}
@@ -1359,13 +1372,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			cameraOffset.rotate( inversePartOrientation );
 
-			// Axes 500..502 return the center in the same Java/world units as
-			// INSTANCE_RENDER.position. RenderRef.setMatrix accepts those units
-			// and applies the native *10 conversion internally when it writes
-			// the bone matrix (Mat3x4_setBasis_posScaled10). Do NOT divide the
-			// orbit center by 10 here: doing so makes the camera aim at a point
-			// one tenth of the actual render-matrix translation.
-			// cameraOffset is also in Java units and receives the same native *10.
+			// cameraOrbitCenter is now in previewRoot space and Java/world
+			// units. RenderRef.setMatrix applies native *10 internally to both
+			// the absolute center and the orbit radius. Never divide the center
+			// by 10: axes 500..502 already return pre-*10 position units.
 			Vector3 cameraPosition = new Vector3(
 				cameraOrbitCenterX + cameraOffset.x,
 				cameraOrbitCenterY + cameraOffset.y,
@@ -1386,8 +1396,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			if( cameraOrbitCenterReady && !cameraAimDiagnosticsLogged )
 			{
 				tracePreview(
-					"CAMERA_AIM targetRenderJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-					" targetRenderMatrixNative=" + (cameraOrbitCenterX * 10.0) + "," +
+					"CAMERA_AIM targetRootJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" targetRootMatrixNative=" + (cameraOrbitCenterX * 10.0) + "," +
 					(cameraOrbitCenterY * 10.0) + "," + (cameraOrbitCenterZ * 10.0) +
 					" cameraJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
 					" cameraNativeExpected=" + (cameraPosition.x * 10.0) + "," +
