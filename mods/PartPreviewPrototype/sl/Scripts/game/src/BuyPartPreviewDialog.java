@@ -237,12 +237,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		int childResource = renderRef.getInfo( AABB_QUERY, 418 );
 		tracePreview( prefix + " resource-payload+0x18 child-resource=" + childResource );
+		int nestedMeshID = 0;
 		if( childResource && childResource != AABB_INVALID )
 		{
 			for( int axis = 419; axis <= 439; axis++ )
 			{
 				int value = renderRef.getInfo( AABB_QUERY, axis );
 				tracePreview( prefix + " child-resource+" + ((axis - 419) * 4) + "=" + value );
+				if( axis == 439 )
+					nestedMeshID = value;
 			}
 			for( int axis = 440; axis <= 471; axis++ )
 			{
@@ -250,6 +253,26 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				tracePreview( prefix + " child-payload+" + ((axis - 440) * 4) + "=" + value );
 			}
 		}
+
+		// The embedded resource owns a type-5 RESOURCE_MESH child. Try resolving
+		// its runtime resource ID through the ordinary Java GameRef constructor,
+		// then reuse the already-installed type-5 AABB path (axes 0..11).
+		if( nestedMeshID > 0 )
+		{
+			tracePreview( prefix + " nested mesh GameRef before construction id=" + nestedMeshID );
+			GameRef nestedMeshRef = new GameRef( nestedMeshID );
+			tracePreview(
+				prefix + " nested mesh GameRef type=" + nestedMeshRef.type() +
+				" id=" + nestedMeshRef.id()
+			);
+			for( int axis = 0; axis <= 11; axis++ )
+			{
+				int value = nestedMeshRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " nested mesh AABB axis=" + axis + " raw=" + value );
+			}
+		}
+		else
+			tracePreview( prefix + " nested mesh ID unavailable; AABB probe skipped" );
 
 		int collection = renderRef.getInfo( AABB_QUERY, 472 );
 		tracePreview( prefix + " resource-payload+0x38 collection=" + collection );
