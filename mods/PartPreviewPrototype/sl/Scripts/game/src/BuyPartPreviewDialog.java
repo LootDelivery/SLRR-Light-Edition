@@ -1076,6 +1076,23 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	// Positive square root using Newton iterations. Avoid relying on a library
+	// square-root implementation in the legacy SLRR JVM.
+	private float cameraSqrt( float value )
+	{
+		if( value <= 0.0 )
+			return 0.0;
+
+		float estimate = value;
+		if( estimate < 1.0 )
+			estimate = 1.0;
+
+		for( int i = 0; i < 8; i++ )
+			estimate = ( estimate + value / estimate ) * 0.5;
+
+		return estimate;
+	}
+
 	// Replace the provisional GII_SIZE camera distance with a fit derived from
 	// the actual nested mesh bounds and the initialized native INSTANCE_RENDER
 	// scale. The half-diagonal is invariant under a rigid node rotation.
@@ -1114,10 +1131,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( radiusSquared <= 0.000001 )
 			return;
 
-		float radius = (float)Math.sqrt( radiusSquared );
+		float radius = cameraSqrt( radiusSquared );
 		float cameraOffsetY = zoom - CAMERA_VERTICAL_OFFSET;
 		float cameraOffsetZ = zoom;
-		float cameraOffsetLength = (float)Math.sqrt(
+		float cameraOffsetLength = cameraSqrt(
 			cameraOffsetY * cameraOffsetY + cameraOffsetZ * cameraOffsetZ
 		);
 		if( cameraOffsetLength <= 0.0001 )
