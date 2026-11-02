@@ -846,6 +846,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 
 		// This is the only native center sample for this preview instance.
+		// The camera uses AABB-center axes 500..502 only; this Java path does
+		// not request the removed surface-centroid axes 503..505.
 		int nativeCenterCaptured = 0;
 		if( orbitRenderRef )
 		{
