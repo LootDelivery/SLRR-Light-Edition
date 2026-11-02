@@ -65,6 +65,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	int dragging;
 	int animateTraceFrames;
+	int renderTransformTraceFrames;
+	int renderTransformTraceReady;
+	int renderTransformTraceNodeY;
+	int renderTransformTracePositionY;
+	int renderTransformTraceScaleY;
+	int renderTransformTraceRecordY;
 
 	String previewTraceData = "";
 
@@ -517,6 +523,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCenterZ = 0.0;
 		cameraOrbitCenterReady = 0;
 		cameraOrbitCenterWaitFrames = 0;
+		renderTransformTraceFrames = 0;
+		renderTransformTraceReady = 0;
+		renderTransformTraceNodeY = AABB_INVALID;
+		renderTransformTracePositionY = AABB_INVALID;
+		renderTransformTraceScaleY = AABB_INVALID;
+		renderTransformTraceRecordY = AABB_INVALID;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
 
@@ -822,6 +834,56 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	// Track the native render-node -> INSTANCE_RENDER initialization.
+	// Native 0x5433E0 copies the selected node transform into the render instance
+	// after the render record becomes active. Log only the first few frames and
+	// any later changes, keeping the probe read-only and bounded.
+	private void traceNativeTransformTimeline()
+	{
+		if( renderTransformTraceFrames >= 45 )
+			return;
+
+		if( !orbitRenderRef )
+		{
+			int renderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+			if( renderInstance )
+				orbitRenderRef = new GameRef( renderInstance );
+		}
+		if( !orbitRenderRef )
+			return;
+
+		int nodeTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 308 );
+		int instancePositionY = orbitRenderRef.getInfo( AABB_QUERY, 174 );
+		int instanceScaleY = orbitRenderRef.getInfo( AABB_QUERY, 177 );
+		int renderRecordTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 136 );
+
+		int changed = 0;
+		if( !renderTransformTraceReady )
+			changed = 1;
+		else
+		if( nodeTranslationY != renderTransformTraceNodeY ||
+			instancePositionY != renderTransformTracePositionY ||
+			instanceScaleY != renderTransformTraceScaleY ||
+			renderRecordTranslationY != renderTransformTraceRecordY )
+			changed = 1;
+
+		if( renderTransformTraceFrames < 4 || changed )
+			tracePreview(
+				"TRANSFORM_TIMELINE frame=" + renderTransformTraceFrames +
+				" recordTyRaw=" + renderRecordTranslationY +
+				" bone00TyRaw=" + nodeTranslationY +
+				" instancePosYRaw=" + instancePositionY +
+				" instanceScaleYRaw=" + instanceScaleY
+			);
+
+		renderTransformTraceNodeY = nodeTranslationY;
+		renderTransformTracePositionY = instancePositionY;
+		renderTransformTraceScaleY = instanceScaleY;
+		renderTransformTraceRecordY = renderRecordTranslationY;
+		renderTransformTraceReady = 1;
+		renderTransformTraceFrames++;
+	}
+
 	// Query axes 500..502 once, after the render instance has had time to
 	// initialize. The root mesh AABB has already been cached before previewCamera
 	// is created, so it remains the provisional center during this short delay.
@@ -962,6 +1024,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		float wheel = Input.getAxis( 1, 2 );
 		if( traceFrame ) tracePreview( "A5 after wheel Input.getAxis" );
 		int overPreview = cursorOverPreview( mouseX, mouseY );
+
+		traceNativeTransformTimeline();
 
 		// Wait for the native render instance to publish its first valid
 		// world-space AABB. Do not rotate around a provisional origin.
