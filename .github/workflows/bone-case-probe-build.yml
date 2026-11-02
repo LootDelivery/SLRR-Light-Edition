@@ -1,0 +1,70 @@
+name: Build bone-case diagnostic EXE
+
+on:
+  push:
+    branches:
+      - diagnostic/bone-case-probe
+    paths:
+      - ".github/workflows/bone-case-probe-build.yml"
+      - "mods/PartPreviewPrototype/native/**"
+      - "mods/PartPreviewPrototype/sl/Scripts/game/src/BuyPartPreviewDialog.java"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout diagnostic branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install assembler and linker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils
+
+      - name: Verify base EXE and build diagnostic EXE
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="38e09d0dbdd1c8d8afa1f3d0365b8a629b91e0fa8968c91ec53ccbc69bacdc88"
+          CANDIDATES=(
+            "StreetLegal_Redline_native.exe"
+            "mods/PartPreviewPrototype/StreetLegal_Redline_native_getinfo_route_probe.exe"
+            "StreetLegal_Redline.exe"
+          )
+          printf "Candidate executable hashes:\n" | tee build-manifest.txt
+          MATCH=""
+          for candidate in "${CANDIDATES[@]}"; do
+            if [[ -f "$candidate" ]]; then
+              HASH="$(sha256sum "$candidate" | cut -d' ' -f1)"
+              printf "%s  %s\n" "$HASH" "$candidate" | tee -a build-manifest.txt
+              if [[ "$HASH" == "$BASE_SHA" ]]; then
+                MATCH="$candidate"
+              fi
+            fi
+          done
+          if [[ -z "$MATCH" ]]; then
+            echo "No tracked executable matches the exact pinned base SHA-256." | tee -a build-manifest.txt
+            exit 2
+          fi
+          echo "Matched base: $MATCH" | tee -a build-manifest.txt
+          python mods/PartPreviewPrototype/native/build_rendercenter_diag.py "$MATCH" StreetLegal_Redline_native_bone_case_probe.exe | tee -a build-manifest.txt
+          sha256sum StreetLegal_Redline_native_bone_case_probe.exe | tee -a build-manifest.txt
+
+      - name: Upload built EXE
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bone-case-diagnostic-exe
+          path: |
+            StreetLegal_Redline_native_bone_case_probe.exe
+            build-manifest.txt
+          if-no-files-found: error
+          retention-days: 7
