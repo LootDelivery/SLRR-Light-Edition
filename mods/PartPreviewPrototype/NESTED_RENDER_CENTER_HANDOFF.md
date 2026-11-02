@@ -148,7 +148,7 @@ The latest runtime log from the spring confirms:
 - after the render update, the preview position converges to approximately Y=-0.257 (1.053 multiplied by runtime scale about 0.244);
 - the former Java path queried the previous completed world pose and then applied a new Part transform on every frame. This creates a one-frame feedback path while the user rotates the preview.
 
-Java commit `64402df9d6582eea3fd303d7c311d785f6884e46` changes this:
+Java commits `64402df9d6582eea3fd303d7c311d785f6884e46` and `e8a4d4a69e0e92e7269d7e590b350f6495a9a139` change this (the second also resets capture state at preview creation):
 1. Hold the initial orientation until a first valid native center is available (up to 30 preview frames).
 2. Capture the center offset relative to Part position once.
 3. Convert that captured offset from its reference orientation using rotated basis vectors, then apply the target orientation to it.
