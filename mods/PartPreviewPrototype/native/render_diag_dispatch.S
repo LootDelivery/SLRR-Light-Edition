@@ -84,6 +84,8 @@ render_diag_dispatch:
     je .resource_collection_pointer
     cmp ecx, 488
     jbe .resource_collection_header
+    cmp ecx, 500
+    jb .invalid
     cmp ecx, 502
     jbe .nested_mesh_center
     jmp .invalid
