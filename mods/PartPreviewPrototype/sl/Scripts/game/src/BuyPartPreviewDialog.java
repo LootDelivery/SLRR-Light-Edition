@@ -796,8 +796,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewCamera = new Camera( previewRoot, previewViewport, 1, 110, 0.001, 10.0 );
 		tracePreview( "3B after preview Camera creation" );
 
-		updateCamera();
-		tracePreview( "3C after updateCamera" );
+		// Defer the first camera matrix until all preview render components
+		// have published valid world-space bounds. This avoids showing the model
+		// around a guessed origin and then jumping to a late native center.
+		tracePreview( "3C camera matrix deferred until render-component bounds are ready" );
 
 		Vector3 cursorPosition = Input.cursor.getPos();
 		if( cursorPosition )
@@ -975,11 +977,166 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		renderTransformTraceFrames++;
 	}
 
-	// Query axes 500..502 once, after the render instance has had time to
-	// initialize. The root mesh AABB has already been cached before previewCamera
-	// is created, so it remains the provisional center during this short delay.
-	// No AABB/native-center query is performed on every animation frame.
+	// Add a render-instance ID once. Assemblies may expose the same root
+	// instance both through GII_RENDERINSTANCE and as a direct child.
+	private int appendRenderInstanceID( int[] ids, int count, int renderInstanceID )
+	{
+		if( !renderInstanceID || count >= 64 )
+			return count;
+
+		for( int i = 0; i < count; i++ )
+		{
+			if( ids[i] == renderInstanceID )
+				return count;
+		}
+		ids[count] = renderInstanceID;
+		return count + 1;
+	}
+
+	// A Part can be a compound assembly: previewPart.getMesh() may be zero while
+	// its resource tree contains several type-3 INSTANCE_RENDER children. Collect
+	// the root handle plus direct children and one nested child level.
+	private int collectPreviewRenderInstances( int[] ids )
+	{
+		int count = 0;
+		int rootRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+		count = appendRenderInstanceID( ids, count, rootRenderInstance );
+
+		ResourceRef child = previewPart.getFirstChild();
+		int childIndex = 0;
+		while( child && childIndex < 64 )
+		{
+			if( child.type() == 3 )
+				count = appendRenderInstanceID( ids, count, child.id() );
+
+			ResourceRef nested = child.getFirstChild();
+			int nestedIndex = 0;
+			while( nested && nestedIndex < 32 )
+			{
+				if( nested.type() == 3 )
+					count = appendRenderInstanceID( ids, count, nested.id() );
+				nested = nested.getNextChild();
+				nestedIndex++;
+			}
+
+			child = child.getNextChild();
+			childIndex++;
+		}
+
+		tracePreview(
+			"CAMERA_ORBIT_CENTER render components discovered=" + count +
+			" rootRenderInstance=" + rootRenderInstance
+		);
+		return count;
+	}
+
+	// Query the center of every render component, not only the root
+	// GII_RENDERINSTANCE. The current native axes return each component's
+	// transformed live-AABB midpoint in previewRoot coordinates.
+	//
+	// Until every discovered component is ready, keep polling. If one child
+	// never publishes bounds, use the valid components after a bounded timeout.
+	// The envelope of component centers is an assembly-level target estimate;
+	// it is intentionally not called the exact union AABB of all vertices.
 	private int captureCameraOrbitCenter()
+	{
+		if( cameraOrbitCenterReady )
+			return 1;
+
+		cameraOrbitCenterWaitFrames++;
+		int renderInstanceIDs[] = new int[64];
+		int renderInstanceCount = collectPreviewRenderInstances( renderInstanceIDs );
+		int rootRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+
+		int validCount = 0;
+		float minX = 0.0;
+		float minY = 0.0;
+		float minZ = 0.0;
+		float maxX = 0.0;
+		float maxY = 0.0;
+		float maxZ = 0.0;
+
+		for( int i = 0; i < renderInstanceCount; i++ )
+		{
+			int renderInstanceID = renderInstanceIDs[i];
+			GameRef componentRenderRef = new GameRef( renderInstanceID );
+			if( !orbitRenderRef || renderInstanceID == rootRenderInstance )
+				orbitRenderRef = componentRenderRef;
+
+			int centerXFixed = componentRenderRef.getInfo( AABB_QUERY, 500 );
+			int centerYFixed = componentRenderRef.getInfo( AABB_QUERY, 501 );
+			int centerZFixed = componentRenderRef.getInfo( AABB_QUERY, 502 );
+
+			if( centerXFixed == AABB_INVALID ||
+				centerYFixed == AABB_INVALID ||
+				centerZFixed == AABB_INVALID )
+			{
+				tracePreview(
+					"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
+					" bounds=PENDING values=" + centerXFixed + "," + centerYFixed + "," + centerZFixed
+				);
+				continue;
+			}
+
+			float centerX = centerXFixed / AABB_SCALE;
+			float centerY = centerYFixed / AABB_SCALE;
+			float centerZ = centerZFixed / AABB_SCALE;
+			tracePreview(
+				"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
+				" center=" + centerX + "," + centerY + "," + centerZ
+			);
+
+			if( validCount == 0 )
+			{
+				minX = centerX;
+				minY = centerY;
+				minZ = centerZ;
+				maxX = centerX;
+				maxY = centerY;
+				maxZ = centerZ;
+			}
+			else
+			{
+				if( centerX < minX ) minX = centerX;
+				if( centerY < minY ) minY = centerY;
+				if( centerZ < minZ ) minZ = centerZ;
+				if( centerX > maxX ) maxX = centerX;
+				if( centerY > maxY ) maxY = centerY;
+				if( centerZ > maxZ ) maxZ = centerZ;
+			}
+			validCount++;
+
+			if( renderInstanceID == rootRenderInstance )
+				traceRenderNativePose( componentRenderRef, "CAMERA_ORBIT_CENTER_ROOT" );
+		}
+
+		if( validCount > 0 &&
+			(validCount == renderInstanceCount || cameraOrbitCenterWaitFrames >= 60) )
+		{
+			cameraOrbitCenterX = (minX + maxX) * 0.5;
+			cameraOrbitCenterY = (minY + maxY) * 0.5;
+			cameraOrbitCenterZ = (minZ + maxZ) * 0.5;
+			tracePreview(
+				"CAMERA_ORBIT_CENTER finalized component-center envelope=" +
+				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+				" valid=" + validCount + " discovered=" + renderInstanceCount
+			);
+			cameraOrbitCenterReady = 1;
+			return 1;
+		}
+
+		if( cameraOrbitCenterWaitFrames >= 60 )
+		{
+			tracePreview(
+				"CAMERA_ORBIT_CENTER timeout; using cached root fallback valid=" +
+				validCount + " discovered=" + renderInstanceCount
+			);
+			cameraOrbitCenterReady = 1;
+			return 1;
+		}
+
+		return 0;
+	}
 	{
 		if( cameraOrbitCenterReady )
 			return 1;
@@ -1127,7 +1284,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			lastMouseX = mouseX;
 			lastMouseY = mouseY;
 			lastWheel = wheel;
-			updateCamera();
+			// Keep the camera untouched while native component bounds are pending.
 			return;
 		}
 
