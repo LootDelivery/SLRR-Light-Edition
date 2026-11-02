@@ -924,6 +924,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							nestedCenterBaseRoll = currentPartOrientation.r;
 							nestedCenterOffsetReady = 1;
 
+							String aabbCenterText = "invalid";
+							if( aabbXFixed != AABB_INVALID && aabbYFixed != AABB_INVALID && aabbZFixed != AABB_INVALID )
+								aabbCenterText = "" + (aabbXFixed / AABB_SCALE) + "," +
+									(aabbYFixed / AABB_SCALE) + "," + (aabbZFixed / AABB_SCALE);
+							String surfaceCenterText = "invalid";
+							if( surfaceXFixed != AABB_INVALID && surfaceYFixed != AABB_INVALID && surfaceZFixed != AABB_INVALID )
+								surfaceCenterText = "" + (surfaceXFixed / AABB_SCALE) + "," +
+									(surfaceYFixed / AABB_SCALE) + "," + (surfaceZFixed / AABB_SCALE);
+
 							tracePreview(
 								"NESTED_CENTER captured offset=" +
 								nestedCenterOffsetX + "," + nestedCenterOffsetY + "," + nestedCenterOffsetZ +
@@ -931,8 +940,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 								nestedCenterBasePitch + "," + nestedCenterBaseRoll +
 								" selected=" + (useSurfaceCentroid ? "surface-centroid" : "aabb-fallback") +
 								" nativeWorldCenter=" + nativeCenterX + "," + nativeCenterY + "," + nativeCenterZ +
-								" aabbWorldCenter=" + aabbXFixed + "," + aabbYFixed + "," + aabbZFixed +
-								" surfaceWorldCenter=" + surfaceXFixed + "," + surfaceYFixed + "," + surfaceZFixed +
+								" aabbWorldCenter=" + aabbCenterText +
+								" surfaceWorldCenter=" + surfaceCenterText +
 								" currentPartPos=" + currentPartPosition.x + "," + currentPartPosition.y + "," + currentPartPosition.z
 							);
 						}
