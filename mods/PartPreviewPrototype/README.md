@@ -17,7 +17,7 @@ This branch replaces the old three-axis AABB-center experiment with a six-axis g
 
 The native helper returns a signed integer equal to `round(coordinate * 1000)`. Java divides by `1000.0`. This deliberately avoids `Float.intBitsToFloat()`, which is absent from SLRR's bundled `java.lang.Float.class`. `0x80000000` is the invalid-result sentinel.
 
-The preview computes the geometric center from live bounds and offsets only the isolated preview instance. The catalog's source Part is not modified. Camera distance continues to use the existing `GII_SIZE` convention; the AABB extent is diagnostic only and is not assumed to be interchangeable with `GII_SIZE`.
+The preview computes the geometric center from live bounds and positions the isolated preview Part so that this center lands at the private preview root origin `(0,0,0)`. It deliberately does not preserve the part's original install/mount position: `savedPosition` belongs to the source part placement, not the camera-centered preview scene. The catalog's source Part is not modified. Camera distance continues to use the existing `GII_SIZE` convention; the AABB extent is not assumed to be interchangeable with `GII_SIZE`.
 
 ## Native route
 
@@ -81,7 +81,7 @@ The stack-order build uses query at `[ESP+0x10]` and axis at `[ESP+0x0C]`. SHA-2
 3. Test in a copied game installation.
 4. First confirm garage entry and catalog category loading.
 5. Open a part preview and inspect `PartPreviewTrace.txt` in the game's temp-save directory. Axes `0..5` are the fresh CPU-vertex bounds; axes `6..11` are the loader's stored root bounds. Compare them on an unmodified mesh.
-6. Check `savedPosition`, `savedOrientation`, `center`, `rotatedCenter`, and `finalPos` in the trace to identify whether the offset is in the AABB or in the Part transform.
+6. Check `savedPosition`, `savedOrientation`, `center`, `rotatedCenter`, and `finalPos` in the trace. `finalPos` should equal `-rotatedCenter`; the source/install position is logged for diagnosis but is not retained in the private preview root.
 7. Verify that the old `GII_SIZE` camera framing remains intact, including previously invisible or oversized parts.
 8. After basic tests pass, use a mesh changed by `scaleMesh()` and verify that fresh axes `0..5` change while stored axes `6..11` remain stale.
 
