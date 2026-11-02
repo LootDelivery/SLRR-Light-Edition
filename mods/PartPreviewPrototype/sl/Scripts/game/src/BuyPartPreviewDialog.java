@@ -483,6 +483,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		boundsCenterX = 0.0;
 		boundsCenterY = 0.0;
 		boundsCenterZ = 0.0;
+		hasNestedMeshBounds = 0;
+		nestedCenterOffsetReady = 0;
+		nestedCenterWaitFrames = 0;
+		nestedCenterWaitLogged = 0;
 		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
