@@ -379,3 +379,14 @@ Current Java integration (surface-centroid selection + AABB fallback + dual veri
 - Commit: `eec34b7184eb339efcbe999668603955559f71d8`
 
 Capture and verification traces now print both AABB and surface-centroid coordinates in world units, not raw fixed-point integers.
+
+## SLRR script compiler syntax correction (2026-11-02)
+
+The user reported `!syntax error` at line 817 in `BuyPartPreviewDialog.java` after the first surface-centroid integration. The added code used Java's conditional (`?:`) operator eight times. The SLRR script compiler rejected the first occurrence.
+
+Commit `8354bbeb8fc103790e8285c04f4b439916a5a3f7` replaces all eight conditional expressions with explicit `if` assignments and integer trace flags. No native code, center-selection policy, transform math, or fallback behavior changed. A text scan of the updated file confirms there are no remaining question-mark/conditional-operator occurrences.
+
+Updated Java:
+https://github.com/LootDelivery/SLRR-Light-Edition/blob/8354bbeb8fc103790e8285c04f4b439916a5a3f7/mods/PartPreviewPrototype/sl/Scripts/game/src/BuyPartPreviewDialog.java
+
+The file was inspected around the original error line and around both center-selection blocks. This is a source-level syntax correction; the SLRR compiler has not yet been run against this commit.
