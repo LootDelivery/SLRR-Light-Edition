@@ -36,12 +36,29 @@ aabb_helper:
     cmp ecx, 119
     jbe .diag_render_handle_fields
     cmp ecx, 156
-    ja .invalid
-    jmp .diag_render_record_fields
+    jbe .diag_render_record_fields
+    cmp ecx, 195
+    jbe .diag_render_outer_fields
+    cmp ecx, 220
+    jbe .diag_render_inner_fields
+    jmp .invalid
 
 .diag_render_handle_fields:
     sub ecx, 100
     mov eax, dword ptr [esi+ecx*4]
+    jmp .return_raw
+
+.diag_render_outer_fields:
+    # Outer INSTANCE_RENDER fields at +0x50..+0xDC, raw DWORDs only.
+    sub ecx, 160
+    add ecx, 20
+    mov eax, dword ptr [esi+ecx*4]
+    jmp .return_raw
+
+.diag_render_inner_fields:
+    # Embedded render-list object at outer handle +0xD8, offsets +0x00..+0x50.
+    sub ecx, 200
+    mov eax, dword ptr [esi+ecx*4+0xd8]
     jmp .return_raw
 
 .require_mesh:
