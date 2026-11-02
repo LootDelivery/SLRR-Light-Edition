@@ -43,21 +43,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float nestedMeshSizeY;
 	float nestedMeshSizeZ;
 	int hasNestedMeshBounds;
-	int nestedCenterUsingSurfaceCentroid;
 	int nestedMeshResourceID;
-	float nestedCenterOffsetX;
-	float nestedCenterOffsetY;
-	float nestedCenterOffsetZ;
-	float nestedCenterBaseYaw;
-	float nestedCenterBasePitch;
-	float nestedCenterBaseRoll;
-	int nestedCenterOffsetReady;
-	int nestedCenterWaitFrames;
-	int nestedCenterWaitLogged;
-	int nestedCenterVerifyPending;
-	int nestedCenterVerifyInitialDone;
-	int nestedCenterVerifyRotationDone;
-	int nestedCenterApplyLogged;
 	float yaw;
 	float pitch;
 	float roll;
@@ -101,7 +87,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	final static float DRAG_PITCH_SCALE = 2.2;
 
 	// Lower the camera slightly so the model sits a little higher in the viewport.
-	// Only the isolated preview transform is adjusted to center its runtime AABB.
+	// The preview Part itself stays at its original transform.
 	final static float CAMERA_VERTICAL_OFFSET = 0.08;
 	final static float MIN_ZOOM = 0.65;
 	final static float MAX_ZOOM = 2.25;
@@ -493,14 +479,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		boundsCenterZ = 0.0;
 		hasNestedMeshBounds = 0;
 		nestedMeshResourceID = 0;
-		nestedCenterOffsetReady = 0;
-		nestedCenterWaitFrames = 0;
-		nestedCenterWaitLogged = 0;
-		nestedCenterVerifyPending = 0;
-		nestedCenterVerifyInitialDone = 0;
-		nestedCenterVerifyRotationDone = 0;
-		nestedCenterApplyLogged = 0;
-		nestedCenterUsingSurfaceCentroid = 0;
 		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
@@ -683,10 +661,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			tracePreview( "19 previewPart.getMesh returned 0; AABB skipped" );
 
 		// A nested resource may be a different submesh from Part.getMesh().
-		// Use nested centering when it is the actual direct mesh, or when the
-		// Part has no direct mesh (e.g. suspension springs). If both resources
-		// exist but identify different meshes, retain the established direct
-		// Part.getMesh() bounds instead of centering an unrelated engine submesh.
+		// Keep this identity check for diagnostics only: bounds no longer select
+		// a pivot or alter the Part transform in the camera-orbit preview.
 		if( hasRuntimeBounds && hasNestedMeshBounds &&
 			previewMeshID && nestedMeshResourceID != previewMeshID )
 		{
@@ -888,7 +864,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		updateCamera();
 		if( traceFrame ) tracePreview( "A6 after camera orbit update" );
-		if( traceFrame ) tracePreview( "A8 after updateCamera" );
 	}
 
 	public void show()
