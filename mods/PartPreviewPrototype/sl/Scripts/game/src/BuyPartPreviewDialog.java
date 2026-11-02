@@ -213,6 +213,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				int rawValue = renderGameRef.getInfo( AABB_QUERY, RENDER_RAW_QUERY_BASE + rawField );
 				tracePreview( "R05 render-handle raw offset=" + (rawField * 4) + " value=" + rawValue );
 			}
+
+			// Native lookup 0x005413C0 follows the linked render-record list:
+			// handle+0x204 -> first record, record+0x34 -> key,
+			// record+0x04 -> next record, record+0x54 -> 4x4 matrix.
+			for( int listAxis = 120; listAxis <= 156; listAxis++ )
+			{
+				int listValue = renderGameRef.getInfo( AABB_QUERY, listAxis );
+				tracePreview( "R06 render-record axis=" + listAxis + " raw=" + listValue );
+			}
 		}
 
 		// ResourceRef exposes a generic child/sibling traversal API. Dump only
