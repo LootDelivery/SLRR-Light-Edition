@@ -25,16 +25,21 @@ aabb_helper:
     test esi, esi
     jz .invalid
 
-    # The preview Part's GII_RENDERINSTANCE child resolves as runtime type 3.
-    # For that object only, expose a bounded read-only dump of its first 20 DWORDs.
-    # This deliberately returns raw values; it does not dereference any field.
+    # INSTANCE_RENDER (type 3) diagnostics. Axes 100..119 expose the
+    # object's first 20 raw DWORDs. Axes 120..156 inspect the linked
+    # render-record list and the 4x4 matrix stored in each record.
     mov ecx, dword ptr [ebp+0x0c]
     cmp dword ptr [esi+0x4c], 3
     jne .require_mesh
     cmp ecx, 100
     jb .invalid
     cmp ecx, 119
+    jbe .diag_render_handle_fields
+    cmp ecx, 156
     ja .invalid
+    jmp .diag_render_record_fields
+
+.diag_render_handle_fields:
     sub ecx, 100
     mov eax, dword ptr [esi+ecx*4]
     jmp .return_raw
@@ -574,6 +579,68 @@ aabb_helper:
     mov eax, dword ptr [esp]
     add esp, 8
     jmp .epilogue
+.diag_render_record_fields:
+    # vtable slot +0x0C (0x005433D0) returns handle+0xD8.
+    # Native 0x005413C0 reads [that pointer+0x12C] == [handle+0x204]
+    # as the first linked render record. Each record stores its key at +0x34,
+    # next pointer at +0x04, and the 16-DWORD matrix at +0x54.
+    mov eax, dword ptr [esi+0x204]
+    test eax, eax
+    jz .invalid
+
+    cmp ecx, 120
+    je .return_raw
+    cmp ecx, 121
+    je .diag_render_first_key
+    cmp ecx, 122
+    je .diag_render_first_next
+
+    cmp ecx, 138
+    jbe .diag_render_first_matrix
+    cmp ecx, 139
+    je .diag_render_second_key
+    cmp ecx, 140
+    je .diag_render_second_next
+    cmp ecx, 156
+    ja .invalid
+
+    # Second linked record.
+    mov edx, dword ptr [eax+0x04]
+    test edx, edx
+    jz .invalid
+    sub ecx, 141
+    mov eax, dword ptr [edx+ecx*4+0x54]
+    jmp .return_raw
+
+.diag_render_first_key:
+    mov eax, dword ptr [eax+0x34]
+    jmp .return_raw
+
+.diag_render_first_next:
+    mov eax, dword ptr [eax+0x04]
+    jmp .return_raw
+
+.diag_render_first_matrix:
+    cmp ecx, 123
+    jb .invalid
+    sub ecx, 123
+    mov eax, dword ptr [eax+ecx*4+0x54]
+    jmp .return_raw
+
+.diag_render_second_key:
+    mov edx, dword ptr [eax+0x04]
+    test edx, edx
+    jz .invalid
+    mov eax, dword ptr [edx+0x34]
+    jmp .return_raw
+
+.diag_render_second_next:
+    mov edx, dword ptr [eax+0x04]
+    test edx, edx
+    jz .invalid
+    mov eax, dword ptr [edx+0x04]
+    jmp .return_raw
+
 .invalid:
     mov eax, 0x80000000
 .epilogue:
