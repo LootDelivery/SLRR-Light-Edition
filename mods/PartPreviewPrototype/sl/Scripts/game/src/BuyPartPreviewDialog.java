@@ -157,6 +157,48 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		);
 	}
 
+	private void traceRenderBoneDiagnostics( GameRef renderRef, String prefix )
+	{
+		// INSTANCE_RENDER+0xF4 is optional. Do not query its child fields when null:
+		// the native dispatcher then returns the invalid sentinel for every child.
+		int f4Pointer = renderRef.getInfo( AABB_QUERY, 251 );
+		tracePreview( prefix + " F4 pointer=" + f4Pointer );
+		if( f4Pointer )
+		{
+			for( int axis = 252; axis <= 272; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " F4 axis=" + axis + " raw=" + value );
+			}
+		}
+
+		// These probes follow the same native list helpers used by 0x005433E0.
+		int auxiliaryListEmpty = renderRef.getInfo( AABB_QUERY, 273 );
+		tracePreview( prefix + " auxiliary-list-empty=" + auxiliaryListEmpty );
+
+		int firstNode = renderRef.getInfo( AABB_QUERY, 274 );
+		tracePreview( prefix + " first-list-node=" + firstNode );
+		if( firstNode && firstNode != AABB_INVALID )
+		{
+			for( int axis = 275; axis <= 293; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " first-node axis=" + axis + " raw=" + value );
+			}
+		}
+
+		int bone00Node = renderRef.getInfo( AABB_QUERY, 294 );
+		tracePreview( prefix + " bone00-node=" + bone00Node );
+		if( bone00Node && bone00Node != AABB_INVALID )
+		{
+			for( int axis = 295; axis <= 318; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " bone00 axis=" + axis + " raw=" + value );
+			}
+		}
+	}
+
 	private void tracePartResourceTree()
 	{
 		tracePreview(
@@ -229,14 +271,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				tracePreview( "R09 embedded-render raw offset=" + (0x100 + innerField * 4) + " value=" + rawValue );
 			}
 
-			// INSTANCE_RENDER+0xF4 is consumed by native 0x005433E0.
-			// Axes 251..272 read the pointer, the source block at +0x120..+0x150,
-			// and the first eight DWORDs of the pointed object.
-			for( int f4Axis = 251; f4Axis <= 272; f4Axis++ )
-			{
-				int f4Value = renderGameRef.getInfo( AABB_QUERY, f4Axis );
-				tracePreview( "R11 f4-chain axis=" + f4Axis + " raw=" + f4Value );
-			}
+			traceRenderBoneDiagnostics( renderGameRef, "R11" );
 
 			// Native lookup 0x005413C0 follows a sorted linked render-record list.
 			// Axis 122 is its terminal node; the terminal's +0x04 field is zero.
@@ -644,12 +679,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							int value = liveRenderRef.getInfo( AABB_QUERY, 230 + field );
 						tracePreview( "T05 embedded+" + (0x100 + field * 4) + "=" + value );
 						}
-						// Compare the same +0xF4 chain after Part.setMatrix() has run.
-						for( int f4Axis = 251; f4Axis <= 272; f4Axis++ )
-						{
-							int value = liveRenderRef.getInfo( AABB_QUERY, f4Axis );
-							tracePreview( "T06 f4-chain axis=" + f4Axis + " raw=" + value );
-						}
+						traceRenderBoneDiagnostics( liveRenderRef, "T06" );
 					}
 					else
 						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
