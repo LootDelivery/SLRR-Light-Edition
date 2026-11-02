@@ -13,6 +13,15 @@ bone_upper_gate:
     cmp ecx, 498
     jbe .probe
 
+.check_second_bone:
+    # Read-only access to the next node in the same list walked by native
+    # 0x5433E0. Axes 516..535 expose node #1 (normally bone01):
+    # 516 pointer; 517..518 name; 519..534 matrix; 535 next pointer.
+    cmp ecx, 516
+    jb .check_native_pivot
+    cmp ecx, 535
+    jbe .second_bone
+
 .check_native_pivot:
     cmp ecx, 510
     jb .check_native_scale
@@ -29,6 +38,49 @@ bone_upper_gate:
     # Restore the original axis-500 comparison flags for the stock route.
     cmp ecx, 500
     jmp 0x007E17CD
+
+.second_bone:
+    push ebx
+    push edi
+    mov ebx, ecx
+
+    # Use the exact next-node helper used by native 0x5433E0.
+    lea ecx, [esi+0x1FC]
+    call 0x004293A0
+    test eax, eax
+    je .not_found
+    mov ecx, eax
+    call 0x0040CFC0
+    test eax, eax
+    je .not_found
+
+    cmp ebx, 516
+    je .second_bone_return
+    cmp ebx, 517
+    je .second_bone_name0
+    cmp ebx, 518
+    je .second_bone_name1
+    cmp ebx, 535
+    je .second_bone_next
+
+    sub ebx, 519
+    cmp ebx, 15
+    ja .not_found
+    mov eax, dword ptr [eax+ebx*4+0xB0]
+    jmp .second_bone_return
+
+.second_bone_name0:
+    mov eax, dword ptr [eax+0x14]
+    jmp .second_bone_return
+.second_bone_name1:
+    mov eax, dword ptr [eax+0x18]
+    jmp .second_bone_return
+.second_bone_next:
+    mov eax, dword ptr [eax+0x04]
+.second_bone_return:
+    pop edi
+    pop ebx
+    jmp 0x005E6EC5
 
 .native_pivot:
     # Axes 510..512 return INSTANCE_RENDER.position XYZ as signed fixed-point
