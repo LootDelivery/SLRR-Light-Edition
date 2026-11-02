@@ -412,8 +412,8 @@ render_diag_dispatch:
     mov dword ptr [esp+0x08], 1
     mov dword ptr [esp+0x0c], edx
 
-    # Read the six stored root-AABB coordinates (axes 6..11) in fixed-point.
-    push 6
+    # Read the live CPU-vertex AABB coordinates (axes 0..5) in fixed-point.
+    push 0
     lea eax, [esp+4]
     push eax
     call 0x005e6900
@@ -421,7 +421,7 @@ render_diag_dispatch:
     je .nested_center_fail
     mov dword ptr [esp+0x10], eax
 
-    push 7
+    push 1
     lea eax, [esp+4]
     push eax
     call 0x005e6900
@@ -429,7 +429,7 @@ render_diag_dispatch:
     je .nested_center_fail
     mov dword ptr [esp+0x14], eax
 
-    push 8
+    push 2
     lea eax, [esp+4]
     push eax
     call 0x005e6900
@@ -437,7 +437,7 @@ render_diag_dispatch:
     je .nested_center_fail
     mov dword ptr [esp+0x18], eax
 
-    push 9
+    push 3
     lea eax, [esp+4]
     push eax
     call 0x005e6900
@@ -445,7 +445,7 @@ render_diag_dispatch:
     je .nested_center_fail
     mov dword ptr [esp+0x1c], eax
 
-    push 10
+    push 4
     lea eax, [esp+4]
     push eax
     call 0x005e6900
@@ -453,7 +453,7 @@ render_diag_dispatch:
     je .nested_center_fail
     mov dword ptr [esp+0x20], eax
 
-    push 11
+    push 5
     lea eax, [esp+4]
     push eax
     call 0x005e6900
