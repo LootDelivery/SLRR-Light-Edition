@@ -341,6 +341,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					nestedMeshSizeX = sizeX;
 					nestedMeshSizeY = sizeY;
 					nestedMeshSizeZ = sizeZ;
+					nestedMeshResourceID = nestedMeshRef.id();
+					tracePreview( prefix + " nested mesh identity stored=" + nestedMeshResourceID );
 					hasNestedMeshBounds = 1;
 					tracePreview(
 						prefix + " nested mesh AABB min=" + minX + "," + minY + "," + minZ +
