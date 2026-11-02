@@ -409,20 +409,34 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 			previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
 
-			// Read the transform back once immediately after the first setter call.
-			// This distinguishes a rejected/overridden Part transform from an
-			// internal mesh/child offset that is not represented by Part.getPos().
+			// First read back the two-argument Part.setMatrix path independently.
 			if( animateTraceFrames == 0 )
 			{
-				Vector3 appliedPosition = previewPart.getPos();
-				Ypr appliedOrientation = previewPart.getOri();
-				if( appliedPosition && appliedOrientation )
+				Vector3 matrixPosition = previewPart.getPos();
+				Ypr matrixOrientation = previewPart.getOri();
+				if( matrixPosition && matrixOrientation )
 					tracePreview(
-						"T01 after setMatrix readbackPos=" + appliedPosition.x + "," + appliedPosition.y + "," + appliedPosition.z +
-						" readbackYpr=" + appliedOrientation.y + "," + appliedOrientation.p + "," + appliedOrientation.r
+						"T01 after setMatrix readbackPos=" + matrixPosition.x + "," + matrixPosition.y + "," + matrixPosition.z +
+						" readbackYpr=" + matrixOrientation.y + "," + matrixOrientation.p + "," + matrixOrientation.r
 					);
 				else
 					tracePreview( "T01 after setMatrix readback returned null" );
+			}
+
+			// GameRef has a dedicated native setPos(Vector3) method. Apply the
+			// translation through that API as well; keep Part.setMatrix above for
+			// the preview's YPR rotation, then read back the native position.
+			previewPart.setPos( previewPosition );
+
+			if( animateTraceFrames == 0 )
+			{
+				Vector3 nativePosition = previewPart.getPos();
+				if( nativePosition )
+					tracePreview(
+						"T02 after GameRef.setPos readbackPos=" + nativePosition.x + "," + nativePosition.y + "," + nativePosition.z
+					);
+				else
+					tracePreview( "T02 after GameRef.setPos readback returned null" );
 			}
 		}
 	}
