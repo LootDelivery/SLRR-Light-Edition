@@ -75,8 +75,15 @@ aabb_helper:
     je .diag_group_count
     cmp ecx, 14
     jb .invalid
-    cmp ecx, 44
+    cmp ecx, 41
+    jbe .diag_group_fields
+    cmp ecx, 61
     ja .invalid
+    cmp ecx, 52
+    jb .diag_vertex_zero
+    jmp .diag_vertex_one
+
+.diag_group_fields:
     cmp ecx, 28
     jb .diag_group_zero
     jmp .diag_group_one
@@ -195,6 +202,104 @@ aabb_helper:
     jmp .return_raw
 .diag_vtable_14:
     mov eax, dword ptr [edx+0x14]
+    jmp .return_raw
+
+.diag_vertex_zero:
+    mov eax, dword ptr [ebp-0x08]
+    cmp dword ptr [eax+0x4c], 1
+    jb .invalid
+    mov edx, dword ptr [eax+0x48]
+    test edx, edx
+    jz .invalid
+    mov edi, dword ptr [edx]
+    jmp .diag_vertex_child
+
+.diag_vertex_one:
+    mov eax, dword ptr [ebp-0x08]
+    cmp dword ptr [eax+0x4c], 2
+    jb .invalid
+    mov edx, dword ptr [eax+0x48]
+    test edx, edx
+    jz .invalid
+    mov edi, dword ptr [edx+4]
+
+.diag_vertex_child:
+    test edi, edi
+    jz .invalid
+    cmp dword ptr [edi+8], 1
+    jb .invalid
+    mov edx, dword ptr [edi+4]
+    test edx, edx
+    jz .invalid
+    mov esi, dword ptr [edx]
+    test esi, esi
+    jz .invalid
+    cmp dword ptr [esi], 0x005f2c08
+    jne .invalid
+    mov ecx, dword ptr [ebp+0x0c]
+    cmp ecx, 52
+    jb .diag_vertex_axis0
+    sub ecx, 52
+    jmp .diag_vertex_field
+.diag_vertex_axis0:
+    sub ecx, 42
+.diag_vertex_field:
+    cmp ecx, 0
+    je .diag_vertex_return_wrapper
+    cmp ecx, 1
+    je .diag_vertex_return_vtable
+    cmp ecx, 2
+    je .diag_vertex_return_vertex_desc
+    cmp ecx, 3
+    je .diag_vertex_return_face_desc
+    mov eax, dword ptr [esi+0x20]
+    test eax, eax
+    jz .invalid
+    cmp ecx, 4
+    je .diag_face_count
+    cmp ecx, 5
+    je .diag_face_buffer
+    cmp ecx, 6
+    je .diag_face_format
+    cmp ecx, 7
+    je .diag_face_stride
+    mov edx, dword ptr [eax+4]
+    test edx, edx
+    jz .invalid
+    cmp ecx, 8
+    je .diag_face_data0
+    cmp ecx, 9
+    je .diag_face_data1
+    jmp .invalid
+.diag_vertex_return_wrapper:
+    mov eax, esi
+    jmp .return_raw
+.diag_vertex_return_vtable:
+    mov eax, dword ptr [esi]
+    jmp .return_raw
+.diag_vertex_return_vertex_desc:
+    mov eax, dword ptr [esi+0x1c]
+    jmp .return_raw
+.diag_vertex_return_face_desc:
+    mov eax, dword ptr [esi+0x20]
+    jmp .return_raw
+.diag_face_count:
+    mov eax, dword ptr [eax]
+    jmp .return_raw
+.diag_face_buffer:
+    mov eax, dword ptr [eax+4]
+    jmp .return_raw
+.diag_face_format:
+    mov eax, dword ptr [eax+8]
+    jmp .return_raw
+.diag_face_stride:
+    mov eax, dword ptr [eax+0xc]
+    jmp .return_raw
+.diag_face_data0:
+    mov eax, dword ptr [edx]
+    jmp .return_raw
+.diag_face_data1:
+    mov eax, dword ptr [edx+4]
     jmp .return_raw
 
 .normal_axis_dispatch:
