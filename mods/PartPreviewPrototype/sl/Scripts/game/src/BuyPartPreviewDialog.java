@@ -1258,9 +1258,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				cameraOrbitDiagnosticsLogged = 1;
 			}
 
-			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 500 );
-			int centerYFixed = orbitRenderRef.getInfo( AABB_QUERY, 501 );
-			int centerZFixed = orbitRenderRef.getInfo( AABB_QUERY, 502 );
+			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 536 );
+			int centerYFixed = orbitRenderRef.getInfo( AABB_QUERY, 537 );
+			int centerZFixed = orbitRenderRef.getInfo( AABB_QUERY, 538 );
 
 			if( centerXFixed != AABB_INVALID &&
 				centerYFixed != AABB_INVALID &&
