@@ -225,6 +225,44 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		tracePreview( prefix + " embedded+0x160 collection-pointer=" + collectionPointer );
 	}
 
+	private void traceRenderPayloadDiagnostics( GameRef renderRef, String prefix )
+	{
+		// Native 0x419860 returns the embedded payload at ResourceRef +0x80.
+		// Its +0x18 and +0x38 links are consumed by native 0x541FE0.
+		for( int axis = 386; axis <= 417; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			tracePreview( prefix + " resource-payload+" + ((axis - 386) * 4) + "=" + value );
+		}
+
+		int childResource = renderRef.getInfo( AABB_QUERY, 418 );
+		tracePreview( prefix + " resource-payload+0x18 child-resource=" + childResource );
+		if( childResource && childResource != AABB_INVALID )
+		{
+			for( int axis = 419; axis <= 439; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " child-resource+" + ((axis - 419) * 4) + "=" + value );
+			}
+			for( int axis = 440; axis <= 471; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " child-payload+" + ((axis - 440) * 4) + "=" + value );
+			}
+		}
+
+		int collection = renderRef.getInfo( AABB_QUERY, 472 );
+		tracePreview( prefix + " resource-payload+0x38 collection=" + collection );
+		if( collection && collection != AABB_INVALID )
+		{
+			for( int axis = 473; axis <= 488; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " collection+" + ((axis - 473) * 4) + "=" + value );
+			}
+		}
+	}
+
 	private void tracePartResourceTree()
 	{
 		tracePreview(
@@ -299,6 +337,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 			traceRenderBoneDiagnostics( renderGameRef, "R11" );
 			traceRenderResourceDiagnostics( renderGameRef, "R12" );
+			traceRenderPayloadDiagnostics( renderGameRef, "R13" );
 
 			// Native lookup 0x005413C0 follows a sorted linked render-record list.
 			// Axis 122 is its terminal node; the terminal's +0x04 field is zero.
@@ -708,6 +747,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						}
 						traceRenderBoneDiagnostics( liveRenderRef, "T06" );
 						traceRenderResourceDiagnostics( liveRenderRef, "T07" );
+						traceRenderPayloadDiagnostics( liveRenderRef, "T08" );
 					}
 					else
 						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
