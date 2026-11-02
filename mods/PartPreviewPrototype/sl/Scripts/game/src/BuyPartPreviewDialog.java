@@ -1222,24 +1222,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			return 0;
 		}
 
-		// The native center route applies only to the matching embedded mesh
-		// already identified during the read-only resource-tree probe.
-		int nativeCenterSourceAvailable = hasNestedMeshBounds;
-		if( previewMeshResourceID && nestedMeshResourceID != previewMeshResourceID )
-			nativeCenterSourceAvailable = 0;
-
-		// A normal direct mesh already has a cached, previewRoot-space AABB center.
-		// If there is no matching nested native source, keep that center as-is.
-		if( !nativeCenterSourceAvailable && hasRuntimeBounds )
-		{
-			cameraOrbitCenterReady = 1;
-			tracePreview(
-				"CAMERA_ORBIT_CENTER finalized cached direct AABB=" +
-				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
-			);
-			return 1;
-		}
-
+		// Query the native center from this exact INSTANCE_RENDER. The native
+		// handler resolves and validates its own embedded type-5 mesh. Do not
+		// gate it on Java's separate ResourceRef walk or compare against
+		// Part.getMesh(): that getter may be zero or refer to another resource.
 		if( !orbitRenderRef )
 		{
 			int renderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
@@ -1250,7 +1236,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			}
 		}
 
-		if( nativeCenterSourceAvailable && orbitRenderRef )
+		if( orbitRenderRef )
 		{
 			if( !cameraOrbitDiagnosticsLogged )
 			{
@@ -1286,48 +1272,74 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				if( cameraCenterSamplesMatch( centerXFixed, centerYFixed, centerZFixed ) )
 				{
 					// The native center is expressed in the render instance's parent space.
-					// Different part resources attach that instance either directly to previewRoot
-					// or beneath previewPart. Compose only when the actual parent is previewPart.
+					// Resolve only the two parent spaces we can prove here. For a Part
+					// parent, sample its live transform now (not the createPreview snapshot).
 					int renderParentID = orbitRenderRef.getParentID();
 					Vector3 renderParentCenter = new Vector3(
 						centerXFixed / AABB_SCALE,
 						centerYFixed / AABB_SCALE,
 						centerZFixed / AABB_SCALE
 					);
-					String parentTransform = "unresolved-parent; treated as previewRoot-local";
+					String parentTransform = "unsupported-parent";
+					int parentResolved = 0;
 					if( renderParentID == previewPart.id() )
 					{
-						renderParentCenter.rotate( savedOrientation );
-						cameraOrbitCenterX = savedPosition.x + renderParentCenter.x;
-						cameraOrbitCenterY = savedPosition.y + renderParentCenter.y;
-						cameraOrbitCenterZ = savedPosition.z + renderParentCenter.z;
-						parentTransform = "previewPart-to-previewRoot";
+						Vector3 currentPartPosition = previewPart.getPos();
+						Ypr currentPartOrientation = previewPart.getOri();
+						if( currentPartPosition )
+							currentPartPosition = new Vector3( currentPartPosition );
+						else
+							currentPartPosition = new Vector3( savedPosition );
+						if( currentPartOrientation )
+							currentPartOrientation = new Ypr( currentPartOrientation );
+						else
+							currentPartOrientation = new Ypr( savedOrientation );
+						renderParentCenter.rotate( currentPartOrientation );
+						cameraOrbitCenterX = currentPartPosition.x + renderParentCenter.x;
+						cameraOrbitCenterY = currentPartPosition.y + renderParentCenter.y;
+						cameraOrbitCenterZ = currentPartPosition.z + renderParentCenter.z;
+						parentTransform = "previewPart-to-previewRoot-live-transform";
+						parentResolved = 1;
 					}
 					else
+					if( renderParentID == previewRoot.id() )
 					{
 						// A root-parented render instance is already in previewRoot space.
-						// Do not add previewPart's transform a second time.
 						cameraOrbitCenterX = renderParentCenter.x;
 						cameraOrbitCenterY = renderParentCenter.y;
 						cameraOrbitCenterZ = renderParentCenter.z;
-						if( renderParentID == previewRoot.id() )
-							parentTransform = "already-previewRoot";
+						parentTransform = "already-previewRoot";
+						parentResolved = 1;
 					}
-					cameraOrbitCenterReady = 1;
-					tracePreview(
-						"CAMERA_ORBIT_CENTER captured root world=" +
-						cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-						" renderParentCenter=" + (centerXFixed / AABB_SCALE) + "," +
-						(centerYFixed / AABB_SCALE) + "," + (centerZFixed / AABB_SCALE) +
-						" renderParentID=" + renderParentID +
-						" previewPartID=" + previewPart.id() +
-						" previewRootID=" + previewRoot.id() +
-						" transform=" + parentTransform +
-						" partPos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
-						" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
-						" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
-					);
-					return 1;
+					if( parentResolved )
+					{
+						cameraOrbitCenterReady = 1;
+						tracePreview(
+							"CAMERA_ORBIT_CENTER captured root world=" +
+							cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+							" renderParentCenter=" + (centerXFixed / AABB_SCALE) + "," +
+							(centerYFixed / AABB_SCALE) + "," + (centerZFixed / AABB_SCALE) +
+							" renderParentID=" + renderParentID +
+							" previewPartID=" + previewPart.id() +
+							" previewRootID=" + previewRoot.id() +
+							" transform=" + parentTransform +
+							" livePartPos=" + previewPart.getPos().x + "," +
+							previewPart.getPos().y + "," + previewPart.getPos().z +
+							" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
+							" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
+						);
+						return 1;
+					}
+					else
+					{
+						cameraOrbitCandidateReady = 0;
+						if( cameraOrbitCenterWaitFrames == 3 || cameraOrbitCenterWaitFrames % 5 == 0 )
+							tracePreview(
+								"CAMERA_ORBIT_CENTER rejected unsupported parent=" + renderParentID +
+								" previewPartID=" + previewPart.id() +
+								" previewRootID=" + previewRoot.id()
+							);
+					}
 				}
 				else
 				{
