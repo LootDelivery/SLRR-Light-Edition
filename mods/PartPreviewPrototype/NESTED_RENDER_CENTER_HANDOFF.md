@@ -175,3 +175,23 @@ To identify the body path without another full dump, the useful lines from one b
 - `NESTED_CENTER waiting` or `NESTED_CENTER captured`.
 
 No body-part behavior is claimed until that resource path is observed.
+
+
+## One-shot pivot verification added (2026-11-02)
+
+Latest Java commit: `80f86b857a685a7d8807f5555ced6d50785e9450`.
+
+The latest user-provided logs confirm that the OCA Tuning bumper is centered through the nested path and that the spring now captures a nonzero offset:
+- spring captured offset: `(0.000, +0.257, 0.000)`, base Part orientation near zero;
+- OCA bumper captured offset: `(+0.044, -0.400, +0.054)`, base Part orientation zero.
+Both use nested type-14 -> type-5 resource chains. The bumper also has a direct `getMesh()` resource; spring `getMesh()==0`.
+
+The user reports that the bumper now looks centered on X/Z but has a remaining downward vertical pivot offset; the spring still appears to rotate around its mounting point despite the captured offset.
+
+Java now performs two read-only checks:
+- `NESTED_CENTER_VERIFY_BASE`: on the frame after the initial centering `setMatrix` has passed through the render update;
+- `NESTED_CENTER_VERIFY_ROTATED`: once after the preview has been rotated by more than 0.25 radians from the captured base orientation and the following render update has occurred.
+
+Each line reports native world-space AABB center, Part.getPos(), and Part.getOri(). The measured center is logged only; it is never fed back into the transform. These two values will tell whether the parent translation keeps the geometric center at world origin both before and after rotation.
+
+No native EXE change is required; continue using the v2 EXE. Runtime result of the new probes is pending.
