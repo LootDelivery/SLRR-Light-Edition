@@ -28,8 +28,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	RenderRef previewLight;
 	Viewport previewViewport;
 	Camera previewCamera;
+	GameRef orbitRenderRef;
 
 	Vector3 savedPosition;
+
+	float cameraOrbitCenterX;
+	float cameraOrbitCenterY;
+	float cameraOrbitCenterZ;
+	int cameraOrbitCenterReady;
+	int cameraOrbitCenterWaitFrames;
+	int cameraOrbitCenterWaitLogged;
 	Ypr savedOrientation;
 
 	float modelSize = 1.0;
@@ -479,6 +487,13 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		boundsCenterZ = 0.0;
 		hasNestedMeshBounds = 0;
 		nestedMeshResourceID = 0;
+		orbitRenderRef = null;
+		cameraOrbitCenterX = 0.0;
+		cameraOrbitCenterY = 0.0;
+		cameraOrbitCenterZ = 0.0;
+		cameraOrbitCenterReady = 0;
+		cameraOrbitCenterWaitFrames = 0;
+		cameraOrbitCenterWaitLogged = 0;
 		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
@@ -750,23 +765,93 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		return inverse;
 	}
 
+	// Query axes 500..502 return the embedded mesh's runtime AABB center in
+	// previewRoot/world coordinates. Capture once: re-reading a live pose each
+	// frame would let render updates feed back into the camera orbit.
+	private int captureCameraOrbitCenter()
+	{
+		if( cameraOrbitCenterReady )
+			return 1;
+
+		if( !orbitRenderRef )
+		{
+			int renderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+			if( renderInstance )
+			{
+				orbitRenderRef = new GameRef( renderInstance );
+				tracePreview( "CAMERA_ORBIT_CENTER renderInstance=" + renderInstance );
+			}
+		}
+
+		if( orbitRenderRef )
+		{
+			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 500 );
+			int centerYFixed = orbitRenderRef.getInfo( AABB_QUERY, 501 );
+			int centerZFixed = orbitRenderRef.getInfo( AABB_QUERY, 502 );
+
+			if( centerXFixed != AABB_INVALID &&
+				centerYFixed != AABB_INVALID &&
+				centerZFixed != AABB_INVALID )
+			{
+				cameraOrbitCenterX = centerXFixed / AABB_SCALE;
+				cameraOrbitCenterY = centerYFixed / AABB_SCALE;
+				cameraOrbitCenterZ = centerZFixed / AABB_SCALE;
+				cameraOrbitCenterReady = 1;
+				tracePreview(
+					"CAMERA_ORBIT_CENTER captured world=" +
+					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
+				);
+				return 1;
+			}
+		}
+
+		cameraOrbitCenterWaitFrames++;
+		if( !cameraOrbitCenterWaitLogged )
+		{
+			tracePreview( "CAMERA_ORBIT_CENTER waiting for valid runtime AABB" );
+			cameraOrbitCenterWaitLogged = 1;
+		}
+
+		// Keep unsupported/no-mesh parts usable. Their orbit falls back to the
+		// original root origin rather than blocking the preview indefinitely.
+		if( cameraOrbitCenterWaitFrames >= 30 )
+		{
+			cameraOrbitCenterX = 0.0;
+			cameraOrbitCenterY = 0.0;
+			cameraOrbitCenterZ = 0.0;
+			cameraOrbitCenterReady = 1;
+			tracePreview( "CAMERA_ORBIT_CENTER fallback=previewRoot origin frames=" + cameraOrbitCenterWaitFrames );
+		}
+		return cameraOrbitCenterReady;
+	}
+
 	private void updateCamera()
 	{
 		if( previewCamera )
 		{
 			Ypr inversePartOrientation = buildInversePreviewOrientation();
 
-			// Keep the same base camera pose and GII_SIZE-based zoom as before.
-			Vector3 cameraPosition = new Vector3(
+			// Start with the old camera position, expressed as an offset from
+			// the captured AABB center. Rotate that offset, then restore the
+			// center so the camera travels on an orbit around the mesh.
+			Vector3 cameraOffset = new Vector3(
 				0.0,
 				modelSize * zoom - modelSize * CAMERA_VERTICAL_OFFSET,
 				modelSize * zoom
 			);
-			cameraPosition.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
-			cameraPosition.rotate( inversePartOrientation );
+			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
+			cameraOffset.x = cameraOffset.x - cameraOrbitCenterX;
+			cameraOffset.y = cameraOffset.y - cameraOrbitCenterY;
+			cameraOffset.z = cameraOffset.z - cameraOrbitCenterZ;
+			cameraOffset.rotate( inversePartOrientation );
 
-			// Equivalent view to rotating the part by (yaw,pitch,roll):
-			// cameraWorld = inverse(partRotation) * baseCameraWorld.
+			Vector3 cameraPosition = new Vector3(
+				cameraOrbitCenterX + cameraOffset.x,
+				cameraOrbitCenterY + cameraOffset.y,
+				cameraOrbitCenterZ + cameraOffset.z
+			);
+
+			// Rotate the camera basis by the same inverse rotation.
 			Ypr cameraOrientation = new Ypr( -2.5, -0.7, 0.0 );
 			cameraOrientation.mul( inversePartOrientation );
 			previewCamera.setMatrix( cameraPosition, cameraOrientation );
@@ -809,6 +894,19 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		float wheel = Input.getAxis( 1, 2 );
 		if( traceFrame ) tracePreview( "A5 after wheel Input.getAxis" );
 		int overPreview = cursorOverPreview( mouseX, mouseY );
+
+		// Wait for the native render instance to publish its first valid
+		// world-space AABB. Do not rotate around a provisional origin.
+		if( !captureCameraOrbitCenter() )
+		{
+			dragging = 0;
+			autoResume = 0.0;
+			lastMouseX = mouseX;
+			lastMouseY = mouseY;
+			lastWheel = wheel;
+			updateCamera();
+			return;
+		}
 
 		if( leftButton > 0.5 )
 		{
