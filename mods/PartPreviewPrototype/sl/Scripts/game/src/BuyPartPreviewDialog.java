@@ -44,6 +44,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float boundsCenterX;
 	float boundsCenterY;
 	float boundsCenterZ;
+	int hasRuntimeBounds;
 	float nestedMeshCenterX;
 	float nestedMeshCenterY;
 	float nestedMeshCenterZ;
@@ -485,6 +486,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		boundsCenterX = 0.0;
 		boundsCenterY = 0.0;
 		boundsCenterZ = 0.0;
+		hasRuntimeBounds = 0;
 		hasNestedMeshBounds = 0;
 		nestedMeshResourceID = 0;
 		orbitRenderRef = null;
@@ -494,7 +496,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCenterReady = 0;
 		cameraOrbitCenterWaitFrames = 0;
 		cameraOrbitCenterWaitLogged = 0;
-		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
 
@@ -812,15 +813,38 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOrbitCenterWaitLogged = 1;
 		}
 
-		// Keep unsupported/no-mesh parts usable. Their orbit falls back to the
-		// original root origin rather than blocking the preview indefinitely.
+		// The native nested-mesh center may be unavailable for parts whose
+		// render pose has no initialized instance scale. In that case, use the
+		// root mesh AABB captured during createPreview(), transformed exactly
+		// once from Part-local space into previewRoot/world space.
 		if( cameraOrbitCenterWaitFrames >= 30 )
 		{
-			cameraOrbitCenterX = 0.0;
-			cameraOrbitCenterY = 0.0;
-			cameraOrbitCenterZ = 0.0;
+			if( hasRuntimeBounds )
+			{
+				Vector3 rootBoundsCenter = new Vector3(
+					boundsCenterX,
+					boundsCenterY,
+					boundsCenterZ
+				);
+				rootBoundsCenter.rotate( savedOrientation );
+
+				cameraOrbitCenterX = savedPosition.x + rootBoundsCenter.x;
+				cameraOrbitCenterY = savedPosition.y + rootBoundsCenter.y;
+				cameraOrbitCenterZ = savedPosition.z + rootBoundsCenter.z;
+				tracePreview(
+					"CAMERA_ORBIT_CENTER fallback=root AABB previewRoot=" +
+					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" local=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ
+				);
+			}
+			else
+			{
+				cameraOrbitCenterX = 0.0;
+				cameraOrbitCenterY = 0.0;
+				cameraOrbitCenterZ = 0.0;
+				tracePreview( "CAMERA_ORBIT_CENTER fallback=previewRoot origin; root AABB unavailable" );
+			}
 			cameraOrbitCenterReady = 1;
-			tracePreview( "CAMERA_ORBIT_CENTER fallback=previewRoot origin frames=" + cameraOrbitCenterWaitFrames );
 		}
 		return cameraOrbitCenterReady;
 	}
