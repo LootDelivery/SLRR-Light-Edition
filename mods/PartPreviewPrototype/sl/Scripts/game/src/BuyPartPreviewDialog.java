@@ -41,6 +41,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	int cameraOrbitCandidateXFixed;
 	int cameraOrbitCandidateYFixed;
 	int cameraOrbitCandidateZFixed;
+	int cameraOrbitDiagnosticsLogged;
 	int previewMeshResourceID;
 	Ypr savedOrientation;
 
@@ -283,6 +284,90 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+
+
+	// One-shot snapshot immediately before the first native center query.
+	// Captures the exact pose and render-list nodes used by axes 500..502.
+	private void traceCameraOrbitInputs( GameRef renderRef )
+	{
+		tracePreview( "CAMERA_ORBIT_DIAG ===== runtime inputs frame=" + cameraOrbitCenterWaitFrames + " =====" );
+		tracePreview(
+			"CAMERA_ORBIT_DIAG resources directMesh=" + previewMeshResourceID +
+			" nestedMesh=" + nestedMeshResourceID +
+			" hasNestedBounds=" + hasNestedMeshBounds
+		);
+		tracePreview(
+			"CAMERA_ORBIT_DIAG nested local AABB center=" +
+			nestedMeshCenterX + "," + nestedMeshCenterY + "," + nestedMeshCenterZ +
+			" size=" + nestedMeshSizeX + "," + nestedMeshSizeY + "," + nestedMeshSizeZ
+		);
+		tracePreview(
+			"CAMERA_ORBIT_DIAG direct local AABB center=" +
+			boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
+			" extent=" + runtimeBoundsExtent + " hasRuntimeBounds=" + hasRuntimeBounds
+		);
+		tracePreview(
+			"CAMERA_ORBIT_DIAG initial Part transform pos=" +
+			savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
+			" ypr=" + savedOrientation.y + "," + savedOrientation.p + "," + savedOrientation.r
+		);
+
+		// Axes 172..178 expose INSTANCE_RENDER +0x80..+0x98.
+		// +0x84..+0x8c are position; +0x90..+0x98 are per-axis scale.
+		for( int axis = 172; axis <= 178; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			String field = "unknown";
+			if( axis == 172 ) field = "handle+0x80";
+			if( axis == 173 ) field = "position.x";
+			if( axis == 174 ) field = "position.y";
+			if( axis == 175 ) field = "position.z";
+			if( axis == 176 ) field = "scale.x";
+			if( axis == 177 ) field = "scale.y";
+			if( axis == 178 ) field = "scale.z";
+			tracePreview( "CAMERA_ORBIT_DIAG instance " + field + " axis=" + axis + " rawFloatBits=" + value );
+		}
+
+		// Empty auxiliary list selects the first node; otherwise native code
+		// scans the list for a lowercase "bone00" entry.
+		int auxiliaryListEmpty = renderRef.getInfo( AABB_QUERY, 273 );
+		int firstNode = renderRef.getInfo( AABB_QUERY, 274 );
+		tracePreview(
+			"CAMERA_ORBIT_DIAG node selection auxiliaryListEmpty=" + auxiliaryListEmpty +
+			" firstNode=" + firstNode
+		);
+		if( firstNode && firstNode != AABB_INVALID )
+		{
+			for( int axis = 278; axis <= 293; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview(
+					"CAMERA_ORBIT_DIAG firstNode matrix[" + (axis - 278) +
+					"] axis=" + axis + " rawFloatBits=" + value
+				);
+			}
+		}
+		else
+			tracePreview( "CAMERA_ORBIT_DIAG firstNode matrix unavailable" );
+
+		int bone00Node = renderRef.getInfo( AABB_QUERY, 294 );
+		tracePreview( "CAMERA_ORBIT_DIAG lowercase bone00 node=" + bone00Node );
+		if( bone00Node && bone00Node != AABB_INVALID )
+		{
+			for( int axis = 295; axis <= 310; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview(
+					"CAMERA_ORBIT_DIAG bone00 matrix[" + (axis - 295) +
+					"] axis=" + axis + " rawFloatBits=" + value
+				);
+			}
+		}
+		else
+			tracePreview( "CAMERA_ORBIT_DIAG bone00 matrix unavailable" );
+
+		tracePreview( "CAMERA_ORBIT_DIAG ===== end runtime inputs =====" );
+	}
 
 	private void traceRenderPayloadDiagnostics( GameRef renderRef, String prefix )
 	{
@@ -528,6 +613,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCandidateXFixed = AABB_INVALID;
 		cameraOrbitCandidateYFixed = AABB_INVALID;
 		cameraOrbitCandidateZFixed = AABB_INVALID;
+		cameraOrbitDiagnosticsLogged = 0;
 		previewMeshResourceID = 0;
 		tracePreview( "00 createPreview begin" );
 
@@ -892,6 +978,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		if( nativeCenterSourceAvailable && orbitRenderRef )
 		{
+			if( !cameraOrbitDiagnosticsLogged )
+			{
+				traceCameraOrbitInputs( orbitRenderRef );
+				cameraOrbitDiagnosticsLogged = 1;
+			}
+
 			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 500 );
 			int centerYFixed = orbitRenderRef.getInfo( AABB_QUERY, 501 );
 			int centerZFixed = orbitRenderRef.getInfo( AABB_QUERY, 502 );
