@@ -410,6 +410,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					"T00 center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
 					" rotatedCenter=" + rotatedCenter.x + "," + rotatedCenter.y + "," + rotatedCenter.z +
 					" sourcePos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
+					" pivot=" + previewPivot.x + "," + previewPivot.y + "," + previewPivot.z +
+					" rotatedPivot=" + rotatedPivot.x + "," + rotatedPivot.y + "," + rotatedPivot.z +
 					" finalPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
 					" ypr=" + yaw + "," + pitch + "," + roll
 				);
@@ -428,6 +430,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				if( readbackPosition && readbackOrientation )
 					tracePreview(
 						"T03 sample=" + transformTraceCount + " frame=" + animateTraceFrames +
+						" requestedPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
 						" requestedYpr=" + yaw + "," + pitch + "," + roll +
 						" readbackYpr=" + readbackOrientation.y + "," + readbackOrientation.p + "," + readbackOrientation.r +
 						" readbackPos=" + readbackPosition.x + "," + readbackPosition.y + "," + readbackPosition.z
