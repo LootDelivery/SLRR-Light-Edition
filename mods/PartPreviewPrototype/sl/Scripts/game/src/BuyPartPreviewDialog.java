@@ -204,15 +204,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			else
 				tracePreview( "R04 GameRef transform contains null" );
 
-			RenderRef renderRef = new RenderRef( renderInstance );
-			Vector3 renderLocalPosition = renderRef.getPos();
-			if( renderLocalPosition )
-				tracePreview(
-					"R04 RenderRef.getPos=" + renderLocalPosition.x + "," +
-					renderLocalPosition.y + "," + renderLocalPosition.z
-				);
-			else
-				tracePreview( "R04 RenderRef.getPos=null" );
 		}
 
 		// ResourceRef exposes a generic child/sibling traversal API. Dump only
