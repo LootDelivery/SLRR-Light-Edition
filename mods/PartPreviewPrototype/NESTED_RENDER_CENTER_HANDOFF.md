@@ -300,3 +300,70 @@ For SR20, savedPosition is zero, so requested and actual positions nearly match:
 The current nested AABB centering and transform compensation are numerically consistent for both known meshes. The user's remaining visual impression (OCA pivot low; SR20 belt pivot laterally offset) is not explained by a failed translation or rotation compensation.
 
 Do not add arbitrary positional offsets or change the current formula. The next useful investigation is whether the AABB midpoint is the desired visual/functional center for these particular meshes, or whether the visible geometry contains disconnected/weighted features that make the bounding-box midpoint visually misleading. Any alternative center definition (for example, an area-weighted triangle centroid) needs independent validation against the visible mesh data before implementation. This is a different measurement problem from the already-validated world-space AABB center.
+
+## Experimental indexed-triangle surface centroid (2026-11-02)
+
+The AABB center and transform compensation are numerically validated, but the user still perceives the pivot as visually offset on some parts. This experiment adds a second center definition without replacing the known-good AABB path.
+
+### Runtime mesh layout used
+
+The existing native `aabb_helper.S` exposes the runtime mesh group/child structures:
+- root visual mesh: group array at `+0x48`, group count at `+0x4C`;
+- group: child array at `+0x04`, child count at `+0x08`;
+- VertexData wrapper vtable: `0x005F2C08`;
+- VertexData descriptor pointer: wrapper `+0x1C`;
+- FaceIndices descriptor pointer: wrapper `+0x20`;
+- VertexData: vertex count `+0x04`, vertex buffer `+0x08`, position mask `+0x0C`, position offset `+0x1C`, stride `+0x60`;
+- FaceIndices: index count `+0x00`, index buffer `+0x04`, format `+0x08`, stride `+0x0C`.
+
+The SR20 and OCA diagnostic dumps confirm `FaceIndices format=2`, `stride=2`, with index counts 816 and 1434. SCX V4 format notes independently describe type-5 FaceIndices as a count followed by 16-bit indices. This experiment therefore supports the observed U16 triangle-list path only. Other index formats and skin-specific variants are not guessed.
+
+### Calculation
+
+For each indexed triangle:
+- `e1 = v1-v0`, `e2 = v2-v0`;
+- `weight = length(cross(e1,e2))` (twice the triangle area; the common factor 1/2 cancels);
+- `triangleCenter = (v0+v1+v2)/3`.
+
+The local surface centroid is:
+`sum(weight * triangleCenter) / sum(weight)`.
+
+All valid VertexData/FaceIndices pairs are accumulated across every root group. Degenerate triangles are ignored. Invalid indices, NaN/Inf positions, unsupported index format/stride, absent descriptors, or uninitialized render scale return `AABB_INVALID` rather than a partial result.
+
+The local centroid is transformed using the same INSTANCE_RENDER per-axis scale, native-selected render-node matrix, and INSTANCE_RENDER position used by axes 500..502.
+
+### New native axes
+
+- 500..502 remain the validated transform-aware AABB world center.
+- 503 = surface-centroid world X * 1000.
+- 504 = surface-centroid world Y * 1000.
+- 505 = surface-centroid world Z * 1000.
+
+The dispatcher axis ceiling is extended from 502 to 505. The old AABB routine entry redirects to a small gate: requests 500..502 replay the displaced original prologue and continue through the unchanged AABB routine; requests 503..505 enter the new centroid routine.
+
+Native source and builder added:
+- `native/render_mesh_centroid.S`
+- `native/build_surface_centroid_diag.py`
+
+### Java preview selection
+
+For nested-mesh previews, Java queries both AABB (500..502) and surface centroid (503..505) once when capturing the initial offset. If all three surface-centroid coordinates are valid, it selects the centroid. If not, it falls back to the existing AABB center. The chosen mode is logged as `selected=surface-centroid` or `selected=aabb-fallback`.
+
+Base and rotated verification logs report both centers separately:
+- `aabbWorldCenter`
+- `surfaceWorldCenter`
+- `selectedWorldCenter`
+
+The direct-mesh path is unchanged. Existing `savedPosition` compensation is unchanged.
+
+### Test EXE
+
+Built test file: `StreetLegal_Redline_native_surface_centroid_diag.exe`
+
+- Base EXE SHA-256: `ebc2b46a976e00914f624f6937070bdac1d8dc8f6bb8e2538f74bd204244c0f8`
+- Test EXE SHA-256: `fdbeb5433eb3c6dee87d1057e38a3458d1370959ce7069aaa308b225e043f2a7`
+- Test ZIP SHA-256: `0263480cb012cc24306e6db365faa99dcbab0225ca9349ce3ff93c777841bb10`
+
+Static PE verification passed. Only the dispatcher axis limit, the existing AABB handler entry, and the new executable `.reloc` code cave changed. This native build has not yet been runtime-tested in SLRR.
+
+Runtime test should use a copied game installation, this new EXE, and the updated Java source. First check OCA bumper and Nissan SR20 belt. Compare the visual result with the AABB fallback and review only the four `NESTED_CENTER` capture/apply/base/rotated lines; the full raw pointer dump is unnecessary. If startup or preview crashes, revert immediately to `StreetLegal_Redline_native_aabb_rendercenter_v2.exe`.
