@@ -275,7 +275,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				// 12=root group count, 13=root group array pointer;
 				// 14..27=group 0, 28..41=group 1 (wrapper, inner object,
 				// child array/count/capacity, inner vtable/fields, vtable slots).
-				for( int diagAxis = 12; diagAxis <= 41; diagAxis++ )
+				for( int diagAxis = 12; diagAxis <= 61; diagAxis++ )
 				{
 					int diagValue = previewMeshRef.getInfo( AABB_QUERY, diagAxis );
 					tracePreview( "GD" + diagAxis + " raw=" + diagValue );
