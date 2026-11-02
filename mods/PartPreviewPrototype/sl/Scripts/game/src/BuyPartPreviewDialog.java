@@ -71,23 +71,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	int dragging;
 	int animateTraceFrames;
-	int renderTransformTraceFrames;
-	int renderTransformTraceReady;
-	int renderTransformTraceNodeX;
-	int renderTransformTraceNodeY;
-	int renderTransformTraceNodeZ;
-	int renderTransformTracePositionX;
-	int renderTransformTracePositionY;
-	int renderTransformTracePositionZ;
-	int renderTransformTraceScaleX;
-	int renderTransformTraceScaleY;
-	int renderTransformTraceScaleZ;
-	int renderTransformTraceRecordX;
-	int renderTransformTraceRecordY;
-	int renderTransformTraceRecordZ;
-	int renderTransformTracePivotX;
-	int renderTransformTracePivotY;
-	int renderTransformTracePivotZ;
 
 	String previewTraceData = "";
 
@@ -546,23 +529,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCandidateYFixed = AABB_INVALID;
 		cameraOrbitCandidateZFixed = AABB_INVALID;
 		previewMeshResourceID = 0;
-		renderTransformTraceFrames = 0;
-		renderTransformTraceReady = 0;
-		renderTransformTraceNodeX = AABB_INVALID;
-		renderTransformTraceNodeY = AABB_INVALID;
-		renderTransformTraceNodeZ = AABB_INVALID;
-		renderTransformTracePositionX = AABB_INVALID;
-		renderTransformTracePositionY = AABB_INVALID;
-		renderTransformTracePositionZ = AABB_INVALID;
-		renderTransformTraceScaleX = AABB_INVALID;
-		renderTransformTraceScaleY = AABB_INVALID;
-		renderTransformTraceScaleZ = AABB_INVALID;
-		renderTransformTraceRecordX = AABB_INVALID;
-		renderTransformTraceRecordY = AABB_INVALID;
-		renderTransformTraceRecordZ = AABB_INVALID;
-		renderTransformTracePivotX = AABB_INVALID;
-		renderTransformTracePivotY = AABB_INVALID;
-		renderTransformTracePivotZ = AABB_INVALID;
 		tracePreview( "00 createPreview begin" );
 
 		if( !sourcePart )
@@ -869,127 +835,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
-	// Track the native render-node -> INSTANCE_RENDER initialization.
-	// Native 0x5433E0 copies the selected node transform into the render instance
-	// after the render record becomes active. Log only the first few frames and
-	// any later changes, keeping the probe read-only and bounded.
-	private void traceNativeTransformTimeline()
-	{
-		if( renderTransformTraceFrames >= 45 )
-			return;
-
-		if( !orbitRenderRef )
-		{
-			int renderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-			if( renderInstance )
-				orbitRenderRef = new GameRef( renderInstance );
-		}
-		if( !orbitRenderRef )
-			return;
-
-		// Match the native 0x5433E0 node-selection branch.
-		int auxiliaryListEmpty = orbitRenderRef.getInfo( AABB_QUERY, 273 );
-		int nodeTranslationX = AABB_INVALID;
-		int nodeTranslationY = AABB_INVALID;
-		int nodeTranslationZ = AABB_INVALID;
-		if( auxiliaryListEmpty == 1 )
-		{
-			nodeTranslationX = orbitRenderRef.getInfo( AABB_QUERY, 290 );
-			nodeTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 291 );
-			nodeTranslationZ = orbitRenderRef.getInfo( AABB_QUERY, 292 );
-		}
-		else
-		if( auxiliaryListEmpty == 0 )
-		{
-			nodeTranslationX = orbitRenderRef.getInfo( AABB_QUERY, 307 );
-			nodeTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 308 );
-			nodeTranslationZ = orbitRenderRef.getInfo( AABB_QUERY, 309 );
-		}
-
-		// Raw IEEE-754 DWORDs from INSTANCE_RENDER and the selected render record.
-		int instancePositionX = orbitRenderRef.getInfo( AABB_QUERY, 173 );
-		int instancePositionY = orbitRenderRef.getInfo( AABB_QUERY, 174 );
-		int instancePositionZ = orbitRenderRef.getInfo( AABB_QUERY, 175 );
-		int instanceScaleX = orbitRenderRef.getInfo( AABB_QUERY, 176 );
-		int instanceScaleY = orbitRenderRef.getInfo( AABB_QUERY, 177 );
-		int instanceScaleZ = orbitRenderRef.getInfo( AABB_QUERY, 178 );
-		int renderRecordTranslationX = orbitRenderRef.getInfo( AABB_QUERY, 135 );
-		int renderRecordTranslationY = orbitRenderRef.getInfo( AABB_QUERY, 136 );
-		int renderRecordTranslationZ = orbitRenderRef.getInfo( AABB_QUERY, 137 );
-
-		// These three axes return the actual native INSTANCE_RENDER origin in
-		// fixed-point world units (*1000), separately from AABB center axes 500..502.
-		int nativePivotX = orbitRenderRef.getInfo( AABB_QUERY, 510 );
-		int nativePivotY = orbitRenderRef.getInfo( AABB_QUERY, 511 );
-		int nativePivotZ = orbitRenderRef.getInfo( AABB_QUERY, 512 );
-
-		int changed = 0;
-		if( !renderTransformTraceReady )
-			changed = 1;
-		else
-		if( nodeTranslationX != renderTransformTraceNodeX ||
-			nodeTranslationY != renderTransformTraceNodeY ||
-			nodeTranslationZ != renderTransformTraceNodeZ ||
-			instancePositionX != renderTransformTracePositionX ||
-			instancePositionY != renderTransformTracePositionY ||
-			instancePositionZ != renderTransformTracePositionZ ||
-			instanceScaleX != renderTransformTraceScaleX ||
-			instanceScaleY != renderTransformTraceScaleY ||
-			instanceScaleZ != renderTransformTraceScaleZ ||
-			renderRecordTranslationX != renderTransformTraceRecordX ||
-			renderRecordTranslationY != renderTransformTraceRecordY ||
-			renderRecordTranslationZ != renderTransformTraceRecordZ ||
-			nativePivotX != renderTransformTracePivotX ||
-			nativePivotY != renderTransformTracePivotY ||
-			nativePivotZ != renderTransformTracePivotZ )
-			changed = 1;
-
-		if( renderTransformTraceFrames < 4 || changed )
-		{
-			String selectedNodeText = "INVALID";
-			if( nodeTranslationX != AABB_INVALID &&
-				nodeTranslationY != AABB_INVALID &&
-				nodeTranslationZ != AABB_INVALID )
-				selectedNodeText = "" + nodeTranslationX + "," + nodeTranslationY + "," + nodeTranslationZ;
-
-			String nativePivotText = "INVALID";
-			if( nativePivotX != AABB_INVALID &&
-				nativePivotY != AABB_INVALID &&
-				nativePivotZ != AABB_INVALID )
-				nativePivotText = "" + nativePivotX + "," + nativePivotY + "," + nativePivotZ;
-
-			tracePreview(
-				"TRANSFORM_TIMELINE frame=" + renderTransformTraceFrames +
-				" auxListEmpty=" + auxiliaryListEmpty +
-				" recordTraw=" + renderRecordTranslationX + "," + renderRecordTranslationY + "," + renderRecordTranslationZ +
-				" selectedNodeTraw=" + selectedNodeText +
-				" instancePosRaw=" + instancePositionX + "," + instancePositionY + "," + instancePositionZ +
-				" instanceScaleRaw=" + instanceScaleX + "," + instanceScaleY + "," + instanceScaleZ +
-				" nativePivotFixed=" + nativePivotText
-			);
-		}
-
-		renderTransformTraceNodeX = nodeTranslationX;
-		renderTransformTraceNodeY = nodeTranslationY;
-		renderTransformTraceNodeZ = nodeTranslationZ;
-		renderTransformTracePositionX = instancePositionX;
-		renderTransformTracePositionY = instancePositionY;
-		renderTransformTracePositionZ = instancePositionZ;
-		renderTransformTraceScaleX = instanceScaleX;
-		renderTransformTraceScaleY = instanceScaleY;
-		renderTransformTraceScaleZ = instanceScaleZ;
-		renderTransformTraceRecordX = renderRecordTranslationX;
-		renderTransformTraceRecordY = renderRecordTranslationY;
-		renderTransformTraceRecordZ = renderRecordTranslationZ;
-		renderTransformTracePivotX = nativePivotX;
-		renderTransformTracePivotY = nativePivotY;
-		renderTransformTracePivotZ = nativePivotZ;
-		renderTransformTraceReady = 1;
-		renderTransformTraceFrames++;
-	}
-
-	// Add one render component to the current assembly bounds. This uses no
-	// Java arrays: the SLRR script parser treats array signatures inconsistently.
 	// Compare fixed-point native center samples. One unit equals 0.001 world unit.
 	private int cameraCenterSamplesMatch( int x, int y, int z )
 	{
@@ -1177,11 +1022,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( delta <= 0.0 || delta > 0.1 )
 			delta = 0.016;
 
-		// Center capture must not depend on cursor availability. Keep the native
-		// transform timeline only while capture is pending; after the center is
-		// finalized, no bounds/center queries are issued by animate().
-		if( !cameraOrbitCenterReady )
-			traceNativeTransformTimeline();
+		// Center capture must not depend on cursor availability. After the
+		// center is finalized, animate() performs no bounds/center queries.
 		int centerReady = captureCameraOrbitCenter();
 
 		if( !centerReady )
