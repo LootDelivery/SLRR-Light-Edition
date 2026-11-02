@@ -213,6 +213,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				int rawValue = renderGameRef.getInfo( AABB_QUERY, RENDER_RAW_QUERY_BASE + rawField );
 				tracePreview( "R05 render-handle raw offset=" + (rawField * 4) + " value=" + rawValue );
 			}
+			for( int rawField = 20; rawField < 56; rawField++ )
+			{
+				int rawValue = renderGameRef.getInfo( AABB_QUERY, 160 + rawField - 20 );
+				tracePreview( "R07 render-handle raw offset=" + (rawField * 4) + " value=" + rawValue );
+			}
+			for( int innerField = 0; innerField < 21; innerField++ )
+			{
+				int rawValue = renderGameRef.getInfo( AABB_QUERY, 200 + innerField );
+				tracePreview( "R08 embedded-render raw offset=" + (innerField * 4) + " value=" + rawValue );
+			}
 
 			// Native lookup 0x005413C0 follows a sorted linked render-record list.
 			// Axis 122 is its terminal node; the terminal's +0x04 field is zero.
