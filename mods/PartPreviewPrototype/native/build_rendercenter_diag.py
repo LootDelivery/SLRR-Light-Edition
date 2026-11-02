@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Build a read-only nested-mesh world-center query into the known-good payload diagnostic EXE.
+"""Build the read-only bone-name probe and nested-mesh center query into the known-good payload diagnostic EXE.
 
-Adds INSTANCE_RENDER AABB_QUERY axes 500..502. Each returns one world-center
-coordinate as signed fixed-point *1000. The source EXE is pinned and preserved.
+Adds INSTANCE_RENDER AABB_QUERY axes 489..498 for an exact-case "Bone00" node
+pointer and the nine matrix terms used by the center transform. Keeps axes
+500..502 for the world-space nested-mesh center as signed fixed-point *1000.
+The pinned source EXE is preserved.
 """
 from __future__ import annotations
 import argparse
@@ -138,7 +140,8 @@ def main() -> int:
     print(f"Output SHA-256: {sha(check)}")
     print(f"Dispatcher VA:  {CAVE_VA:#010x}; code size {len(code)} bytes (base {OLD_CODE_SIZE})")
     print(f"Changed bytes:  {len(changed)}; all confined to the existing .reloc dispatcher")
-    print("New axes: 500=X, 501=Y, 502=Z; coordinates are signed fixed-point *1000.")
+    print("New axes: 489=uppercase Bone00 node pointer; 490..498=its center-transform matrix terms.")
+    print("Center axes remain 500=X, 501=Y, 502=Z; signed fixed-point *1000.")
     print("Static verification passed; runtime validation in SLRR is still required.")
     print(f"Output: {output}")
     return 0
