@@ -386,10 +386,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			Vector3 rotatedCenter = new Vector3( boundsCenterX, boundsCenterY, boundsCenterZ );
 			rotatedCenter.rotate( new Ypr( yaw, pitch, roll ) );
 
-			Vector3 previewPosition = new Vector3( savedPosition );
-			previewPosition.x = savedPosition.x - rotatedCenter.x;
-			previewPosition.y = savedPosition.y - rotatedCenter.y;
-			previewPosition.z = savedPosition.z - rotatedCenter.z;
+			// This Part lives under a private preview root whose camera targets
+			// the root origin. Do not preserve the part's original install/mount
+			// position here: remove it entirely and place the rotated mesh center
+			// at (0, 0, 0). savedPosition is kept only as a diagnostic reference.
+			Vector3 previewPosition = new Vector3(
+				-rotatedCenter.x,
+				-rotatedCenter.y,
+				-rotatedCenter.z
+			);
 
 			// Log the initial transform once; animateTraceFrames becomes non-zero
 			// before the per-frame update path runs.
