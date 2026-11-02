@@ -36,6 +36,13 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float boundsCenterX;
 	float boundsCenterY;
 	float boundsCenterZ;
+	float nestedMeshCenterX;
+	float nestedMeshCenterY;
+	float nestedMeshCenterZ;
+	float nestedMeshSizeX;
+	float nestedMeshSizeY;
+	float nestedMeshSizeZ;
+	int hasNestedMeshBounds;
 	float yaw;
 	float pitch;
 	float roll;
@@ -225,6 +232,23 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		tracePreview( prefix + " embedded+0x160 collection-pointer=" + collectionPointer );
 	}
 
+	private void traceRenderNativePose( GameRef renderRef, String prefix )
+	{
+		// INSTANCE_RENDER mode, position and uniform scale are at +0x80..+0x98.
+		for( int axis = 172; axis <= 178; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			tracePreview( prefix + " instancePose axis=" + axis + " raw=" + value );
+		}
+
+		// The first render-list matrix is the one consumed by native 0x5433E0.
+		for( int axis = 295; axis <= 310; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			tracePreview( prefix + " boneMatrix[" + (axis - 295) + "]=" + value );
+		}
+	}
+
 	private void traceRenderPayloadDiagnostics( GameRef renderRef, String prefix )
 	{
 		// Native 0x419860 returns the embedded payload at ResourceRef +0x80.
@@ -261,14 +285,60 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		{
 			tracePreview( prefix + " nested mesh GameRef before construction id=" + nestedMeshID );
 			GameRef nestedMeshRef = new GameRef( nestedMeshID );
+			int nestedMeshType = nestedMeshRef.type();
 			tracePreview(
-				prefix + " nested mesh GameRef type=" + nestedMeshRef.type() +
+				prefix + " nested mesh GameRef type=" + nestedMeshType +
 				" id=" + nestedMeshRef.id()
 			);
+
+			int minXFixed = AABB_INVALID;
+			int minYFixed = AABB_INVALID;
+			int minZFixed = AABB_INVALID;
+			int maxXFixed = AABB_INVALID;
+			int maxYFixed = AABB_INVALID;
+			int maxZFixed = AABB_INVALID;
 			for( int axis = 0; axis <= 11; axis++ )
 			{
 				int value = nestedMeshRef.getInfo( AABB_QUERY, axis );
 				tracePreview( prefix + " nested mesh AABB axis=" + axis + " raw=" + value );
+				if( axis == 0 ) minXFixed = value;
+				if( axis == 1 ) minYFixed = value;
+				if( axis == 2 ) minZFixed = value;
+				if( axis == 3 ) maxXFixed = value;
+				if( axis == 4 ) maxYFixed = value;
+				if( axis == 5 ) maxZFixed = value;
+			}
+
+			if( nestedMeshType == 5 &&
+				minXFixed != AABB_INVALID && minYFixed != AABB_INVALID && minZFixed != AABB_INVALID &&
+				maxXFixed != AABB_INVALID && maxYFixed != AABB_INVALID && maxZFixed != AABB_INVALID )
+			{
+				float minX = minXFixed / AABB_SCALE;
+				float minY = minYFixed / AABB_SCALE;
+				float minZ = minZFixed / AABB_SCALE;
+				float maxX = maxXFixed / AABB_SCALE;
+				float maxY = maxYFixed / AABB_SCALE;
+				float maxZ = maxZFixed / AABB_SCALE;
+				float sizeX = maxX - minX;
+				float sizeY = maxY - minY;
+				float sizeZ = maxZ - minZ;
+
+				if( sizeX > 0.001 && sizeY > 0.001 && sizeZ > 0.001 )
+				{
+					nestedMeshCenterX = (minX + maxX) * 0.5;
+					nestedMeshCenterY = (minY + maxY) * 0.5;
+					nestedMeshCenterZ = (minZ + maxZ) * 0.5;
+					nestedMeshSizeX = sizeX;
+					nestedMeshSizeY = sizeY;
+					nestedMeshSizeZ = sizeZ;
+					hasNestedMeshBounds = 1;
+					tracePreview(
+						prefix + " nested mesh AABB min=" + minX + "," + minY + "," + minZ +
+						" max=" + maxX + "," + maxY + "," + maxZ +
+						" center=" + nestedMeshCenterX + "," + nestedMeshCenterY + "," + nestedMeshCenterZ +
+						" size=" + nestedMeshSizeX + "," + nestedMeshSizeY + "," + nestedMeshSizeZ
+					);
+				}
 			}
 		}
 		else
@@ -771,6 +841,35 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						traceRenderBoneDiagnostics( liveRenderRef, "T06" );
 						traceRenderResourceDiagnostics( liveRenderRef, "T07" );
 						traceRenderPayloadDiagnostics( liveRenderRef, "T08" );
+
+						// Reversible calibration probe: temporarily add +0.1 on Part X,
+						// read the native bone matrix/instance pose, then restore exactly
+						// the transform that was active before the probe.
+						traceRenderNativePose( liveRenderRef, "P00 baseline" );
+						Vector3 probePosition = new Vector3(
+							previewPosition.x + 0.1,
+							previewPosition.y,
+							previewPosition.z
+						);
+					previewPart.setMatrix( probePosition, new Ypr( yaw, pitch, roll ) );
+					int probeRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+					if( probeRenderInstance )
+					{
+						GameRef probeRenderRef = new GameRef( probeRenderInstance );
+						traceRenderNativePose( probeRenderRef, "P01 plusX_0.1" );
+					}
+					else
+						tracePreview( "P01 render instance missing during translation probe" );
+
+					previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
+					int restoredRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+					if( restoredRenderInstance )
+					{
+						GameRef restoredRenderRef = new GameRef( restoredRenderInstance );
+						traceRenderNativePose( restoredRenderRef, "P02 restored" );
+					}
+					else
+						tracePreview( "P02 render instance missing after translation probe restore" );
 					}
 					else
 						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
