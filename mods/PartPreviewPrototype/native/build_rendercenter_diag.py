@@ -4,7 +4,9 @@
 Adds INSTANCE_RENDER AABB_QUERY axes 489..498 for an exact-case "Bone00" node
 pointer and the nine matrix terms used by the center transform. Keeps axes
 500..502 for the world-space nested-mesh center as signed fixed-point *1000.
-The center query uses the live CPU-vertex AABB (axes 0..5), not the stale loader AABB (axes 6..11). The pinned source EXE is preserved.
+The center query uses the live CPU-vertex AABB (axes 0..5), not stale loader
+bounds (axes 6..11). Bone-name lookups use WORD compares so bytes after the
+C-string NUL do not cause false misses. The pinned source EXE is preserved.
 """
 from __future__ import annotations
 import argparse
@@ -141,6 +143,7 @@ def main() -> int:
     print(f"Dispatcher VA:  {CAVE_VA:#010x}; code size {len(code)} bytes (base {OLD_CODE_SIZE})")
     print(f"Changed bytes:  {len(changed)}; all confined to the existing .reloc dispatcher")
     print("New axes: 489=uppercase Bone00 node pointer; 490..498=its center-transform matrix terms.")
+    print("Bone names: suffix chars use WORD compares; bytes after C-string NUL are ignored.")
     print("Center axes 500..502 use the live CPU-vertex AABB (helper axes 0..5), then the selected render-node transform; signed fixed-point *1000.")
     print("Static verification passed; runtime validation in SLRR is still required.")
     print(f"Output: {output}")
