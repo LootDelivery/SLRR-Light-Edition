@@ -711,6 +711,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		pitch = savedOrientation.p;
 		roll = savedOrientation.r;
 
+		// Cache the root AABB fallback now, before the first camera matrix is set.
+		// A later valid native nested-mesh center may replace it once.
+		cacheRootBoundsOrbitCenter();
+
 		tracePreview( "34 before previewPart.getInfo(GII_SIZE) fallback" );
 		modelSize = previewPart.getInfo( GameType.GII_SIZE ) / 100.0;
 		tracePreview( "35 after previewPart.getInfo(GII_SIZE) fallback value=" + modelSize );
@@ -766,6 +770,37 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		return inverse;
 	}
 
+	// Convert the already-captured root mesh AABB center from Part-local
+	// coordinates into previewRoot/world coordinates. This is a one-time cache.
+	private void cacheRootBoundsOrbitCenter()
+	{
+		if( hasRuntimeBounds )
+		{
+			Vector3 rootBoundsCenter = new Vector3(
+				boundsCenterX,
+				boundsCenterY,
+				boundsCenterZ
+			);
+			rootBoundsCenter.rotate( savedOrientation );
+
+			cameraOrbitCenterX = savedPosition.x + rootBoundsCenter.x;
+			cameraOrbitCenterY = savedPosition.y + rootBoundsCenter.y;
+			cameraOrbitCenterZ = savedPosition.z + rootBoundsCenter.z;
+			tracePreview(
+				"CAMERA_ORBIT_CENTER root AABB cached previewRoot=" +
+				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+				" local=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ
+			);
+		}
+		else
+		{
+			cameraOrbitCenterX = 0.0;
+			cameraOrbitCenterY = 0.0;
+			cameraOrbitCenterZ = 0.0;
+			tracePreview( "CAMERA_ORBIT_CENTER root AABB unavailable; provisional origin" );
+		}
+	}
+
 	// Query axes 500..502 return the embedded mesh's runtime AABB center in
 	// previewRoot/world coordinates. Capture once: re-reading a live pose each
 	// frame would let render updates feed back into the camera orbit.
@@ -813,38 +848,18 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOrbitCenterWaitLogged = 1;
 		}
 
-		// The native nested-mesh center may be unavailable for parts whose
-		// render pose has no initialized instance scale. In that case, use the
-		// root mesh AABB captured during createPreview(), transformed exactly
-		// once from Part-local space into previewRoot/world space.
+		// The root AABB center was already cached in createPreview(). If the
+		// native nested-mesh center never becomes valid, lock that cached point.
 		if( cameraOrbitCenterWaitFrames >= 30 )
 		{
-			if( hasRuntimeBounds )
-			{
-				Vector3 rootBoundsCenter = new Vector3(
-					boundsCenterX,
-					boundsCenterY,
-					boundsCenterZ
-				);
-				rootBoundsCenter.rotate( savedOrientation );
-
-				cameraOrbitCenterX = savedPosition.x + rootBoundsCenter.x;
-				cameraOrbitCenterY = savedPosition.y + rootBoundsCenter.y;
-				cameraOrbitCenterZ = savedPosition.z + rootBoundsCenter.z;
-				tracePreview(
-					"CAMERA_ORBIT_CENTER fallback=root AABB previewRoot=" +
-					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-					" local=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ
-				);
-			}
-			else
-			{
-				cameraOrbitCenterX = 0.0;
-				cameraOrbitCenterY = 0.0;
-				cameraOrbitCenterZ = 0.0;
-				tracePreview( "CAMERA_ORBIT_CENTER fallback=previewRoot origin; root AABB unavailable" );
-			}
 			cameraOrbitCenterReady = 1;
+			if( hasRuntimeBounds )
+				tracePreview(
+					"CAMERA_ORBIT_CENTER fallback=cached root AABB previewRoot=" +
+					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
+				);
+			else
+				tracePreview( "CAMERA_ORBIT_CENTER fallback=previewRoot origin; root AABB unavailable" );
 		}
 		return cameraOrbitCenterReady;
 	}
