@@ -199,6 +199,32 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	private void traceRenderResourceDiagnostics( GameRef renderRef, String prefix )
+	{
+		// 0x541FE0 is called with the embedded render object at outer+0xD8.
+		// Its +0x84 field is a typed resource descriptor (native type 14).
+		// Dump the otherwise-unobserved middle fields and the descriptor header.
+		for( int axis = 319; axis <= 361; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			tracePreview( prefix + " embedded+" + (0x54 + (axis - 319) * 4) + "=" + value );
+		}
+
+		int resourcePointer = renderRef.getInfo( AABB_QUERY, 362 );
+		tracePreview( prefix + " embedded+0x84 resource-pointer=" + resourcePointer );
+		if( resourcePointer && resourcePointer != AABB_INVALID )
+		{
+			for( int axis = 363; axis <= 384; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " resource-header+" + ((axis - 363) * 4) + "=" + value );
+			}
+		}
+
+		int collectionPointer = renderRef.getInfo( AABB_QUERY, 385 );
+		tracePreview( prefix + " embedded+0x160 collection-pointer=" + collectionPointer );
+	}
+
 	private void tracePartResourceTree()
 	{
 		tracePreview(
@@ -272,6 +298,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			}
 
 			traceRenderBoneDiagnostics( renderGameRef, "R11" );
+			traceRenderResourceDiagnostics( renderGameRef, "R12" );
 
 			// Native lookup 0x005413C0 follows a sorted linked render-record list.
 			// Axis 122 is its terminal node; the terminal's +0x04 field is zero.
@@ -680,6 +707,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						tracePreview( "T05 embedded+" + (0x100 + field * 4) + "=" + value );
 						}
 						traceRenderBoneDiagnostics( liveRenderRef, "T06" );
+						traceRenderResourceDiagnostics( liveRenderRef, "T07" );
 					}
 					else
 						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
