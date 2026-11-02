@@ -218,3 +218,19 @@ Commit `735b2f35ed10e7b0edb77407096219fea0a351c5` implements identity-aware prec
 Runtime retest is pending. This is intentionally narrower than disabling nested centering for every direct-mesh Part, because the OCA bumper demonstrated that a matching nested/direct resource can have a useful render transform.
 
 If the spring's visible rotation still appears to pivot at its mounting point while the native center remains exactly zero, the remaining mismatch is in the relationship between the selected type-5 AABB and the actual visible spring render transform (or in what is visually perceived as the pivot). Do not add further positional correction based solely on the current zero-center logs.
+
+## Follow-up: fix nested mesh identity tracking (2026-11-02)
+
+Java commit `e61710463a03e4b9d232d13c92f00d9c96f0eda0` fixes a bug in the identity-aware selection introduced in commit `735b2f35ed10e7b0edb77407096219fea0a351c5`.
+
+The nested type-5 mesh ID was read into the local variable `nestedMeshID` and used to construct `nestedMeshRef`, but the class field `nestedMeshResourceID` was never assigned. Consequently, it remained zero and the later comparison treated every valid direct-mesh Part as though its nested mesh ID differed from the direct mesh ID.
+
+The fix stores `nestedMeshRef.id()` in `nestedMeshResourceID` only after the nested type-5 AABB has passed validation, and emits a `nested mesh identity stored=` trace line.
+
+Expected selection after this fix:
+- OCA bumper: if the resolved nested ID is `3014932`, matching the direct mesh ID, nested transform-aware centering is enabled again. This should restore the path that previously centered the bumper on X/Z; the latest downward offset occurred while the nested path was incorrectly skipped.
+- Nissan SR20 chain: the real nested ID will now be visible. If it equals direct ID `1351684`, the nested world-center path is selected. If it differs, the direct-mesh path remains selected; further diagnosis is then required because the reported lateral pivot offset persisted while nested centering was skipped.
+- Camaro SS belt: the supplied GD12..GD61 raw mesh-group dump does not identify why the part is invisible in the preview. The render-resource chain and the direct mesh/AABB status are still unknown; do not infer a cause from those pointer values alone.
+- Springs: the base and rotated native checks still report worldCenter approximately zero, but this verifies only the selected nested mesh AABB center, not necessarily the perceived visible rotation pivot of every spring variant.
+
+Only `BuyPartPreviewDialog.java` changed in this fix. No native dispatcher source or EXE replacement is required. Runtime validation of the corrected ID selection is pending.
