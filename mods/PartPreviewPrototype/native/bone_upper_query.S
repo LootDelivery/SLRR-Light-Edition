@@ -5,7 +5,7 @@
 
 # Optional exact-case probe for the inline node name "Bone00".
 # ECX is the requested AABB_QUERY axis; ESI is the type-3 INSTANCE_RENDER.
-# Axes 489..498, 510..512 and 513..515 are served here. Every other request
+# Axes 489..498, 510..515 and 516..535 are served here. Every other request
 # returns through the original route, preserving live-AABB center axes 500..502.
 bone_upper_gate:
     cmp ecx, 489
