@@ -37,7 +37,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float cameraOrbitCenterZ;
 	int cameraOrbitCenterReady;
 	int cameraOrbitCenterWaitFrames;
-	int cameraOrbitCenterWaitLogged;
 	Ypr savedOrientation;
 
 	float modelSize = 1.0;
@@ -495,7 +494,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCenterZ = 0.0;
 		cameraOrbitCenterReady = 0;
 		cameraOrbitCenterWaitFrames = 0;
-		cameraOrbitCenterWaitLogged = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
 
@@ -801,13 +799,18 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
-	// Query axes 500..502 return the embedded mesh's runtime AABB center in
-	// previewRoot/world coordinates. Capture once: re-reading a live pose each
-	// frame would let render updates feed back into the camera orbit.
+	// Query axes 500..502 once, after the render instance has had time to
+	// initialize. The root mesh AABB has already been cached before previewCamera
+	// is created, so it remains the provisional center during this short delay.
+	// No AABB/native-center query is performed on every animation frame.
 	private int captureCameraOrbitCenter()
 	{
 		if( cameraOrbitCenterReady )
 			return 1;
+
+		cameraOrbitCenterWaitFrames++;
+		if( cameraOrbitCenterWaitFrames < 30 )
+			return 0;
 
 		if( !orbitRenderRef )
 		{
@@ -819,6 +822,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			}
 		}
 
+		// This is the only native center sample for this preview instance.
 		if( orbitRenderRef )
 		{
 			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 500 );
@@ -832,38 +836,30 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				cameraOrbitCenterX = centerXFixed / AABB_SCALE;
 				cameraOrbitCenterY = centerYFixed / AABB_SCALE;
 				cameraOrbitCenterZ = centerZFixed / AABB_SCALE;
-				cameraOrbitCenterReady = 1;
 				tracePreview(
-					"CAMERA_ORBIT_CENTER captured world=" +
+					"CAMERA_ORBIT_CENTER captured native world=" +
 					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
 				);
-				return 1;
 			}
-		}
-
-		cameraOrbitCenterWaitFrames++;
-		if( !cameraOrbitCenterWaitLogged )
-		{
-			tracePreview( "CAMERA_ORBIT_CENTER waiting for valid runtime AABB" );
-			cameraOrbitCenterWaitLogged = 1;
-		}
-
-		// The root AABB center was already cached in createPreview(). If the
-		// native nested-mesh center never becomes valid, lock that cached point.
-		if( cameraOrbitCenterWaitFrames >= 30 )
-		{
-			cameraOrbitCenterReady = 1;
-			if( hasRuntimeBounds )
-				tracePreview(
-					"CAMERA_ORBIT_CENTER fallback=cached root AABB previewRoot=" +
-					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
-				);
 			else
-				tracePreview( "CAMERA_ORBIT_CENTER fallback=previewRoot origin; root AABB unavailable" );
+				tracePreview(
+					"CAMERA_ORBIT_CENTER native sample invalid=" +
+					centerXFixed + "," + centerYFixed + "," + centerZFixed
+				);
 		}
-		return cameraOrbitCenterReady;
-	}
 
+		// Keep the cached root AABB center if the single native sample failed.
+		if( hasRuntimeBounds )
+			tracePreview(
+				"CAMERA_ORBIT_CENTER finalized root AABB fallback=" +
+				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
+			);
+		else
+			tracePreview( "CAMERA_ORBIT_CENTER finalized previewRoot origin; no AABB available" );
+
+		cameraOrbitCenterReady = 1;
+		return 1;
+	}
 	private void updateCamera()
 	{
 		if( previewCamera )
