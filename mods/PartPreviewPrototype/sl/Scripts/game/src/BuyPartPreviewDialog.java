@@ -254,6 +254,88 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	private float nativeFloatFromBits( int raw )
+	{
+		int sign = (raw & 0x80000000) != 0 ? -1 : 1;
+		int exponent = (raw >>> 23) & 0xFF;
+		int mantissa = raw & 0x007FFFFF;
+		if( exponent == 255 )
+			return 0.0;
+
+		double value;
+		int power;
+		if( exponent == 0 )
+		{
+			value = (double)mantissa / 8388608.0;
+			power = -126;
+		}
+		else
+		{
+			value = 1.0 + ((double)mantissa / 8388608.0);
+			power = exponent - 127;
+		}
+
+		while( power > 0 )
+		{
+			value = value * 2.0;
+			power--;
+		}
+		while( power < 0 )
+		{
+			value = value * 0.5;
+			power++;
+		}
+		return (float)(sign * value);
+	}
+
+	private void traceNestedMeshCenterFromPose( GameRef renderRef, String prefix )
+	{
+		if( !hasNestedMeshBounds )
+		{
+			tracePreview( prefix + " nested mesh center unavailable" );
+			return;
+		}
+
+		float posX = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 173 ) );
+		float posY = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 174 ) );
+		float posZ = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 175 ) );
+		float scaleX = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 176 ) );
+		float scaleY = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 177 ) );
+		float scaleZ = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 178 ) );
+
+		float m0 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 295 ) );
+		float m1 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 296 ) );
+		float m2 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 297 ) );
+		float m4 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 299 ) );
+		float m5 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 300 ) );
+		float m6 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 301 ) );
+		float m8 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 303 ) );
+		float m9 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 304 ) );
+		float m10 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 305 ) );
+
+		float localX = nestedMeshCenterX * scaleX;
+		float localY = nestedMeshCenterY * scaleY;
+		float localZ = nestedMeshCenterZ * scaleZ;
+		float centerWorldX = posX + m0 * localX + m4 * localY + m8 * localZ;
+		float centerWorldY = posY + m1 * localX + m5 * localY + m9 * localZ;
+		float centerWorldZ = posZ + m2 * localX + m6 * localY + m10 * localZ;
+
+		Vector3 partPosition = previewPart.getPos();
+		if( !partPosition )
+			partPosition = new Vector3( 0.0, 0.0, 0.0 );
+
+		float centerOffsetX = centerWorldX - partPosition.x;
+		float centerOffsetY = centerWorldY - partPosition.y;
+		float centerOffsetZ = centerWorldZ - partPosition.z;
+
+		tracePreview(
+			prefix + " nestedCenter world=" + centerWorldX + "," + centerWorldY + "," + centerWorldZ +
+			" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z +
+			" offsetFromPart=" + centerOffsetX + "," + centerOffsetY + "," + centerOffsetZ +
+			" suggestedPartPos=" + (-centerOffsetX) + "," + (-centerOffsetY) + "," + (-centerOffsetZ)
+		);
+	}
+
 	private void tracePartTransform( Part part, String prefix )
 	{
 		Vector3 position = part.getPos();
@@ -868,6 +950,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						// later; an immediate set/restore cannot observe that composition.
 						tracePartTransform( previewPart, "P00 baseline" );
 						traceRenderNativePose( liveRenderRef, "P00 baseline" );
+						traceNestedMeshCenterFromPose( liveRenderRef, "P00 baseline" );
 						renderTranslationProbeRestorePosition = new Vector3(
 							previewPosition.x,
 							previewPosition.y,
@@ -918,6 +1001,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			{
 				GameRef probeRenderRef = new GameRef( probeRenderInstance );
 				traceRenderNativePose( probeRenderRef, "P01 delayed" );
+				traceNestedMeshCenterFromPose( probeRenderRef, "P01 delayed" );
 			}
 			else
 				tracePreview( "P01 delayed render instance missing" );
@@ -938,6 +1022,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			{
 				GameRef restoredRenderRef = new GameRef( restoredRenderInstance );
 				traceRenderNativePose( restoredRenderRef, "P02 delayed restored" );
+				traceNestedMeshCenterFromPose( restoredRenderRef, "P02 delayed restored" );
 			}
 			else
 				tracePreview( "P02 delayed render instance missing" );
