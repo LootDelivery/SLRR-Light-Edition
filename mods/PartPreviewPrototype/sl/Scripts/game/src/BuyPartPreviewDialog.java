@@ -781,8 +781,57 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					" ypr=" + yaw + "," + pitch + "," + roll
 				);
 
-			// Keep the original, previously working Part transform path. Do not
-			// chain the unverified inherited GameRef.setPos() call after it.
+			// Parts with getMesh()==0 can still own a real render-child mesh.
+			// The native query returns that mesh's world-space AABB center in
+			// fixed-point *1000 after composing its runtime render transform.
+			if( hasNestedMeshBounds )
+			{
+				int nestedRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+				if( nestedRenderInstance )
+				{
+					GameRef nestedRenderRef = new GameRef( nestedRenderInstance );
+					int centerXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
+					int centerYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
+					int centerZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
+
+					if( centerXFixed != AABB_INVALID &&
+						centerYFixed != AABB_INVALID &&
+						centerZFixed != AABB_INVALID )
+					{
+						Vector3 currentPartPosition = previewPart.getPos();
+						if( !currentPartPosition )
+							currentPartPosition = new Vector3( 0.0, 0.0, 0.0 );
+
+						float centerWorldX = centerXFixed / AABB_SCALE;
+						float centerWorldY = centerYFixed / AABB_SCALE;
+						float centerWorldZ = centerZFixed / AABB_SCALE;
+
+						// CenterWorld includes the current Part position. Subtract it
+						// first, then negate the remaining render-child-local offset.
+						previewPosition = new Vector3(
+							currentPartPosition.x - centerWorldX,
+							currentPartPosition.y - centerWorldY,
+							currentPartPosition.z - centerWorldZ
+						);
+
+						if( animateTraceFrames == 0 )
+							tracePreview(
+								"NESTED_CENTER nativeWorld=" + centerWorldX + "," + centerWorldY + "," + centerWorldZ +
+								" currentPart=" + currentPartPosition.x + "," + currentPartPosition.y + "," + currentPartPosition.z +
+								" requestedPart=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z
+							);
+					}
+					else
+					if( animateTraceFrames == 0 )
+						tracePreview(
+							"NESTED_CENTER native query invalid=" +
+							centerXFixed + "," + centerYFixed + "," + centerZFixed
+						);
+				}
+			}
+
+			// Keep the original Part transform API; only the position calculation
+			// differs for a Part whose geometry lives in a nested render-child.
 			previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
 
 			// During the first animated frames, compare requested YPR with the
