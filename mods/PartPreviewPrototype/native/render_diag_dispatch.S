@@ -90,7 +90,25 @@ render_diag_dispatch:
     jb .invalid
     cmp ecx, 502
     jbe .nested_mesh_center
+    cmp ecx, 510
+    jb .invalid
+    cmp ecx, 512
+    jbe .native_pivot
     jmp .invalid
+
+.native_pivot:
+    # Native transform origin, not the geometric bounds center:
+    # INSTANCE_RENDER.position at +0x84..+0x8c, fixed-point *1000.
+    sub ecx, 510
+    fld dword ptr [esi+ecx*4+0x84]
+    push 1000
+    fimul dword ptr [esp]
+    add esp, 4
+    sub esp, 4
+    fistp dword ptr [esp]
+    mov eax, dword ptr [esp]
+    add esp, 4
+    jmp 0x005e6ec5
 
 .f4_pointer_fields:
     mov eax, dword ptr [esi+0xf4]
