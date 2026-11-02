@@ -43,6 +43,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	int cameraOrbitCandidateZFixed;
 	int cameraOrbitDiagnosticsLogged;
 	int cameraAimDiagnosticsLogged;
+	int cameraNativePoseInitialLogged;
+	int cameraNativePoseChangeLogged;
+	int cameraNativePoseChangePending;
 	int previewMeshResourceID;
 	Ypr savedOrientation;
 
@@ -239,6 +242,84 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				int value = renderRef.getInfo( AABB_QUERY, axis );
 				tracePreview( prefix + " Bone00-uppercase matrix axis=" + axis + " raw=" + value );
 			}
+		}
+	}
+
+	// Read back the actual INSTANCE_RENDER pose owned by the preview Camera.
+	// This is diagnostic only: it does not write to the camera or the Part.
+	private void traceCameraNativePose( String phase )
+	{
+		int cameraResourceID = previewCamera.id();
+		tracePreview(
+			"CAMERA_NATIVE phase=" + phase +
+			" resourceID=" + cameraResourceID
+		);
+		if( !cameraResourceID )
+			return;
+
+		GameRef cameraGameRef = new GameRef( cameraResourceID );
+		int cameraType = cameraGameRef.type();
+		tracePreview(
+			"CAMERA_NATIVE wrapperID=" + cameraGameRef.id() +
+			" type=" + cameraType +
+			" parentID=" + cameraGameRef.getParentID()
+		);
+		if( cameraType != 3 )
+		{
+			tracePreview( "CAMERA_NATIVE readback skipped: wrapper is not INSTANCE_RENDER" );
+			return;
+		}
+
+		// Axes 172..178 expose the live instance position and scale as raw float bits.
+		for( int axis = 172; axis <= 178; axis++ )
+		{
+			int value = cameraGameRef.getInfo( AABB_QUERY, axis );
+			tracePreview(
+				"CAMERA_NATIVE instance axis=" + axis +
+				" rawFloatBits=" + value
+			);
+		}
+
+		int auxiliaryListEmpty = cameraGameRef.getInfo( AABB_QUERY, 273 );
+		int firstNode = cameraGameRef.getInfo( AABB_QUERY, 274 );
+		tracePreview(
+			"CAMERA_NATIVE nodeSelection auxiliaryListEmpty=" + auxiliaryListEmpty +
+			" firstNode=" + firstNode
+		);
+		if( firstNode && firstNode != AABB_INVALID )
+		{
+			for( int axis = 278; axis <= 293; axis++ )
+			{
+				int value = cameraGameRef.getInfo( AABB_QUERY, axis );
+				tracePreview(
+					"CAMERA_NATIVE firstNode matrix[" + (axis - 278) +
+					"] rawFloatBits=" + value
+				);
+			}
+		}
+
+		int bone00Node = cameraGameRef.getInfo( AABB_QUERY, 294 );
+		tracePreview( "CAMERA_NATIVE bone00Node=" + bone00Node );
+		if( bone00Node && bone00Node != AABB_INVALID )
+		{
+			for( int axis = 295; axis <= 310; axis++ )
+			{
+				int value = cameraGameRef.getInfo( AABB_QUERY, axis );
+				tracePreview(
+					"CAMERA_NATIVE bone00 matrix[" + (axis - 295) +
+					"] rawFloatBits=" + value
+				);
+			}
+		}
+
+		// Axes 510..512 are the native INSTANCE_RENDER pivot position (*1000).
+		for( int axis = 510; axis <= 512; axis++ )
+		{
+			int value = cameraGameRef.getInfo( AABB_QUERY, axis );
+			tracePreview(
+				"CAMERA_NATIVE nativePosition axis=" + axis +
+				" fixed=" + value
+			);
 		}
 	}
 
@@ -629,6 +710,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCandidateZFixed = AABB_INVALID;
 		cameraOrbitDiagnosticsLogged = 0;
 		cameraAimDiagnosticsLogged = 0;
+		cameraNativePoseInitialLogged = 0;
+		cameraNativePoseChangeLogged = 0;
+		cameraNativePoseChangePending = 0;
 		previewMeshResourceID = 0;
 		tracePreview( "00 createPreview begin" );
 
@@ -1134,6 +1218,21 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			}
 
 			previewCamera.setMatrix( cameraPosition, cameraOrientation );
+
+			// Read back the actual native Camera transform once at startup and
+			// once after its orbit angles have changed. No native state is modified.
+			if( cameraOrbitCenterReady && !cameraNativePoseInitialLogged )
+			{
+				traceCameraNativePose( "initial" );
+				cameraNativePoseInitialLogged = 1;
+			}
+			else
+			if( cameraNativePoseChangePending && !cameraNativePoseChangeLogged )
+			{
+				traceCameraNativePose( "after-orbit-change" );
+				cameraNativePoseChangeLogged = 1;
+				cameraNativePoseChangePending = 0;
+			}
 		}
 	}
 
@@ -1219,6 +1318,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 				yaw = yaw + mouseDeltaX * DRAG_YAW_SCALE;
 				pitch = pitch + mouseDeltaY * DRAG_PITCH_SCALE;
+				cameraNativePoseChangePending = 1;
 				if( pitch < -1.1 ) pitch = -1.1;
 				if( pitch > 1.1 ) pitch = 1.1;
 
@@ -1232,6 +1332,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			autoResume = autoResume + delta * 2.0;
 			if( autoResume > 1.0 ) autoResume = 1.0;
 			yaw = yaw + AUTO_ROTATION_SPEED * delta * autoResume;
+			cameraNativePoseChangePending = 1;
 		}
 
 		// Keep the existing one-step-per-wheel-transition zoom handling.
