@@ -361,9 +361,15 @@ The direct-mesh path is unchanged. Existing `savedPosition` compensation is unch
 Built test file: `StreetLegal_Redline_native_surface_centroid_diag.exe`
 
 - Base EXE SHA-256: `ebc2b46a976e00914f624f6937070bdac1d8dc8f6bb8e2538f74bd204244c0f8`
-- Test EXE SHA-256: `fdbeb5433eb3c6dee87d1057e38a3458d1370959ce7069aaa308b225e043f2a7`
-- Test ZIP SHA-256: `0263480cb012cc24306e6db365faa99dcbab0225ca9349ce3ff93c777841bb10`
+- Test EXE SHA-256: `32f5e75e4a3bf08ccfdfc67288e3dac6e136f9282ca14a9bc0ed319209a2bc6a`
+- Test ZIP SHA-256: `74fe494fc52390e85c759c1cc3e2c838f84f6ff4f1874dfb880e6923efbe8578`
 
 Static PE verification passed. Only the dispatcher axis limit, the existing AABB handler entry, and the new executable `.reloc` code cave changed. This native build has not yet been runtime-tested in SLRR.
 
 Runtime test should use a copied game installation, this new EXE, and the updated Java source. First check OCA bumper and Nissan SR20 belt. Compare the visual result with the AABB fallback and review only the four `NESTED_CENTER` capture/apply/base/rotated lines; the full raw pointer dump is unnecessary. If startup or preview crashes, revert immediately to `StreetLegal_Redline_native_aabb_rendercenter_v2.exe`.
+
+Native source and builder are committed:
+- [render_mesh_centroid.S](https://github.com/LootDelivery/SLRR-Light-Edition/blob/ba7060afff4c726686527f473a46e153318ee839/mods/PartPreviewPrototype/native/render_mesh_centroid.S)
+- [build_surface_centroid_diag.py](https://github.com/LootDelivery/SLRR-Light-Edition/blob/ba7060afff4c726686527f473a46e153318ee839/mods/PartPreviewPrototype/native/build_surface_centroid_diag.py)
+
+The centroid extension performs one full mesh scan for axis 503 and stores the resulting world X/Y/Z triple in its own writable `.reloc` scratch fields. The immediately following axis 504/505 calls for the same INSTANCE_RENDER handle read Y/Z from that scratch cache rather than rescanning the triangles. Axis 500..502 calls and invalid requests clear the pending cache sequence. No game object/resource fields are written by the query; only the extension's own scratch area is updated.
