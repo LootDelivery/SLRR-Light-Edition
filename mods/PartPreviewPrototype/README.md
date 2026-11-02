@@ -54,6 +54,13 @@ Confirmed VertexData descriptor fields used by the helper:
 
 The scan reads current CPU positions, so it can observe CPU-side vertex edits made by `scaleMesh()`. Each live axis query scans the mesh independently; there is no cache. GPU-only skinning/deformation are not covered.
 
+The temporary group-layout diagnostic build also exposes raw values on query axes 12..41. These are **not coordinates**:
+- 12: root group count; 13: root group-array pointer.
+- 14..27: first group wrapper, child-array metadata, inner-object fields, and its virtual slots.
+- 28..41: the same fields for the second group.
+
+These diagnostics are read-only. They are intended to establish where the SCX FaceIndices descriptor and its converted 16-bit buffer are retained by the runtime group object. Do not use axes 12..41 as AABB or pivot values. The Java preview temporarily writes them as `GD12`...`GD41` entries in `PartPreviewTrace.txt`.
+
 For diagnostics, query axes `6..11` return the root's original loader-accumulated bounds at `+0xCC..+0xE0` (MinX/MinY/MinZ/MaxX/MaxY/MaxZ). These stored bounds are not refreshed by `scaleMesh()`. On an unmodified mesh, compare them with axes `0..5`: close values validate the scan and coordinate space; large differences indicate a vertex-layout or traversal problem.
 
 ## Build
