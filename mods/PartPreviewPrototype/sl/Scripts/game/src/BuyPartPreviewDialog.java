@@ -180,6 +180,28 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		);
 	}
 
+	private void traceRenderRecordDiagnostics( GameRef renderRef, String prefix )
+	{
+		// Axes 120..156 expose the first two linked render records.
+		// A nonzero axis 140 means a third record exists, but this EXE build
+		// does not yet expose its fields.
+		for( int axis = 120; axis <= 156; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			String field = "unknown";
+			if( axis == 120 ) field = "record0 pointer";
+			if( axis == 121 ) field = "record0 resource key";
+			if( axis == 122 ) field = "record0 next";
+			if( axis >= 123 && axis <= 138 )
+				field = "record0 matrix[" + (axis - 123) + "]";
+			if( axis == 139 ) field = "record1 resource key";
+			if( axis == 140 ) field = "record1 next / record2 pointer";
+			if( axis >= 141 && axis <= 156 )
+				field = "record1 matrix[" + (axis - 141) + "]";
+			tracePreview( prefix + " axis=" + axis + " " + field + " raw=" + value );
+		}
+	}
+
 	private void traceRenderBoneDiagnostics( GameRef renderRef, String prefix )
 	{
 		// INSTANCE_RENDER+0xF4 is optional. Do not query its child fields when null:
@@ -343,6 +365,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				" fixed=" + value
 			);
 		}
+
+		traceRenderRecordDiagnostics( cameraGameRef, "CAMERA_NATIVE render-record" );
 	}
 
 	private void traceRenderResourceDiagnostics( GameRef renderRef, String prefix )
@@ -483,6 +507,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		else
 			tracePreview( "CAMERA_ORBIT_DIAG bone00 matrix unavailable" );
 
+		traceRenderRecordDiagnostics( renderRef, "CAMERA_ORBIT render-record" );
 		tracePreview( "CAMERA_ORBIT_DIAG ===== end runtime inputs =====" );
 	}
 
@@ -544,6 +569,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				if( axis == 3 ) maxXFixed = value;
 				if( axis == 4 ) maxYFixed = value;
 				if( axis == 5 ) maxZFixed = value;
+			}
+			for( int axis = 12; axis <= 61; axis++ )
+			{
+				int value = nestedMeshRef.getInfo( AABB_QUERY, axis );
+				tracePreview( prefix + " nested mesh group diagnostic axis=" + axis + " raw=" + value );
 			}
 
 			if( nestedMeshType == 5 &&
@@ -671,16 +701,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			traceRenderResourceDiagnostics( renderGameRef, "R12" );
 			traceRenderPayloadDiagnostics( renderGameRef, "R13" );
 
-			// Native lookup 0x005413C0 follows a sorted linked render-record list.
-			// Axis 122 is its terminal node; the terminal's +0x04 field is zero.
-			// Only the first real record owns the matrix at +0x54.
-			for( int listAxis = 120; listAxis <= 138; listAxis++ )
-			{
-				int listValue = renderGameRef.getInfo( AABB_QUERY, listAxis );
-				tracePreview( "R06 render-record axis=" + listAxis + " raw=" + listValue );
-			}
-			int terminalNext = renderGameRef.getInfo( AABB_QUERY, 140 );
-			tracePreview( "R06 terminal node next=" + terminalNext );
+			// Log both records, including the second record's resource key and matrix.
+			traceRenderRecordDiagnostics( renderGameRef, "R06 render-record" );
 		}
 
 		// ResourceRef exposes a generic child/sibling traversal API. Dump only
@@ -792,6 +814,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		int previewMeshID = previewPart.getMesh();
 		previewMeshResourceID = previewMeshID;
 		tracePreview( "11 after previewPart.getMesh value=" + previewMeshID );
+		tracePreview(
+			"MESH_IDENTITY direct=" + previewMeshResourceID +
+			" nested=" + nestedMeshResourceID +
+			" directNestedMatch=" + (previewMeshResourceID && previewMeshResourceID == nestedMeshResourceID)
+		);
 		if( previewMeshID )
 		{
 			tracePreview( "12 before preview mesh GameRef construction" );
