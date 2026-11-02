@@ -58,40 +58,41 @@ VStanced-пружина:
 
 Centroid удалён: нет surface-centroid handler, triangle scan или cache. Запросы 503..505 не используются. Live AABB берётся по axes 0..5; axes 6..11 — старые loader bounds.
 
-## Java timeline
+## Java timeline и камера
 
-`TRANSFORM_TIMELINE` теперь записывает XYZ:
+`TRANSFORM_TIMELINE` записывает:
 - translation исходного render-record;
 - translation native-выбранного node;
 - INSTANCE_RENDER position и scale;
 - native pivot (axes 510..512).
 
-Первые четыре кадра записываются всегда, последующие изменения — до кадра 44. Камера пока продолжает использовать геометрический AABB midpoint по axes 500..502; переключать её на native pivot до проверки на других типах деталей рано.
+Первые четыре кадра записываются всегда, последующие изменения — до кадра 44.
 
-## Центр камеры для составных деталей
+Для камеры Java собирает корневой `GII_RENDERINSTANCE`, прямых дочерних и дочерних на один уровень глубже. ID дедуплицируются. Для каждой render-компоненты:
+1. axes 500..502 дают transformed live-AABB center;
+2. axis 439 даёт ID вложенного `RESOURCE_MESH`;
+3. mesh axes 0..5 дают live local AABB;
+4. axes 513..515 дают native scale;
+5. scaled half-diagonal даёт консервативный bounding-sphere radius.
 
-Java-предпросмотр больше не ограничивается единственным `previewPart.getInfo(GII_RENDERINSTANCE)`.
+Камера центрируется по общему конверту этих сфер. Её `modelSize` увеличивается до enclosing radius сборки, когда `GII_SIZE` меньше реального размера bounds. Это нацелено на вытянутые/смещённые детали (цепь, ремень, пайп) и сборки из нескольких render instance.
 
-При захвате центра он собирает:
-- корневой `GII_RENDERINSTANCE`;
-- прямых дочерних ResourceRef типа 3;
-- дочерние ResourceRef типа 3 на один уровень глубже.
+Если native render instance не найден, сохраняется root-AABB center fallback; для дистанции используется не меньше половины максимального direct Part mesh extent. Детали, которые вообще не создают render instance и не рендерятся, этим не исправляются.
 
-ID дедуплицируются. Для каждого найденного INSTANCE_RENDER запрашиваются axes 500..502 — уже преобразованный midpoint его live AABB. Камера получает середину минимального/максимального конверта этих component-centers. Для одной render-компоненты результат совпадает со старым axis 500..502; для сборки он учитывает несколько render-компонент.
-
-**Ограничение текущего шага:** конверт строится по центрам компонент, а не по их полным min/max. Это осознанная промежуточная оценка, не точный union AABB всей сборки. В логе для каждой компоненты выводятся ID, центр или состояние PENDING. До получения валидных данных камера не устанавливает первую матрицу; опрос продолжается до 60 кадров, затем используются доступные центры либо прежний root-AABB fallback.
+**Геометрический центр не называется native pivot.** Native pivot остаётся доступен отдельно по axes 510..512. Bounding sphere намеренно консервативен и может дать чуть больший отступ, чем точный union AABB. Центр компоненты использует transformed-AABB center; render-record с собственной трансляцией ещё требует отдельной проверки.
 
 ## Сборка
 
-Новый диагностический EXE:
-`StreetLegal_Redline_native_live_aabb_nativepivot_no_centroid.exe`
+Текущий диагностический EXE:
+`StreetLegal_Redline_native_live_aabb_component_scale.exe`
 
 SHA-256:
-`9a3b5f669a0b9c0b5bc0ef5645790b39c3b5e9bf6f3d24c91b0af06e591daab3`
+`f94756966b54bbd3728007d1f93e7e8c0cef3fc0b04e53052840e551eaa743ec`
 
 База:
 `StreetLegal_Redline_native_aabb_rendercenter_v2.exe`
 SHA-256:
 `ebc2b46a976e00914f624f6937070bdac1d8dc8f6bb8e2538f74bd204244c0f8`
 
-Статическая PE/route/cave/patch-scope проверка пройдена. Runtime-проверка этого EXE в SLRR ещё не выполнена. Проверять только в отдельной копии игры.
+Для пересборки используется `build_bonecase_component_fit.py` и `bone_upper_query.S`.
+Статическая PE/route/cave/patch-scope проверка пройдена. Runtime-проверка нового EXE в SLRR ещё не выполнена. Проверять только в отдельной копии игры.
