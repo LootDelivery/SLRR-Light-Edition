@@ -64,6 +64,140 @@ aabb_helper:
 .root_supported:
     mov dword ptr [ebp-0x08], eax
 
+    # Read-only runtime group diagnostics. These return raw 32-bit field values
+    # (not coordinates) so Java can log the actual group/FaceIndices wiring.
+    mov ecx, dword ptr [ebp+0x0c]
+    cmp ecx, 12
+    jb .normal_axis_dispatch
+    cmp ecx, 13
+    je .diag_groups_ptr
+    cmp ecx, 12
+    je .diag_group_count
+    cmp ecx, 14
+    jb .invalid
+    cmp ecx, 44
+    ja .invalid
+    cmp ecx, 28
+    jb .diag_group_zero
+    jmp .diag_group_one
+
+.diag_groups_ptr:
+    mov eax, dword ptr [ebp-0x08]
+    mov eax, dword ptr [eax+0x48]
+    jmp .return_raw
+.diag_group_count:
+    mov eax, dword ptr [ebp-0x08]
+    mov eax, dword ptr [eax+0x4c]
+    jmp .return_raw
+
+.diag_group_zero:
+    mov eax, dword ptr [ebp-0x08]
+    cmp dword ptr [eax+0x4c], 1
+    jb .invalid
+    mov edx, dword ptr [eax+0x48]
+    test edx, edx
+    jz .invalid
+    mov edi, dword ptr [edx]
+    mov ecx, dword ptr [ebp+0x0c]
+    sub ecx, 14
+    jmp .diag_group_field
+
+.diag_group_one:
+    mov eax, dword ptr [ebp-0x08]
+    cmp dword ptr [eax+0x4c], 2
+    jb .invalid
+    mov edx, dword ptr [eax+0x48]
+    test edx, edx
+    jz .invalid
+    mov edi, dword ptr [edx+4]
+    mov ecx, dword ptr [ebp+0x0c]
+    sub ecx, 28
+
+.diag_group_field:
+    test edi, edi
+    jz .invalid
+    cmp ecx, 0
+    je .diag_return_wrapper
+    cmp ecx, 1
+    je .diag_return_inner
+    cmp ecx, 2
+    je .diag_return_children
+    cmp ecx, 3
+    je .diag_return_child_count
+    cmp ecx, 4
+    je .diag_return_child_capacity
+
+    mov eax, dword ptr [edi]
+    test eax, eax
+    jz .invalid
+    cmp ecx, 5
+    je .diag_return_vtable
+    cmp ecx, 6
+    je .diag_inner_04
+    cmp ecx, 7
+    je .diag_inner_08
+    cmp ecx, 8
+    je .diag_inner_0c
+    cmp ecx, 9
+    je .diag_inner_10
+    cmp ecx, 10
+    je .diag_inner_14
+
+    mov edx, dword ptr [eax]
+    test edx, edx
+    jz .invalid
+    cmp ecx, 11
+    je .diag_vtable_08
+    cmp ecx, 12
+    je .diag_vtable_10
+    cmp ecx, 13
+    je .diag_vtable_14
+    jmp .invalid
+
+.diag_return_wrapper:
+    mov eax, edi
+    jmp .return_raw
+.diag_return_inner:
+    mov eax, dword ptr [edi]
+    jmp .return_raw
+.diag_return_children:
+    mov eax, dword ptr [edi+4]
+    jmp .return_raw
+.diag_return_child_count:
+    mov eax, dword ptr [edi+8]
+    jmp .return_raw
+.diag_return_child_capacity:
+    mov eax, dword ptr [edi+0x0c]
+    jmp .return_raw
+.diag_return_vtable:
+    mov eax, dword ptr [eax]
+    jmp .return_raw
+.diag_inner_04:
+    mov eax, dword ptr [eax+4]
+    jmp .return_raw
+.diag_inner_08:
+    mov eax, dword ptr [eax+8]
+    jmp .return_raw
+.diag_inner_0c:
+    mov eax, dword ptr [eax+0x0c]
+    jmp .return_raw
+.diag_inner_10:
+    mov eax, dword ptr [eax+0x10]
+    jmp .return_raw
+.diag_inner_14:
+    mov eax, dword ptr [eax+0x14]
+    jmp .return_raw
+.diag_vtable_08:
+    mov eax, dword ptr [edx+8]
+    jmp .return_raw
+.diag_vtable_10:
+    mov eax, dword ptr [edx+0x10]
+    jmp .return_raw
+.diag_vtable_14:
+    mov eax, dword ptr [edx+0x14]
+    jmp .return_raw
+
+.normal_axis_dispatch:
     # Diagnostic axes 6..11 return the loader's original root AABB at +0xCC..+0xE0.
     # These stored values are not updated by scaleMesh(); compare them with the
     # freshly scanned CPU-vertex bounds to validate the coordinate frame.
@@ -307,6 +441,8 @@ aabb_helper:
     jmp .return_scaled
 .return_max_z:
     fld dword ptr [ebp-0x50]
+.return_raw:
+    jmp .epilogue
 .return_scaled:
     # SLRR's bundled java.lang.Float has no intBitsToFloat().
     # Return signed fixed-point coordinate * 1000 using the existing int API.
