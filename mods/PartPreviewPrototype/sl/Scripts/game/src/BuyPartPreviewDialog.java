@@ -510,6 +510,33 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		else
 			tracePreview( "CAMERA_ORBIT_DIAG bone00 matrix unavailable" );
 
+		// Read the next node in the native bone list. The local AABB scan sees
+		// unskinned XYZ positions only; this matrix lets us determine whether a
+		// second bone (for example bone01) contributes to the visible mesh.
+		int secondBoneNode = renderRef.getInfo( AABB_QUERY, 516 );
+		tracePreview( "CAMERA_ORBIT_DIAG secondBone node=" + secondBoneNode );
+		if( secondBoneNode && secondBoneNode != AABB_INVALID )
+		{
+			int secondName0 = renderRef.getInfo( AABB_QUERY, 517 );
+			int secondName1 = renderRef.getInfo( AABB_QUERY, 518 );
+			tracePreview(
+				"CAMERA_ORBIT_DIAG secondBone nameRaw=" +
+				secondName0 + "," + secondName1
+			);
+			for( int axis = 519; axis <= 534; axis++ )
+			{
+				int value = renderRef.getInfo( AABB_QUERY, axis );
+				tracePreview(
+					"CAMERA_ORBIT_DIAG secondBone matrix[" + (axis - 519) +
+					"] rawFloatBits=" + value
+				);
+			}
+			int thirdBoneNode = renderRef.getInfo( AABB_QUERY, 535 );
+			tracePreview( "CAMERA_ORBIT_DIAG thirdBone node=" + thirdBoneNode );
+		}
+		else
+			tracePreview( "CAMERA_ORBIT_DIAG secondBone unavailable" );
+
 		traceRenderRecordDiagnostics( renderRef, "CAMERA_ORBIT render-record" );
 		tracePreview( "CAMERA_ORBIT_DIAG ===== end runtime inputs =====" );
 	}
