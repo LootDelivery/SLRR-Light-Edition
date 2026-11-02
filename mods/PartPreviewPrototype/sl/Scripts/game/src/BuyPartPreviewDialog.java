@@ -43,6 +43,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float nestedMeshSizeY;
 	float nestedMeshSizeZ;
 	int hasNestedMeshBounds;
+	int nestedCenterUsingSurfaceCentroid;
 	int nestedMeshResourceID;
 	float nestedCenterOffsetX;
 	float nestedCenterOffsetY;
@@ -499,6 +500,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		nestedCenterVerifyInitialDone = 0;
 		nestedCenterVerifyRotationDone = 0;
 		nestedCenterApplyLogged = 0;
+		nestedCenterUsingSurfaceCentroid = 0;
 		int hasRuntimeBounds = 0;
 		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
@@ -805,9 +807,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 
 		GameRef nestedRenderRef = new GameRef( nestedRenderInstance );
-		int centerXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
-		int centerYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
-		int centerZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
+		int aabbXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
+		int aabbYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
+		int aabbZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
+		int surfaceXFixed = nestedRenderRef.getInfo( AABB_QUERY, 503 );
+		int surfaceYFixed = nestedRenderRef.getInfo( AABB_QUERY, 504 );
+		int surfaceZFixed = nestedRenderRef.getInfo( AABB_QUERY, 505 );
+
+		int selectedXFixed = nestedCenterUsingSurfaceCentroid ? surfaceXFixed : aabbXFixed;
+		int selectedYFixed = nestedCenterUsingSurfaceCentroid ? surfaceYFixed : aabbYFixed;
+		int selectedZFixed = nestedCenterUsingSurfaceCentroid ? surfaceZFixed : aabbZFixed;
 
 		Vector3 partPosition = previewPart.getPos();
 		Ypr partOrientation = previewPart.getOri();
@@ -816,22 +825,37 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( !partOrientation )
 			partOrientation = new Ypr( 0.0, 0.0, 0.0 );
 
-		if( centerXFixed == AABB_INVALID ||
-			centerYFixed == AABB_INVALID ||
-			centerZFixed == AABB_INVALID )
+		String aabbText = "invalid";
+		if( aabbXFixed != AABB_INVALID && aabbYFixed != AABB_INVALID && aabbZFixed != AABB_INVALID )
+			aabbText = "" + (aabbXFixed / AABB_SCALE) + "," +
+				(aabbYFixed / AABB_SCALE) + "," + (aabbZFixed / AABB_SCALE);
+
+		String surfaceText = "invalid";
+		if( surfaceXFixed != AABB_INVALID && surfaceYFixed != AABB_INVALID && surfaceZFixed != AABB_INVALID )
+			surfaceText = "" + (surfaceXFixed / AABB_SCALE) + "," +
+				(surfaceYFixed / AABB_SCALE) + "," + (surfaceZFixed / AABB_SCALE);
+
+		if( selectedXFixed == AABB_INVALID ||
+			selectedYFixed == AABB_INVALID ||
+			selectedZFixed == AABB_INVALID )
 		{
 			tracePreview(
-				label + " invalid=" + centerXFixed + "," + centerYFixed + "," + centerZFixed +
+				label + " selected-invalid=" + selectedXFixed + "," + selectedYFixed + "," + selectedZFixed +
+				" aabbWorldCenter=" + aabbText +
+				" surfaceWorldCenter=" + surfaceText +
 				" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z
 			);
 			return;
 		}
 
 		tracePreview(
-			label + " worldCenter=" +
-			(centerXFixed / AABB_SCALE) + "," +
-			(centerYFixed / AABB_SCALE) + "," +
-			(centerZFixed / AABB_SCALE) +
+			label + " selected=" + (nestedCenterUsingSurfaceCentroid ? "surface-centroid" : "aabb") +
+			" selectedWorldCenter=" +
+			(selectedXFixed / AABB_SCALE) + "," +
+			(selectedYFixed / AABB_SCALE) + "," +
+			(selectedZFixed / AABB_SCALE) +
+			" aabbWorldCenter=" + aabbText +
+			" surfaceWorldCenter=" + surfaceText +
 			" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z +
 			" partYpr=" + partOrientation.y + "," + partOrientation.p + "," + partOrientation.r
 		);
@@ -861,9 +885,20 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					if( nestedRenderInstance )
 					{
 						GameRef nestedRenderRef = new GameRef( nestedRenderInstance );
-						int centerXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
-						int centerYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
-						int centerZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
+						int aabbXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
+						int aabbYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
+						int aabbZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
+						int surfaceXFixed = nestedRenderRef.getInfo( AABB_QUERY, 503 );
+						int surfaceYFixed = nestedRenderRef.getInfo( AABB_QUERY, 504 );
+						int surfaceZFixed = nestedRenderRef.getInfo( AABB_QUERY, 505 );
+
+						int useSurfaceCentroid =
+							surfaceXFixed != AABB_INVALID &&
+							surfaceYFixed != AABB_INVALID &&
+							surfaceZFixed != AABB_INVALID;
+						int centerXFixed = useSurfaceCentroid ? surfaceXFixed : aabbXFixed;
+						int centerYFixed = useSurfaceCentroid ? surfaceYFixed : aabbYFixed;
+						int centerZFixed = useSurfaceCentroid ? surfaceZFixed : aabbZFixed;
 
 						if( centerXFixed != AABB_INVALID &&
 							centerYFixed != AABB_INVALID &&
@@ -880,6 +915,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							float nativeCenterX = centerXFixed / AABB_SCALE;
 							float nativeCenterY = centerYFixed / AABB_SCALE;
 							float nativeCenterZ = centerZFixed / AABB_SCALE;
+							nestedCenterUsingSurfaceCentroid = useSurfaceCentroid;
 							nestedCenterOffsetX = nativeCenterX - currentPartPosition.x;
 							nestedCenterOffsetY = nativeCenterY - currentPartPosition.y;
 							nestedCenterOffsetZ = nativeCenterZ - currentPartPosition.z;
@@ -893,7 +929,10 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 								nestedCenterOffsetX + "," + nestedCenterOffsetY + "," + nestedCenterOffsetZ +
 								" baseYpr=" + nestedCenterBaseYaw + "," +
 								nestedCenterBasePitch + "," + nestedCenterBaseRoll +
+								" selected=" + (useSurfaceCentroid ? "surface-centroid" : "aabb-fallback") +
 								" nativeWorldCenter=" + nativeCenterX + "," + nativeCenterY + "," + nativeCenterZ +
+								" aabbWorldCenter=" + aabbXFixed + "," + aabbYFixed + "," + aabbZFixed +
+								" surfaceWorldCenter=" + surfaceXFixed + "," + surfaceYFixed + "," + surfaceZFixed +
 								" currentPartPos=" + currentPartPosition.x + "," + currentPartPosition.y + "," + currentPartPosition.z
 							);
 						}
