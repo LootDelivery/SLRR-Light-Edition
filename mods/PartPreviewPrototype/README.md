@@ -81,7 +81,7 @@ The stack-order build uses query at `[ESP+0x10]` and axis at `[ESP+0x0C]`. SHA-2
 3. Test in a copied game installation.
 4. First confirm garage entry and catalog category loading.
 5. Open a part preview and inspect `PartPreviewTrace.txt` in the game's temp-save directory. Axes `0..5` are the fresh CPU-vertex bounds; axes `6..11` are the loader's stored root bounds. Compare them on an unmodified mesh.
-6. Check `savedPosition`, `savedOrientation`, `center`, `rotatedCenter`, and `finalPos` in the trace. `finalPos` should equal `-rotatedCenter`; the source/install position is logged for diagnosis but is not retained in the private preview root. The new `T01 after setMatrix readbackPos` entry records what `Part.getPos()` returns immediately after the setter, to distinguish setter behavior from an internal child/mesh offset.
+6. Check `savedPosition`, `savedOrientation`, `center`, `rotatedCenter`, and `finalPos` in the trace. `finalPos` should equal `-rotatedCenter`; the source/install position is logged for diagnosis but is not retained in the private preview root. `T01 after setMatrix readbackPos` records the position after the two-argument Part matrix call. `T02 after GameRef.setPos readbackPos` records the position after the dedicated native `GameRef.setPos(Vector3)` call. The two results distinguish the Part-level matrix path from the base GameRef translation setter.
 7. Verify that the old `GII_SIZE` camera framing remains intact, including previously invisible or oversized parts.
 8. After basic tests pass, use a mesh changed by `scaleMesh()` and verify that fresh axes `0..5` change while stored axes `6..11` remain stale.
 
