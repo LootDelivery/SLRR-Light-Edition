@@ -1,0 +1,3999 @@
+<FILE external_links >
+system\
+cars\
+cars\racers\
+parts\
+sound\
+particles\
+parts\engines\Einvagen_Duhen_Ishima_Focer\
+</FILE>
+<FILE 00000001.res >
+typeof	9
+superid	0x00030005
+typeid	0x00000001
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000001.rsd >
+</FILE>
+<FILE 00000002.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000000A
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000002.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_cockpit.scx
+mass 110.000
+</FILE>
+<FILE 00000003.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000003E
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000003.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_C.scx
+mass 10.500
+</FILE>
+<FILE 00000004.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000041
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000004.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_CL.scx
+mass 10.500
+</FILE>
+<FILE 00000005.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000044
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000005.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_CT.scx
+mass 2.500
+</FILE>
+<FILE 00000006.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000045
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000006.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_FL.scx
+mass 3.000
+</FILE>
+<FILE 00000007.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000042
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000007.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_FLL.scx
+mass 2.500
+</FILE>
+<FILE 00000008.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000046
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000008.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_FR.scx
+mass 3.000
+</FILE>
+<FILE 00000009.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000043
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000009.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_FRL.scx
+mass 2.500
+</FILE>
+<FILE 00000010.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000003D
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000010.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_L.scx
+mass 19.500
+</FILE>
+<FILE 00000011.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000047
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000011.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_R.scx
+mass 19.500
+</FILE>
+<FILE 00000012.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000003F
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000012.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_RL.scx
+mass 2.500
+</FILE>
+<FILE 00000013.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000040
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000013.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_engine_bay_RR.scx
+mass 2.500
+</FILE>
+<FILE 00000014.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000003C
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000014.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_frame.scx
+mass 570.000
+</FILE>
+<FILE 00000015.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000000B
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000015.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_chassis_Rf.scx
+mass 61.500
+</FILE>
+<FILE 00000016.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000CC
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000016.rsd >
+shape cars\racers\Einvagen_data\meshes\chassis.scx
+</FILE>
+<FILE 00000017.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000CD
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000017.rsd >
+shape cars\racers\Einvagen_data\meshes\F_bumper.scx
+</FILE>
+<FILE 00000018.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000CE
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000018.rsd >
+shape cars\racers\Einvagen_data\meshes\F_bumper_2.scx
+</FILE>
+<FILE 00000019.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000009E
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000019.rsd >
+shape cars\racers\Einvagen_data\meshes\F_bumper_3.scx
+</FILE>
+<FILE 00000020.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000116
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000020.rsd >
+shape cars\racers\Einvagen_data\meshes\F_bumper_4.scx
+</FILE>
+<FILE 00000021.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000CF
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000021.rsd >
+shape cars\racers\Einvagen_data\meshes\F_windshield.scx
+</FILE>
+<FILE 00000022.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D0
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000022.rsd >
+shape cars\racers\Einvagen_data\meshes\FL_door.scx
+</FILE>
+<FILE 00000023.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000011F
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000023.rsd >
+shape cars\racers\Einvagen_data\meshes\FL_fender_skirt.scx
+</FILE>
+<FILE 00000024.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D1
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000024.rsd >
+shape cars\racers\Einvagen_data\meshes\FL_quarterpanel.scx
+</FILE>
+<FILE 00000025.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D2
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000025.rsd >
+shape cars\racers\Einvagen_data\meshes\FL_seat.scx
+</FILE>
+<FILE 00000026.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D3
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000026.rsd >
+shape cars\racers\Einvagen_data\meshes\FL_window.scx
+</FILE>
+<FILE 00000027.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D4
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000027.rsd >
+shape cars\racers\Einvagen_data\meshes\FR_door.scx
+</FILE>
+<FILE 00000028.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000129
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000028.rsd >
+shape cars\racers\Einvagen_data\meshes\FR_fender_skirt.scx
+</FILE>
+<FILE 00000029.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D5
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000029.rsd >
+shape cars\racers\Einvagen_data\meshes\FR_quarterpanel.scx
+</FILE>
+<FILE 00000030.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D6
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000030.rsd >
+shape cars\racers\Einvagen_data\meshes\FR_seat.scx
+</FILE>
+<FILE 00000031.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D7
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000031.rsd >
+shape cars\racers\Einvagen_data\meshes\FR_window.scx
+</FILE>
+<FILE 00000032.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D8
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000032.rsd >
+shape cars\racers\Einvagen_data\meshes\hat_holder.scx
+</FILE>
+<FILE 00000033.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000D9
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000033.rsd >
+shape cars\racers\Einvagen_data\meshes\hood.scx
+</FILE>
+<FILE 00000034.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000DA
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000034.rsd >
+shape cars\racers\Einvagen_data\meshes\hood_2.scx
+</FILE>
+<FILE 00000035.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000011A
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000035.rsd >
+shape cars\racers\Einvagen_data\meshes\hood_3.scx
+</FILE>
+<FILE 00000036.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000DB
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000036.rsd >
+shape cars\racers\Einvagen_data\meshes\L_headlights.scx
+</FILE>
+<FILE 00000037.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000012F
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000037.rsd >
+shape cars\racers\Einvagen_data\meshes\L_headlights_2.scx
+</FILE>
+<FILE 00000038.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000DC
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000038.rsd >
+shape cars\racers\Einvagen_data\meshes\L_mirror.scx
+</FILE>
+<FILE 00000039.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000DD
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000039.rsd >
+shape cars\racers\Einvagen_data\meshes\L_taillights.scx
+</FILE>
+<FILE 00000040.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000DE
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000040.rsd >
+shape cars\racers\Einvagen_data\meshes\R_bumper.scx
+</FILE>
+<FILE 00000041.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000013D
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000041.rsd >
+shape cars\racers\Einvagen_data\meshes\R_bumper_2.scx
+</FILE>
+<FILE 00000042.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000DF
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000042.rsd >
+shape cars\racers\Einvagen_data\meshes\R_door.scx
+</FILE>
+<FILE 00000043.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000E0
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000043.rsd >
+shape cars\racers\Einvagen_data\meshes\R_headlights.scx
+</FILE>
+<FILE 00000044.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000135
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000044.rsd >
+shape cars\racers\Einvagen_data\meshes\R_headlights_2.scx
+</FILE>
+<FILE 00000045.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000E1
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000045.rsd >
+shape cars\racers\Einvagen_data\meshes\R_mirror.scx
+</FILE>
+<FILE 00000046.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000E2
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000046.rsd >
+shape cars\racers\Einvagen_data\meshes\R_seats.scx
+</FILE>
+<FILE 00000047.res >
+typeof	9
+superid	0x00000001
+typeid	0x000000E3
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000047.rsd >
+shape cars\racers\Einvagen_data\meshes\R_taillights.scx
+</FILE>
+<FILE 00000048.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000100
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000048.rsd >
+shape cars\racers\Einvagen_data\meshes\R_windshield.scx
+</FILE>
+<FILE 00000049.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000101
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000049.rsd >
+shape cars\racers\Einvagen_data\meshes\R_wing.scx
+</FILE>
+<FILE 00000050.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000102
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000050.rsd >
+shape cars\racers\Einvagen_data\meshes\radiator.scx
+</FILE>
+<FILE 00000051.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000103
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000051.rsd >
+shape cars\racers\Einvagen_data\meshes\Rf_wing.scx
+</FILE>
+<FILE 00000052.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000013E
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000052.rsd >
+shape cars\racers\Einvagen_data\meshes\Rf_wing_2.scx
+</FILE>
+<FILE 00000053.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000104
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000053.rsd >
+shape cars\racers\Einvagen_data\meshes\RL_door.scx
+</FILE>
+<FILE 00000054.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000012A
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000054.rsd >
+shape cars\racers\Einvagen_data\meshes\RL_fender_skirt.scx
+</FILE>
+<FILE 00000055.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000105
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000055.rsd >
+shape cars\racers\Einvagen_data\meshes\RL_window.scx
+</FILE>
+<FILE 00000056.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000106
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000056.rsd >
+shape cars\racers\Einvagen_data\meshes\RR_door.scx
+</FILE>
+<FILE 00000057.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000012B
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000057.rsd >
+shape cars\racers\Einvagen_data\meshes\RR_fender_skirt.scx
+</FILE>
+<FILE 00000058.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000107
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000058.rsd >
+shape cars\racers\Einvagen_data\meshes\RR_window.scx
+</FILE>
+<FILE 00000059.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000108
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000059.rsd >
+shape cars\racers\Einvagen_data\meshes\steering_wheel.scx
+</FILE>
+<FILE 00000060.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000013F
+alias	click
+isparentcompatible	1.00
+</FILE>
+<FILE 00000060.rsd >
+shape cars\racers\Einvagen_data\meshes\stock_exhaust_pipe.scx
+</FILE>
+<FILE 00000061.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000000C
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000061.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_2_L.scx
+mass 7.000
+</FILE>
+<FILE 00000062.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000000D
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000062.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_2_LC.scx
+mass 8.000
+</FILE>
+<FILE 00000063.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000000E
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000063.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_2_R.scx
+mass 7.000
+</FILE>
+<FILE 00000064.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000000F
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000064.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_2_RC.scx
+mass 8.000
+</FILE>
+<FILE 00000065.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000010
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000065.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_L.scx
+mass 7.000
+</FILE>
+<FILE 00000066.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000011
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000066.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_LC.scx
+mass 8.000
+</FILE>
+<FILE 00000067.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000012
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000067.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_R.scx
+mass 7.000
+</FILE>
+<FILE 00000068.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000013
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000068.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_bumper_RC.scx
+mass 8.000
+</FILE>
+<FILE 00000069.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000014
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000069.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_F_windshield.scx
+mass 19.000
+</FILE>
+<FILE 00000070.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000015
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000070.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FL_door.scx
+mass 17.500
+</FILE>
+<FILE 00000071.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000016
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000071.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FL_quarterpanel_A.scx
+mass 26.500
+</FILE>
+<FILE 00000072.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000017
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000072.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FL_quarterpanel_B.scx
+mass 4.500
+</FILE>
+<FILE 00000073.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000019
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000073.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FL_seat_A.scx
+mass 8.000
+</FILE>
+<FILE 00000074.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000001A
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000074.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FL_seat_B.scx
+mass 8.000
+</FILE>
+<FILE 00000075.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000001C
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000075.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FL_window.scx
+mass 4.500
+</FILE>
+<FILE 00000076.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000001D
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000076.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FR_door.scx
+mass 17.500
+</FILE>
+<FILE 00000077.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000001E
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000077.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FR_quarterpanel_A.scx
+mass 26.500
+</FILE>
+<FILE 00000078.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000001F
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000078.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FR_quarterpanel_B.scx
+mass 4.500
+</FILE>
+<FILE 00000079.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000018
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000079.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FR_seat_A.scx
+mass 8.000
+</FILE>
+<FILE 00000080.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000001B
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000080.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FR_seat_B.scx
+mass 8.000
+</FILE>
+<FILE 00000081.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000020
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000081.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_FR_window.scx
+mass 4.500
+</FILE>
+<FILE 00000082.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000024
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000082.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_hood_2_A.scx
+mass 26.500
+</FILE>
+<FILE 00000083.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000021
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000083.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_hood_2_B.scx
+mass 3.500
+</FILE>
+<FILE 00000084.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000022
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000084.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_hood_A.scx
+mass 26.500
+</FILE>
+<FILE 00000085.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000023
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000085.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_hood_B.scx
+mass 3.500
+</FILE>
+<FILE 00000086.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000025
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000086.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_L_headlights.scx
+mass 3.000
+</FILE>
+<FILE 00000087.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000027
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000087.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_L_mirror_.scx
+mass 1.750
+</FILE>
+<FILE 00000088.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000026
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000088.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_L_taillights.scx
+mass 2.500
+</FILE>
+<FILE 00000089.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000028
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000089.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_bumper_L.scx
+mass 7.500
+</FILE>
+<FILE 00000090.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000029
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000090.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_bumper_LC.scx
+mass 7.500
+</FILE>
+<FILE 00000091.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000002B
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000091.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_bumper_R.scx
+mass 7.500
+</FILE>
+<FILE 00000092.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000002A
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000092.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_bumper_RC.scx
+mass 7.500
+</FILE>
+<FILE 00000093.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000002C
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000093.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_door_A.scx
+mass 17.500
+</FILE>
+<FILE 00000094.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000002D
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000094.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_door_B.scx
+mass 8.000
+</FILE>
+<FILE 00000095.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000002E
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000095.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_headlights.scx
+mass 3.000
+</FILE>
+<FILE 00000096.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000037
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000096.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_mirror_.scx
+mass 1.750
+</FILE>
+<FILE 00000097.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000002F
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000097.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_seats_A.scx
+mass 10.500
+</FILE>
+<FILE 00000098.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000030
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000098.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_seats_B.scx
+mass 14.000
+</FILE>
+<FILE 00000099.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000031
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000099.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_taillights.scx
+mass 2.500
+</FILE>
+<FILE 00000100.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000032
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000100.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_windshield.scx
+mass 13.000
+</FILE>
+<FILE 00000101.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000033
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000101.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_R_wing.scx
+mass 3.500
+</FILE>
+<FILE 00000102.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000034
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000102.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_Rf_wing_C.scx
+mass 2.500
+</FILE>
+<FILE 00000103.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000035
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000103.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_Rf_wing_L.scx
+mass 0.400
+</FILE>
+<FILE 00000104.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000036
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000104.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_Rf_wing_R.scx
+mass 0.400
+</FILE>
+<FILE 00000105.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000038
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000105.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_RL_door.scx
+mass 17.500
+</FILE>
+<FILE 00000106.res >
+typeof	9
+superid	0x00000001
+typeid	0x00000039
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000106.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_RL_window.scx
+mass 4.500
+</FILE>
+<FILE 00000107.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000003B
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000107.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_RR_door.scx
+mass 17.500
+</FILE>
+<FILE 00000108.res >
+typeof	9
+superid	0x00000001
+typeid	0x0000003A
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000108.rsd >
+shape cars\racers\Einvagen_data\meshes\_phys_RR_window.scx
+mass 4.500
+</FILE>
+<FILE 00000109.res >
+typeof	6
+superid	0x00030002
+typeid	0x00000002
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000109.rsd >
+</FILE>
+<FILE 00000110.res >
+typeof	5
+superid	0x00030003
+typeid	0x00000183
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000110.rsd >
+</FILE>
+<FILE 00000111.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000E5
+alias	L_headlights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000111.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_headlights_CITY.scx
+</FILE>
+<FILE 00000112.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000E7
+alias	L_headlights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000112.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_headlights_INDICATOR.scx
+</FILE>
+<FILE 00000113.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000E9
+alias	L_taillights_BRAKE
+isparentcompatible	1.00
+</FILE>
+<FILE 00000113.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_taillights_BRAKE.scx
+</FILE>
+<FILE 00000114.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000EB
+alias	L_taillights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000114.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_taillights_CITY.scx
+</FILE>
+<FILE 00000115.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000ED
+alias	L_taillights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000115.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_taillights_INDICATOR.scx
+</FILE>
+<FILE 00000116.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000EF
+alias	L_taillights_REVERSING
+isparentcompatible	1.00
+</FILE>
+<FILE 00000116.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_taillights_REVERSING.scx
+</FILE>
+<FILE 00000117.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000F1
+alias	R_headlights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000117.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_headlights_CITY.scx
+</FILE>
+<FILE 00000118.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000F3
+alias	R_headlights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000118.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_headlights_INDICATOR.scx
+</FILE>
+<FILE 00000119.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000F5
+alias	R_taillights_BRAKE
+isparentcompatible	1.00
+</FILE>
+<FILE 00000119.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_taillights_BRAKE.scx
+</FILE>
+<FILE 00000120.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000F7
+alias	R_taillights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000120.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_taillights_CITY.scx
+</FILE>
+<FILE 00000121.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000F9
+alias	R_taillights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000121.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_taillights_INDICATOR.scx
+</FILE>
+<FILE 00000122.res >
+typeof	5
+superid	0x00000183
+typeid	0x000000FB
+alias	R_taillights_REVERSING
+isparentcompatible	1.00
+</FILE>
+<FILE 00000122.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_taillights_REVERSING.scx
+</FILE>
+<FILE 00000123.res >
+typeof	5
+superid	0x00000183
+typeid	0x0000010A
+alias	Rf_wing_BRAKE
+isparentcompatible	1.00
+</FILE>
+<FILE 00000123.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\Rf_wing_BRAKE.scx
+</FILE>
+<FILE 00000124.res >
+typeof	5
+superid	0x00030003
+typeid	0x00000003
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000124.rsd >
+</FILE>
+<FILE 00000125.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000049
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000125.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\chassis.scx
+</FILE>
+<FILE 00000126.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000004E
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000126.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\F_bumper.scx
+</FILE>
+<FILE 00000127.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000051
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000127.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\F_bumper_2.scx
+</FILE>
+<FILE 00000128.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000054
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000128.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\F_windshield.scx
+</FILE>
+<FILE 00000129.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000056
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000129.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_door.scx
+</FILE>
+<FILE 00000130.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000059
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000130.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_quarterpanel.scx
+</FILE>
+<FILE 00000131.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000005C
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000131.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_seat.scx
+</FILE>
+<FILE 00000132.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000005F
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000132.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_window.scx
+</FILE>
+<FILE 00000133.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000061
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000133.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_door.scx
+</FILE>
+<FILE 00000134.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000063
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000134.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_quarterpanel.scx
+</FILE>
+<FILE 00000135.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000065
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000135.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_seat.scx
+</FILE>
+<FILE 00000136.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000067
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000136.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_window.scx
+</FILE>
+<FILE 00000137.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000069
+alias	hat
+isparentcompatible	1.00
+</FILE>
+<FILE 00000137.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\hat_holder.scx
+</FILE>
+<FILE 00000138.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000006B
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000138.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\hood.scx
+</FILE>
+<FILE 00000139.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000006E
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000139.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\hood_2.scx
+</FILE>
+<FILE 00000140.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000070
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000140.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_headlights.scx
+</FILE>
+<FILE 00000141.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000073
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000141.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_mirror.scx
+</FILE>
+<FILE 00000142.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000076
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000142.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_taillights.scx
+</FILE>
+<FILE 00000143.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000079
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000143.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_bumper.scx
+</FILE>
+<FILE 00000144.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000007C
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000144.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_door.scx
+</FILE>
+<FILE 00000145.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000007F
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000145.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_headlights.scx
+</FILE>
+<FILE 00000146.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000081
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000146.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_mirror.scx
+</FILE>
+<FILE 00000147.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000083
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000147.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_seats.scx
+</FILE>
+<FILE 00000148.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000086
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000148.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_taillights.scx
+</FILE>
+<FILE 00000149.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000088
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000149.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_windshield.scx
+</FILE>
+<FILE 00000150.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000008A
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000150.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_wing.scx
+</FILE>
+<FILE 00000151.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000008D
+alias	radiator
+isparentcompatible	1.00
+</FILE>
+<FILE 00000151.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\radiator.scx
+</FILE>
+<FILE 00000152.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000008F
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000152.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\Rf_wing.scx
+</FILE>
+<FILE 00000153.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000092
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000153.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RL_door.scx
+</FILE>
+<FILE 00000154.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000095
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000154.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RL_window.scx
+</FILE>
+<FILE 00000155.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000097
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000155.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RR_door.scx
+</FILE>
+<FILE 00000156.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000099
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000156.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RR_window.scx
+</FILE>
+<FILE 00000157.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000009B
+alias	steering
+isparentcompatible	1.00
+</FILE>
+<FILE 00000157.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\steering_wheel.scx
+</FILE>
+<FILE 00000158.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000009D
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000158.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_shock_absorber.scx
+</FILE>
+<FILE 00000159.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000009F
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000159.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RL_shock_absorber.scx
+</FILE>
+<FILE 00000160.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000A1
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000160.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_shock_absorber.scx
+</FILE>
+<FILE 00000161.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000A3
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000161.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RR_shock_absorber.scx
+</FILE>
+<FILE 00000162.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000A5
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000162.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_brake.scx
+</FILE>
+<FILE 00000163.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000A7
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000163.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_brake.scx
+</FILE>
+<FILE 00000164.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000A9
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000164.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RL_brake.scx
+</FILE>
+<FILE 00000165.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000AB
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000165.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RR_brake.scx
+</FILE>
+<FILE 00000166.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000A0
+alias	F_bumper_3
+isparentcompatible	1.00
+</FILE>
+<FILE 00000166.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\F_bumper_3.scx
+</FILE>
+<FILE 00000167.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000114
+alias	F_bumper_4
+isparentcompatible	1.00
+</FILE>
+<FILE 00000167.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\F_bumper_4.scx
+</FILE>
+<FILE 00000168.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000118
+alias	hood_3
+isparentcompatible	1.00
+</FILE>
+<FILE 00000168.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\hood_3.scx
+</FILE>
+<FILE 00000169.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000011D
+alias	FL_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000169.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FL_fender_skirt.scx
+</FILE>
+<FILE 00000170.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000121
+alias	FR_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000170.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\FR_fender_skirt.scx
+</FILE>
+<FILE 00000171.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000123
+alias	RL_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000171.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RL_fender_skirt.scx
+</FILE>
+<FILE 00000172.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000125
+alias	RR_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000172.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\RR_fender_skirt.scx
+</FILE>
+<FILE 00000173.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000012D
+alias	L_headlights_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000173.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_headlights_2.scx
+</FILE>
+<FILE 00000174.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000133
+alias	R_headlights_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000174.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_headlights_2.scx
+</FILE>
+<FILE 00000175.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000137
+alias	Rf_wing_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000175.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\Rf_wing_2.scx
+</FILE>
+<FILE 00000176.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000013A
+alias	R_bumper_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000176.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_bumper_2.scx
+</FILE>
+<FILE 00000177.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000142
+alias	stock_exhaust_pipe
+isparentcompatible	1.00
+</FILE>
+<FILE 00000177.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\stock_exhaust_pipe.scx
+</FILE>
+<FILE 00000178.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000FD
+alias	L_headlights_2_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000178.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_headlights_2_CITY.scx
+</FILE>
+<FILE 00000179.res >
+typeof	5
+superid	0x00000003
+typeid	0x000000FF
+alias	R_headlights_2_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000179.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_headlights_2_CITY.scx
+</FILE>
+<FILE 00000180.res >
+typeof	5
+superid	0x00000003
+typeid	0x00000148
+alias	L_headlights_2_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000180.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\L_headlights_2_INDICATOR.scx
+</FILE>
+<FILE 00000181.res >
+typeof	5
+superid	0x00000003
+typeid	0x0000014A
+alias	R_headlights_2_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000181.rsd >
+sourcefile cars\racers\Einvagen_data\meshes\R_headlights_2_INDICATOR.scx
+</FILE>
+<FILE 00000182.res >
+typeof	7
+superid	0x00030001
+typeid	0x00000180
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000182.rsd >
+</FILE>
+<FILE 00000183.res >
+typeof	7
+superid	0x00000180
+typeid	0x00000146
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000183.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_light_glow.dds
+</FILE>
+<FILE 00000184.res >
+typeof	7
+superid	0x00030001
+typeid	0x00000004
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000184.rsd >
+</FILE>
+<FILE 00000185.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000004A
+alias	Einvagen_chassis.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000185.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_chassis.dds
+</FILE>
+<FILE 00000186.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000004C
+alias	Einvagen_dash.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000186.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_dash.dds
+</FILE>
+<FILE 00000187.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000004F
+alias	Einvagen_F_bumper.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000187.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_bumper.dds
+</FILE>
+<FILE 00000188.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000052
+alias	Einvagen_F_bumper_2.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000188.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_bumper_2.dds
+</FILE>
+<FILE 00000189.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000009C
+alias	Einvagen_F_bumper_3.dds
+isparentcompatible	1.00
+</FILE>
+<FILE 00000189.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_bumper_3.dds
+</FILE>
+<FILE 00000190.res >
+typeof	7
+superid	0x00000004
+typeid	0x000000A8
+alias	Einvagen_F_bumper_4.dds
+isparentcompatible	1.00
+</FILE>
+<FILE 00000190.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_bumper_4.dds
+</FILE>
+<FILE 00000191.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000057
+alias	Einvagen_F_door.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000191.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_door.dds
+</FILE>
+<FILE 00000192.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000005A
+alias	Einvagen_F_quarterpanel.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000192.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_quarterpanel.png
+</FILE>
+<FILE 00000193.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000005D
+alias	Einvagen_F_seat.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000193.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_F_seat.dds
+</FILE>
+<FILE 00000194.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000007D
+alias	Einvagen_hatch_door.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000194.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_hatch_door.dds
+</FILE>
+<FILE 00000195.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000071
+alias	Einvagen_headlights.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000195.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_headlights.dds
+</FILE>
+<FILE 00000196.res >
+typeof	7
+superid	0x00000004
+typeid	0x000000AA
+alias	Einvagen_headlights_2.dds
+isparentcompatible	1.00
+</FILE>
+<FILE 00000196.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_headlights_2.dds
+</FILE>
+<FILE 00000197.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000006C
+alias	Einvagen_hood.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000197.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_hood.png
+</FILE>
+<FILE 00000198.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000117
+alias	Einvagen_hood_2.dds
+isparentcompatible	1.00
+</FILE>
+<FILE 00000198.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_hood_2.dds
+</FILE>
+<FILE 00000199.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000004B
+alias	Einvagen_interior.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000199.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_interior.dds
+</FILE>
+<FILE 00000200.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000074
+alias	Einvagen_mirror.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000200.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_mirror.dds
+</FILE>
+<FILE 00000201.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000007A
+alias	Einvagen_R_bumper.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000201.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_R_bumper.dds
+</FILE>
+<FILE 00000202.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000139
+alias	Einvagen_R_bumper_2.dds
+isparentcompatible	1.00
+</FILE>
+<FILE 00000202.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_R_bumper_2.dds
+</FILE>
+<FILE 00000203.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000093
+alias	Einvagen_R_door.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000203.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_R_door.dds
+</FILE>
+<FILE 00000204.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000084
+alias	Einvagen_R_seats.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000204.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_R_seats.dds
+</FILE>
+<FILE 00000205.res >
+typeof	7
+superid	0x00000004
+typeid	0x0000008B
+alias	Einvagen_R_wing.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000205.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_R_wing.dds
+</FILE>
+<FILE 00000206.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000090
+alias	Einvagen_Rf_wing.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000206.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_Rf_wing.dds
+</FILE>
+<FILE 00000207.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000141
+alias	Einvagen_steering_wheel.dds
+isparentcompatible	1.00
+</FILE>
+<FILE 00000207.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_steering_wheel.dds
+</FILE>
+<FILE 00000208.res >
+typeof	7
+superid	0x00000004
+typeid	0x00000077
+alias	Einvagen_taillights.ptx
+isparentcompatible	1.00
+</FILE>
+<FILE 00000208.rsd >
+sourcefile cars\racers\Einvagen_data\textures\Einvagen_taillights.dds
+</FILE>
+<FILE 00000209.res >
+typeof	14
+superid	0x00030006
+typeid	0x0000017D
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000209.rsd >
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000210.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000E4
+alias	L_headlights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000210.rsd >
+mesh 0x000000E5
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000211.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000E6
+alias	L_headlights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000211.rsd >
+mesh 0x000000E7
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000212.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000E8
+alias	L_taillights_BRAKE
+isparentcompatible	1.00
+</FILE>
+<FILE 00000212.rsd >
+mesh 0x000000E9
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000213.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000EA
+alias	L_taillights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000213.rsd >
+mesh 0x000000EB
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000214.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000EC
+alias	L_taillights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000214.rsd >
+mesh 0x000000ED
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000215.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000EE
+alias	L_taillights_REVERSING
+isparentcompatible	1.00
+</FILE>
+<FILE 00000215.rsd >
+mesh 0x000000EF
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000216.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000F0
+alias	R_headlights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000216.rsd >
+mesh 0x000000F1
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000217.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000F2
+alias	R_headlights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000217.rsd >
+mesh 0x000000F3
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000218.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000F4
+alias	R_taillights_BRAKE
+isparentcompatible	1.00
+</FILE>
+<FILE 00000218.rsd >
+mesh 0x000000F5
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000219.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000F6
+alias	R_taillights_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000219.rsd >
+mesh 0x000000F7
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000220.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000F8
+alias	R_taillights_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000220.rsd >
+mesh 0x000000F9
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000221.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000FA
+alias	R_taillights_REVERSING
+isparentcompatible	1.00
+</FILE>
+<FILE 00000221.rsd >
+mesh 0x000000FB
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000222.res >
+typeof	14
+superid	0x0000017D
+typeid	0x00000109
+alias	Rf_wing_BRAKE
+isparentcompatible	1.00
+</FILE>
+<FILE 00000222.rsd >
+mesh 0x0000010A
+flags 1152.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000223.res >
+typeof	14
+superid	0x0000017D
+typeid	0x000000FE
+alias	L_headlights_2_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000223.rsd >
+mesh 0x000000FD
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000224.res >
+typeof	14
+superid	0x0000017D
+typeid	0x00000147
+alias	R_headlights_2_CITY
+isparentcompatible	1.00
+</FILE>
+<FILE 00000224.rsd >
+mesh 0x000000FF
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000225.res >
+typeof	14
+superid	0x0000017D
+typeid	0x00000149
+alias	L_headlights_2_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000225.rsd >
+mesh 0x00000148
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000226.res >
+typeof	14
+superid	0x0000017D
+typeid	0x0000014B
+alias	R_headlights_2_INDICATOR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000226.rsd >
+mesh 0x0000014A
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000146
+</FILE>
+<FILE 00000227.res >
+typeof	14
+superid	0x00030006
+typeid	0x00000005
+alias	Einvagen
+isparentcompatible	1.00
+</FILE>
+<FILE 00000227.rsd >
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000228.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000048
+alias	chassis
+isparentcompatible	1.00
+</FILE>
+<FILE 00000228.rsd >
+mesh 0x00000049
+flags 8.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x0000004C
+texture 0x0000004B
+texture 0x00020025
+texture 0x0000004A
+</FILE>
+<FILE 00000229.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000004D
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000229.rsd >
+mesh 0x0000004E
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000004F
+</FILE>
+<FILE 00000230.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000050
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000230.rsd >
+mesh 0x00000051
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000052
+</FILE>
+<FILE 00000231.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000053
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000231.rsd >
+mesh 0x00000054
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000232.res >
+typeof	14
+superid	0x00000005
+typeid	0x000000A2
+alias	F_bumper_3
+isparentcompatible	1.00
+</FILE>
+<FILE 00000232.rsd >
+mesh 0x000000A0
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000009C
+</FILE>
+<FILE 00000233.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000115
+alias	F_bumper_4
+isparentcompatible	1.00
+</FILE>
+<FILE 00000233.rsd >
+mesh 0x00000114
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x000000A8
+</FILE>
+<FILE 00000234.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000055
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000234.rsd >
+mesh 0x00000056
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x0000005A
+texture 0x00000117
+texture 0x00000000
+</FILE>
+<FILE 00000235.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000058
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000235.rsd >
+mesh 0x00000059
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000005A
+</FILE>
+<FILE 00000236.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000005B
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000236.rsd >
+mesh 0x0000005C
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x0000005D
+</FILE>
+<FILE 00000237.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000005E
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000237.rsd >
+mesh 0x0000005F
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000238.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000011E
+alias	FL_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000238.rsd >
+mesh 0x0000011D
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+</FILE>
+<FILE 00000239.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000060
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000239.rsd >
+mesh 0x00000061
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000057
+</FILE>
+<FILE 00000240.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000062
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000240.rsd >
+mesh 0x00000063
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000005A
+</FILE>
+<FILE 00000241.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000064
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000241.rsd >
+mesh 0x00000065
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x0000005D
+</FILE>
+<FILE 00000242.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000066
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000242.rsd >
+mesh 0x00000067
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000243.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000068
+alias	hat
+isparentcompatible	1.00
+</FILE>
+<FILE 00000243.rsd >
+mesh 0x00000069
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000244.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000006A
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000244.rsd >
+mesh 0x0000006B
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000006C
+</FILE>
+<FILE 00000245.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000006D
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000245.rsd >
+mesh 0x0000006E
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000117
+</FILE>
+<FILE 00000246.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000119
+alias	hood_3
+isparentcompatible	1.00
+</FILE>
+<FILE 00000246.rsd >
+mesh 0x00000118
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000117
+</FILE>
+<FILE 00000247.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000006F
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000247.rsd >
+mesh 0x00000070
+flags 8.000
+lod_amp 6.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000071
+</FILE>
+<FILE 00000248.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000072
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000248.rsd >
+mesh 0x00000073
+flags 8.000
+lod_amp 8.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000074
+</FILE>
+<FILE 00000249.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000075
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000249.rsd >
+mesh 0x00000076
+flags 8.000
+lod_amp 6.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000077
+</FILE>
+<FILE 00000250.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000078
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000250.rsd >
+mesh 0x00000079
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000007A
+</FILE>
+<FILE 00000251.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000007B
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000251.rsd >
+mesh 0x0000007C
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000007D
+</FILE>
+<FILE 00000252.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000007E
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000252.rsd >
+mesh 0x0000007F
+flags 8.000
+lod_amp 6.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000071
+</FILE>
+<FILE 00000253.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000080
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000253.rsd >
+mesh 0x00000081
+flags 8.000
+lod_amp 8.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000074
+</FILE>
+<FILE 00000254.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000082
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000254.rsd >
+mesh 0x00000083
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000084
+</FILE>
+<FILE 00000255.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000085
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000255.rsd >
+mesh 0x00000086
+flags 8.000
+lod_amp 6.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000077
+</FILE>
+<FILE 00000256.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000087
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000256.rsd >
+mesh 0x00000088
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000257.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000089
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000257.rsd >
+mesh 0x0000008A
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000008B
+</FILE>
+<FILE 00000258.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000008C
+alias	radiator
+isparentcompatible	1.00
+</FILE>
+<FILE 00000258.rsd >
+mesh 0x0000008D
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x0000004A
+texture 0x00000000
+texture 0x0000004B
+texture 0x0000004C
+</FILE>
+<FILE 00000259.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000008E
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000259.rsd >
+mesh 0x0000008F
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000090
+</FILE>
+<FILE 00000260.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000091
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000260.rsd >
+mesh 0x00000092
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000093
+</FILE>
+<FILE 00000261.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000094
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000261.rsd >
+mesh 0x00000095
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000262.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000096
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000262.rsd >
+mesh 0x00000097
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000093
+</FILE>
+<FILE 00000263.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000098
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000263.rsd >
+mesh 0x00000099
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+</FILE>
+<FILE 00000264.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000009A
+alias	steering
+isparentcompatible	1.00
+</FILE>
+<FILE 00000264.rsd >
+mesh 0x0000009B
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00000141
+</FILE>
+<FILE 00000265.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000122
+alias	FR_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000265.rsd >
+mesh 0x00000121
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+</FILE>
+<FILE 00000266.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000124
+alias	RL_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000266.rsd >
+mesh 0x00000123
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+</FILE>
+<FILE 00000267.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000126
+alias	RR_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000267.rsd >
+mesh 0x00000125
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+</FILE>
+<FILE 00000268.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000012E
+alias	L_headlights_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000268.rsd >
+mesh 0x0000012D
+flags 8.000
+lod_amp 6.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x000000AA
+</FILE>
+<FILE 00000269.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000134
+alias	R_headlights_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000269.rsd >
+mesh 0x00000133
+flags 8.000
+lod_amp 6.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x000000AA
+</FILE>
+<FILE 00000270.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000138
+alias	Rf_wing_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000270.rsd >
+mesh 0x00000137
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+</FILE>
+<FILE 00000271.res >
+typeof	14
+superid	0x00000005
+typeid	0x0000013B
+alias	R_bumper_2
+isparentcompatible	1.00
+</FILE>
+<FILE 00000271.rsd >
+mesh 0x0000013A
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x00020025
+texture 0x00000139
+</FILE>
+<FILE 00000272.res >
+typeof	14
+superid	0x00000005
+typeid	0x00000143
+alias	stock_exhaust_pipe
+isparentcompatible	1.00
+</FILE>
+<FILE 00000272.rsd >
+mesh 0x00000142
+flags 8.000
+lod_amp 3.000
+shd_center 0.000 0.000 0.000
+shd_diru 0.000 0.000 0.000
+shd_dirv 0.000 0.000 0.000
+shd_vbase 0.000 0.000 0.000
+shd_vup 0.000 0.000 0.000
+texture 0x0003001E
+</FILE>
+<FILE 00000273.res >
+typeof	8
+superid	0x00020101
+typeid	0x00000006
+alias	Einvagen_110_GT
+isparentcompatible	1.00
+</FILE>
+<FILE 00000273.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_110_GT.class
+native car cars\racers\Einvagen_data\scripts\_main_110_GT.cfg
+</FILE>
+<FILE 00000274.res >
+typeof	8
+superid	0x00020101
+typeid	0x00000112
+alias	Einvagen_110_GTK
+isparentcompatible	1.00
+</FILE>
+<FILE 00000274.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_110_GTK.class
+native car cars\racers\Einvagen_data\scripts\_main_110_GTK.cfg
+</FILE>
+<FILE 00000275.res >
+typeof	8
+superid	0x00020101
+typeid	0x00000113
+alias	Einvagen_140_GTA
+isparentcompatible	1.00
+</FILE>
+<FILE 00000275.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_140_GTA.class
+native car cars\racers\Einvagen_data\scripts\_main_140_GTA.cfg
+</FILE>
+<FILE 00000276.res >
+typeof	8
+superid	0x00020008
+typeid	0x00000111
+alias	Einvagen_models
+isparentcompatible	1.00
+</FILE>
+<FILE 00000276.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_models.class
+</FILE>
+<FILE 00000277.res >
+typeof	8
+superid	0x00021000
+typeid	0x0000015F
+alias	Einvagen_VT
+isparentcompatible	1.00
+</FILE>
+<FILE 00000277.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_VT.class
+</FILE>
+<FILE 00000278.res >
+typeof	8
+superid	0x0004F233
+typeid	0x0000010C
+alias	>Aerodynamic
+isparentcompatible	1.00
+</FILE>
+<FILE 00000278.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000279.res >
+typeof	8
+superid	0x0000010C
+typeid	0x000000C4
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000279.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_wing.class
+native part cars\racers\Einvagen_data\scripts\R_wing.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000280.res >
+typeof	8
+superid	0x0000010C
+typeid	0x000000C6
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000280.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_Rf_wing.class
+native part cars\racers\Einvagen_data\scripts\Rf_wing.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000281.res >
+typeof	8
+superid	0x0000010C
+typeid	0x0000012C
+alias	Rf
+isparentcompatible	1.00
+</FILE>
+<FILE 00000281.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_Rf_wing_2.class
+native part cars\racers\Einvagen_data\scripts\Rf_wing_2.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000282.res >
+typeof	8
+superid	0x0004F24C
+typeid	0x00000132
+alias	>Replacement
+isparentcompatible	1.00
+</FILE>
+<FILE 00000282.rsd >
+</FILE>
+<FILE 00000283.res >
+typeof	8
+superid	0x00000132
+typeid	0x00000131
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000283.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_L_headlights_2.class
+native part cars\racers\Einvagen_data\scripts\L_headlights_2.cfg
+lod_amp 6.000
+</FILE>
+<FILE 00000284.res >
+typeof	8
+superid	0x00000132
+typeid	0x00000130
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000284.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_headlights_2.class
+native part cars\racers\Einvagen_data\scripts\R_headlights_2.cfg
+lod_amp 6.000
+</FILE>
+<FILE 00000285.res >
+typeof	8
+superid	0x0004F24C
+typeid	0x0000010E
+alias	>Stock
+isparentcompatible	1.00
+</FILE>
+<FILE 00000285.rsd >
+</FILE>
+<FILE 00000286.res >
+typeof	8
+superid	0x0000010E
+typeid	0x000000BA
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000286.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_L_headlights.class
+native part cars\racers\Einvagen_data\scripts\L_headlights.cfg
+lod_amp 6.000
+</FILE>
+<FILE 00000287.res >
+typeof	8
+superid	0x0000010E
+typeid	0x000000BC
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000287.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_L_taillights.class
+native part cars\racers\Einvagen_data\scripts\L_taillights.cfg
+lod_amp 6.000
+</FILE>
+<FILE 00000288.res >
+typeof	8
+superid	0x0000010E
+typeid	0x000000BF
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000288.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_headlights.class
+native part cars\racers\Einvagen_data\scripts\R_headlights.cfg
+lod_amp 6.000
+</FILE>
+<FILE 00000289.res >
+typeof	8
+superid	0x0000010E
+typeid	0x000000C2
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000289.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_taillights.class
+native part cars\racers\Einvagen_data\scripts\R_taillights.cfg
+lod_amp 6.000
+</FILE>
+<FILE 00000290.res >
+typeof	8
+superid	0x0004F24C
+typeid	0x0000010D
+alias	>Stock
+isparentcompatible	1.00
+</FILE>
+<FILE 00000290.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000291.res >
+typeof	8
+superid	0x0000010D
+typeid	0x000000AE
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000291.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_F_windshield.class
+native part cars\racers\Einvagen_data\scripts\F_windshield.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000292.res >
+typeof	8
+superid	0x0000010D
+typeid	0x000000B2
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000292.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FL_window.class
+native part cars\racers\Einvagen_data\scripts\FL_window.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000293.res >
+typeof	8
+superid	0x0000010D
+typeid	0x000000B6
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000293.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FR_window.class
+native part cars\racers\Einvagen_data\scripts\FR_window.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000294.res >
+typeof	8
+superid	0x0000010D
+typeid	0x000000C3
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000294.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_windshield.class
+native part cars\racers\Einvagen_data\scripts\R_windshield.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000295.res >
+typeof	8
+superid	0x0000010D
+typeid	0x000000C8
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000295.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_RL_window.class
+native part cars\racers\Einvagen_data\scripts\RL_window.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000296.res >
+typeof	8
+superid	0x0000010D
+typeid	0x000000CA
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000296.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_RR_window.class
+native part cars\racers\Einvagen_data\scripts\RR_window.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000297.res >
+typeof	8
+superid	0x0004F242
+typeid	0x00000140
+alias	>Decorative
+isparentcompatible	1.00
+</FILE>
+<FILE 00000297.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000298.res >
+typeof	8
+superid	0x00000140
+typeid	0x0000011C
+alias	FL_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000298.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FL_fender_skirt.class
+native part cars\racers\Einvagen_data\scripts\FL_fender_skirt.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000299.res >
+typeof	8
+superid	0x00000140
+typeid	0x00000120
+alias	FR_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000299.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FR_fender_skirt.class
+native part cars\racers\Einvagen_data\scripts\FR_fender_skirt.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000300.res >
+typeof	8
+superid	0x00000140
+typeid	0x00000127
+alias	RL_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000300.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_RL_fender_skirt.class
+native part cars\racers\Einvagen_data\scripts\RL_fender_skirt.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000301.res >
+typeof	8
+superid	0x00000140
+typeid	0x00000128
+alias	RR_fender_skirt
+isparentcompatible	1.00
+</FILE>
+<FILE 00000301.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_RR_fender_skirt.class
+native part cars\racers\Einvagen_data\scripts\RR_fender_skirt.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000302.res >
+typeof	8
+superid	0x0004F242
+typeid	0x00000007
+alias	>Replacement
+isparentcompatible	1.00
+</FILE>
+<FILE 00000302.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000303.res >
+typeof	8
+superid	0x00000007
+typeid	0x000000A4
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000303.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_F_bumper_3.class
+native part cars\racers\Einvagen_data\scripts\F_bumper_3.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000304.res >
+typeof	8
+superid	0x00000007
+typeid	0x000000A6
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000304.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_F_bumper_4.class
+native part cars\racers\Einvagen_data\scripts\F_bumper_4.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000305.res >
+typeof	8
+superid	0x00000007
+typeid	0x0000011B
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000305.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_hood_3.class
+native part cars\racers\Einvagen_data\scripts\hood_3.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000306.res >
+typeof	8
+superid	0x00000007
+typeid	0x0000013C
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000306.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_bumper_2.class
+native part cars\racers\Einvagen_data\scripts\R_bumper_2.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000307.res >
+typeof	8
+superid	0x0004F242
+typeid	0x0000010B
+alias	>Stock
+isparentcompatible	1.00
+</FILE>
+<FILE 00000307.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000308.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000AC
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000308.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_F_bumper.class
+native part cars\racers\Einvagen_data\scripts\F_bumper.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000309.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000AD
+alias	F
+isparentcompatible	1.00
+</FILE>
+<FILE 00000309.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_F_bumper_2.class
+native part cars\racers\Einvagen_data\scripts\F_bumper_2.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000310.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000AF
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000310.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FL_door.class
+native part cars\racers\Einvagen_data\scripts\FL_door.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000311.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000B0
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000311.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FL_quarterpanel.class
+native part cars\racers\Einvagen_data\scripts\FL_quarterpanel.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000312.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000B3
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000312.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FR_door.class
+native part cars\racers\Einvagen_data\scripts\FR_door.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000313.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000B4
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000313.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FR_quarterpanel.class
+native part cars\racers\Einvagen_data\scripts\FR_quarterpanel.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000314.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000B7
+alias	hat
+isparentcompatible	1.00
+</FILE>
+<FILE 00000314.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_hat_holder.class
+native part cars\racers\Einvagen_data\scripts\hat_holder.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000315.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000B8
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000315.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_hood.class
+native part cars\racers\Einvagen_data\scripts\hood.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000316.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000B9
+alias	hood
+isparentcompatible	1.00
+</FILE>
+<FILE 00000316.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_hood_2.class
+native part cars\racers\Einvagen_data\scripts\hood_2.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000317.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000BB
+alias	L
+isparentcompatible	1.00
+</FILE>
+<FILE 00000317.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_L_mirror.class
+native part cars\racers\Einvagen_data\scripts\L_mirror.cfg
+lod_amp 8.000
+</FILE>
+<FILE 00000318.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000BD
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000318.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_bumper.class
+native part cars\racers\Einvagen_data\scripts\R_bumper.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000319.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000BE
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000319.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_door.class
+native part cars\racers\Einvagen_data\scripts\R_door.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000320.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000C0
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000320.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_mirror.class
+native part cars\racers\Einvagen_data\scripts\R_mirror.cfg
+lod_amp 8.000
+</FILE>
+<FILE 00000321.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000C7
+alias	RL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000321.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_RL_door.class
+native part cars\racers\Einvagen_data\scripts\RL_door.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000322.res >
+typeof	8
+superid	0x0000010B
+typeid	0x000000C9
+alias	RR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000322.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_RR_door.class
+native part cars\racers\Einvagen_data\scripts\RR_door.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000323.res >
+typeof	8
+superid	0x0004F23B
+typeid	0x0000010F
+alias	>Body
+isparentcompatible	1.00
+</FILE>
+<FILE 00000323.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000324.res >
+typeof	8
+superid	0x0000010F
+typeid	0x00000145
+alias	kit_GTA_body
+isparentcompatible	1.00
+</FILE>
+<FILE 00000324.rsd >
+script cars\racers\Einvagen_data\scripts\kit_GTA_body.class
+lod_amp 3.000
+</FILE>
+<FILE 00000325.res >
+typeof	8
+superid	0x00040250
+typeid	0x00000008
+alias	>pipes
+isparentcompatible	1.00
+</FILE>
+<FILE 00000325.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000326.res >
+typeof	8
+superid	0x00000008
+typeid	0x00000136
+alias	Einvagen_stock_exhaust_system
+isparentcompatible	1.00
+</FILE>
+<FILE 00000326.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_stock_exhaust_pipe.class
+native part cars\racers\Einvagen_data\scripts\stock_exhaust_pipe.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000327.res >
+typeof	8
+superid	0x00040008
+typeid	0x00000144
+alias	>engine
+isparentcompatible	1.00
+</FILE>
+<FILE 00000327.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000328.res >
+typeof	8
+superid	0x00000144
+typeid	0x000000C5
+alias	radiator
+isparentcompatible	1.00
+</FILE>
+<FILE 00000328.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_radiator.class
+native part cars\racers\Einvagen_data\scripts\radiator.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000329.res >
+typeof	8
+superid	0x00040019
+typeid	0x00000009
+alias	einvagen_R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000329.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000330.res >
+typeof	8
+superid	0x0004F246
+typeid	0x00000110
+alias	>seats
+isparentcompatible	1.00
+</FILE>
+<FILE 00000330.rsd >
+lod_amp 3.000
+</FILE>
+<FILE 00000331.res >
+typeof	8
+superid	0x00000110
+typeid	0x000000B1
+alias	FL
+isparentcompatible	1.00
+</FILE>
+<FILE 00000331.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FL_seat.class
+native part cars\racers\Einvagen_data\scripts\FL_seat.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000332.res >
+typeof	8
+superid	0x00000110
+typeid	0x000000B5
+alias	FR
+isparentcompatible	1.00
+</FILE>
+<FILE 00000332.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_FR_seat.class
+native part cars\racers\Einvagen_data\scripts\FR_seat.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000333.res >
+typeof	8
+superid	0x00000110
+typeid	0x000000C1
+alias	R
+isparentcompatible	1.00
+</FILE>
+<FILE 00000333.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_R_seats.class
+native part cars\racers\Einvagen_data\scripts\R_seats.cfg
+lod_amp 3.000
+</FILE>
+<FILE 00000334.res >
+typeof	8
+superid	0x0004F243
+typeid	0x000000CB
+alias	steering
+isparentcompatible	1.00
+</FILE>
+<FILE 00000334.rsd >
+script cars\racers\Einvagen_data\scripts\Einvagen_steering_wheel.class
+native part cars\racers\Einvagen_data\scripts\steering_wheel.cfg
+lod_amp 3.000
+</FILE>
