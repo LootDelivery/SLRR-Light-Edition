@@ -249,6 +249,22 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	private void tracePartTransform( Part part, String prefix )
+	{
+		Vector3 position = part.getPos();
+		Ypr orientation = part.getOri();
+
+		if( position )
+			tracePreview( prefix + " Part.getPos=" + position.x + "," + position.y + "," + position.z );
+		else
+			tracePreview( prefix + " Part.getPos=null" );
+
+		if( orientation )
+			tracePreview( prefix + " Part.getOri=" + orientation.y + "," + orientation.p + "," + orientation.r );
+		else
+			tracePreview( prefix + " Part.getOri=null" );
+	}
+
 	private void traceRenderPayloadDiagnostics( GameRef renderRef, String prefix )
 	{
 		// Native 0x419860 returns the embedded payload at ResourceRef +0x80.
@@ -845,6 +861,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						// Reversible calibration probe: temporarily add +0.1 on Part X,
 						// read the native bone matrix/instance pose, then restore exactly
 						// the transform that was active before the probe.
+						tracePartTransform( previewPart, "P00 baseline" );
 						traceRenderNativePose( liveRenderRef, "P00 baseline" );
 						Vector3 probePosition = new Vector3(
 							previewPosition.x + 0.1,
@@ -852,6 +869,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							previewPosition.z
 						);
 					previewPart.setMatrix( probePosition, new Ypr( yaw, pitch, roll ) );
+					tracePartTransform( previewPart, "P01 plusX_0.1" );
 					int probeRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
 					if( probeRenderInstance )
 					{
@@ -862,6 +880,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						tracePreview( "P01 render instance missing during translation probe" );
 
 					previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
+					tracePartTransform( previewPart, "P02 restored" );
 					int restoredRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
 					if( restoredRenderInstance )
 					{
