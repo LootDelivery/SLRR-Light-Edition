@@ -5,8 +5,8 @@
 
 # Optional exact-case probe for the inline node name "Bone00".
 # ECX is the requested AABB_QUERY axis; ESI is the type-3 INSTANCE_RENDER.
-# Axes 489..498 are served here. Every other request is sent back through
-# the original axis-500 range check, preserving axes 500..502 unchanged.
+# Axes 489..498, 510..512 and 513..515 are served here. Every other request
+# returns through the original route, preserving live-AABB center axes 500..502.
 bone_upper_gate:
     cmp ecx, 489
     jb .check_native_pivot
@@ -15,9 +15,15 @@ bone_upper_gate:
 
 .check_native_pivot:
     cmp ecx, 510
-    jb .pass_through
+    jb .check_native_scale
     cmp ecx, 512
     jbe .native_pivot
+
+.check_native_scale:
+    cmp ecx, 513
+    jb .pass_through
+    cmp ecx, 515
+    jbe .native_scale
 
 .pass_through:
     # Restore the original axis-500 comparison flags for the stock route.
@@ -29,6 +35,21 @@ bone_upper_gate:
     # world coordinates (*1000), distinct from the geometry center at 500..502.
     sub ecx, 510
     fld dword ptr [esi+ecx*4+0x84]
+    push 1000
+    fimul dword ptr [esp]
+    add esp, 4
+    sub esp, 4
+    fistp dword ptr [esp]
+    mov eax, dword ptr [esp]
+    add esp, 4
+    jmp 0x005E6EC5
+
+.native_scale:
+    # Axes 513..515 return INSTANCE_RENDER scale XYZ as fixed-point *1000.
+    # Java uses these values with each component's live local mesh AABB to
+    # calculate a conservative assembly bounding sphere.
+    sub ecx, 513
+    fld dword ptr [esi+ecx*4+0x90]
     push 1000
     fimul dword ptr [esp]
     add esp, 4
