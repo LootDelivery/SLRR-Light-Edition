@@ -158,7 +158,7 @@ def main() -> int:
     raw_end_off = text["raw_ptr"] + text["raw_size"]
     if original[cave_off:raw_end_off] != bytes(raw_end_off - cave_off):
         raise SystemExit("Candidate .text padding is not all zero")
-    if cave_room < 0x200 or helper_room < 0x400:
+    if cave_room < 0x200 or helper_room < 0x700:
         raise SystemExit("Insufficient .text padding for inline hook/helper")
 
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -171,7 +171,7 @@ def main() -> int:
         raise SystemExit(f"Inline hook overlaps helper: hook is {len(hook)} bytes")
     if HELPER_VA + len(helper) > image_base + text["virtual_address"] + text["raw_size"]:
         raise SystemExit("AABB helper exceeds .text raw padding")
-    if len(helper) > 0x400:
+    if len(helper) > 0x700:
         raise SystemExit(f"AABB helper too large for validated helper slot: {len(helper)} bytes")
 
     detour = b"\xE9" + struct.pack("<i", HOOK_VA - (DISPATCH_VA + 5)) + b"\x90\x90\x90"
