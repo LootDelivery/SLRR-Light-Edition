@@ -1217,10 +1217,27 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				cameraAimDiagnosticsLogged = 1;
 			}
 
+			// Record the exact Java-side values supplied to setMatrix. The second
+			// sample is reserved for an actual mouse drag, not automatic spin.
+			if( cameraOrbitCenterReady &&
+				( !cameraNativePoseInitialLogged || cameraNativePoseChangePending ) )
+			{
+				String phase = "initial";
+				if( cameraNativePoseInitialLogged )
+					phase = "after-user-drag";
+				tracePreview(
+					"CAMERA_SET_INPUT phase=" + phase +
+					" yawPitchRoll=" + yaw + "," + pitch + "," + roll +
+					" cameraJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
+					" orientation=" + cameraOrientation.y + "," +
+					cameraOrientation.p + "," + cameraOrientation.r
+				);
+			}
+
 			previewCamera.setMatrix( cameraPosition, cameraOrientation );
 
 			// Read back the actual native Camera transform once at startup and
-			// once after its orbit angles have changed. No native state is modified.
+			// once after a deliberate mouse drag. No native state is modified.
 			if( cameraOrbitCenterReady && !cameraNativePoseInitialLogged )
 			{
 				traceCameraNativePose( "initial" );
@@ -1229,7 +1246,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			else
 			if( cameraNativePoseChangePending && !cameraNativePoseChangeLogged )
 			{
-				traceCameraNativePose( "after-orbit-change" );
+				traceCameraNativePose( "after-user-drag" );
 				cameraNativePoseChangeLogged = 1;
 				cameraNativePoseChangePending = 0;
 			}
@@ -1318,7 +1335,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 				yaw = yaw + mouseDeltaX * DRAG_YAW_SCALE;
 				pitch = pitch + mouseDeltaY * DRAG_PITCH_SCALE;
-				cameraNativePoseChangePending = 1;
+				if( mouseDeltaX != 0.0 || mouseDeltaY != 0.0 )
+					cameraNativePoseChangePending = 1;
 				if( pitch < -1.1 ) pitch = -1.1;
 				if( pitch > 1.1 ) pitch = 1.1;
 
@@ -1332,7 +1350,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			autoResume = autoResume + delta * 2.0;
 			if( autoResume > 1.0 ) autoResume = 1.0;
 			yaw = yaw + AUTO_ROTATION_SPEED * delta * autoResume;
-			cameraNativePoseChangePending = 1;
 		}
 
 		// Keep the existing one-step-per-wheel-transition zoom handling.
