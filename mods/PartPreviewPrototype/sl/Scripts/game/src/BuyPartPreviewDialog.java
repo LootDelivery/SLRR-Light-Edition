@@ -729,9 +729,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		// guaranteed to use the same fitting convention as GII_SIZE.
 		tracePreview( "35A camera modelSize keeps GII_SIZE=" + modelSize + " live AABB extent=" + runtimeModelSize + " hasBounds=" + hasRuntimeBounds );
 
-		// Center and fit the isolated preview, leaving the source catalog Part untouched.
-		applyPartTransform();
-		tracePreview( "35A after applying AABB-centered preview transform" );
+		// Keep the preview Part at its original origin. Rotation is applied to the camera.
+		tracePreview( "35A preview Part remains unchanged; camera orbit will control rotation" );
 
 		// Independent light: do not reuse the catalog panel's render root.
 		tracePreview( "36 before preview RenderRef creation" );
@@ -763,291 +762,38 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		tracePreview( "3D createPreview complete" );
 	}
 
-	private Vector3 rotateOffsetFromBase( Vector3 offset, Ypr baseOrientation, Ypr targetOrientation )
+	// Orbit the camera around the unchanged part instead of moving the part.
+	// SLRR's Ypr.mul(other) computes other * this (Math3D.cpp /
+	// java_lang_Ypr_mul), so the factors below build:
+	// inverse = Rz(-roll) * Rx(-pitch) * Ry(-yaw).
+	private Ypr buildInversePreviewOrientation()
 	{
-		// Convert the captured world-space offset back into the Part's reference
-		// orientation, then apply the requested orientation. Basis vectors avoid
-		// relying on Euler-angle subtraction (which is not a valid inverse for
-		// combined yaw/pitch/roll).
-		Vector3 baseX = new Vector3( 1.0, 0.0, 0.0 );
-		Vector3 baseY = new Vector3( 0.0, 1.0, 0.0 );
-		Vector3 baseZ = new Vector3( 0.0, 0.0, 1.0 );
-		baseX.rotate( baseOrientation );
-		baseY.rotate( baseOrientation );
-		baseZ.rotate( baseOrientation );
-
-		float localX = offset.x * baseX.x + offset.y * baseX.y + offset.z * baseX.z;
-		float localY = offset.x * baseY.x + offset.y * baseY.y + offset.z * baseY.z;
-		float localZ = offset.x * baseZ.x + offset.y * baseZ.y + offset.z * baseZ.z;
-
-		Vector3 targetX = new Vector3( 1.0, 0.0, 0.0 );
-		Vector3 targetY = new Vector3( 0.0, 1.0, 0.0 );
-		Vector3 targetZ = new Vector3( 0.0, 0.0, 1.0 );
-		targetX.rotate( targetOrientation );
-		targetY.rotate( targetOrientation );
-		targetZ.rotate( targetOrientation );
-
-		return new Vector3(
-			localX * targetX.x + localY * targetY.x + localZ * targetZ.x,
-			localX * targetX.y + localY * targetY.y + localZ * targetZ.y,
-			localX * targetX.z + localY * targetY.z + localZ * targetZ.z
-		);
-	}
-
-	private void verifyNestedCenterAfterRender( String label )
-	{
-		if( !previewPart )
-			return;
-
-		int nestedRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-		if( !nestedRenderInstance )
-		{
-			tracePreview( label + " render-instance missing" );
-			return;
-		}
-
-		GameRef nestedRenderRef = new GameRef( nestedRenderInstance );
-		int aabbXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
-		int aabbYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
-		int aabbZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
-		int surfaceXFixed = nestedRenderRef.getInfo( AABB_QUERY, 503 );
-		int surfaceYFixed = nestedRenderRef.getInfo( AABB_QUERY, 504 );
-		int surfaceZFixed = nestedRenderRef.getInfo( AABB_QUERY, 505 );
-
-		int selectedXFixed = aabbXFixed;
-		int selectedYFixed = aabbYFixed;
-		int selectedZFixed = aabbZFixed;
-		if( nestedCenterUsingSurfaceCentroid )
-		{
-			selectedXFixed = surfaceXFixed;
-			selectedYFixed = surfaceYFixed;
-			selectedZFixed = surfaceZFixed;
-		}
-
-		Vector3 partPosition = previewPart.getPos();
-		Ypr partOrientation = previewPart.getOri();
-		if( !partPosition )
-			partPosition = new Vector3( 0.0, 0.0, 0.0 );
-		if( !partOrientation )
-			partOrientation = new Ypr( 0.0, 0.0, 0.0 );
-
-		String aabbText = "invalid";
-		if( aabbXFixed != AABB_INVALID && aabbYFixed != AABB_INVALID && aabbZFixed != AABB_INVALID )
-			aabbText = "" + (aabbXFixed / AABB_SCALE) + "," +
-				(aabbYFixed / AABB_SCALE) + "," + (aabbZFixed / AABB_SCALE);
-
-		String surfaceText = "invalid";
-		if( surfaceXFixed != AABB_INVALID && surfaceYFixed != AABB_INVALID && surfaceZFixed != AABB_INVALID )
-			surfaceText = "" + (surfaceXFixed / AABB_SCALE) + "," +
-				(surfaceYFixed / AABB_SCALE) + "," + (surfaceZFixed / AABB_SCALE);
-
-		if( selectedXFixed == AABB_INVALID ||
-			selectedYFixed == AABB_INVALID ||
-			selectedZFixed == AABB_INVALID )
-		{
-			tracePreview(
-				label + " selected-invalid=" + selectedXFixed + "," + selectedYFixed + "," + selectedZFixed +
-				" aabbWorldCenter=" + aabbText +
-				" surfaceWorldCenter=" + surfaceText +
-				" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z
-			);
-			return;
-		}
-
-		tracePreview(
-			label + " selectedSurfaceCentroid=" + nestedCenterUsingSurfaceCentroid +
-			" selectedWorldCenter=" +
-			(selectedXFixed / AABB_SCALE) + "," +
-			(selectedYFixed / AABB_SCALE) + "," +
-			(selectedZFixed / AABB_SCALE) +
-			" aabbWorldCenter=" + aabbText +
-			" surfaceWorldCenter=" + surfaceText +
-			" partPos=" + partPosition.x + "," + partPosition.y + "," + partPosition.z +
-			" partYpr=" + partOrientation.y + "," + partOrientation.p + "," + partOrientation.r
-		);
-	}
-
-	private void applyPartTransform()
-	{
-		if( previewPart )
-		{
-			Ypr targetOrientation = new Ypr( yaw, pitch, roll );
-			Vector3 previewPivot = new Vector3(
-				savedPosition.x + boundsCenterX,
-				savedPosition.y + boundsCenterY,
-				savedPosition.z + boundsCenterZ
-			);
-			previewPivot.rotate( targetOrientation );
-
-			if( hasNestedMeshBounds )
-			{
-				// Capture the child mesh's center once, after the native render
-				// instance has a valid scale. Re-reading a world-space center every
-				// frame creates a feedback loop: Java applies a transform based on
-				// a render pose that may belong to the previous frame.
-				if( !nestedCenterOffsetReady )
-				{
-					int nestedRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-					if( nestedRenderInstance )
-					{
-						GameRef nestedRenderRef = new GameRef( nestedRenderInstance );
-						int aabbXFixed = nestedRenderRef.getInfo( AABB_QUERY, 500 );
-						int aabbYFixed = nestedRenderRef.getInfo( AABB_QUERY, 501 );
-						int aabbZFixed = nestedRenderRef.getInfo( AABB_QUERY, 502 );
-						int surfaceXFixed = nestedRenderRef.getInfo( AABB_QUERY, 503 );
-						int surfaceYFixed = nestedRenderRef.getInfo( AABB_QUERY, 504 );
-						int surfaceZFixed = nestedRenderRef.getInfo( AABB_QUERY, 505 );
-
-						int useSurfaceCentroid = 0;
-						if( surfaceXFixed != AABB_INVALID &&
-							surfaceYFixed != AABB_INVALID &&
-							surfaceZFixed != AABB_INVALID )
-							useSurfaceCentroid = 1;
-
-						int centerXFixed = aabbXFixed;
-						int centerYFixed = aabbYFixed;
-						int centerZFixed = aabbZFixed;
-						if( useSurfaceCentroid )
-						{
-							centerXFixed = surfaceXFixed;
-							centerYFixed = surfaceYFixed;
-							centerZFixed = surfaceZFixed;
-						}
-
-						if( centerXFixed != AABB_INVALID &&
-							centerYFixed != AABB_INVALID &&
-							centerZFixed != AABB_INVALID )
-						{
-							Vector3 currentPartPosition = previewPart.getPos();
-							if( !currentPartPosition )
-								currentPartPosition = new Vector3( 0.0, 0.0, 0.0 );
-
-							Ypr currentPartOrientation = previewPart.getOri();
-							if( !currentPartOrientation )
-								currentPartOrientation = new Ypr( savedOrientation );
-
-							float nativeCenterX = centerXFixed / AABB_SCALE;
-							float nativeCenterY = centerYFixed / AABB_SCALE;
-							float nativeCenterZ = centerZFixed / AABB_SCALE;
-							nestedCenterUsingSurfaceCentroid = useSurfaceCentroid;
-							nestedCenterOffsetX = nativeCenterX - currentPartPosition.x;
-							nestedCenterOffsetY = nativeCenterY - currentPartPosition.y;
-							nestedCenterOffsetZ = nativeCenterZ - currentPartPosition.z;
-							nestedCenterBaseYaw = currentPartOrientation.y;
-							nestedCenterBasePitch = currentPartOrientation.p;
-							nestedCenterBaseRoll = currentPartOrientation.r;
-							nestedCenterOffsetReady = 1;
-
-							String aabbCenterText = "invalid";
-							if( aabbXFixed != AABB_INVALID && aabbYFixed != AABB_INVALID && aabbZFixed != AABB_INVALID )
-								aabbCenterText = "" + (aabbXFixed / AABB_SCALE) + "," +
-									(aabbYFixed / AABB_SCALE) + "," + (aabbZFixed / AABB_SCALE);
-							String surfaceCenterText = "invalid";
-							if( surfaceXFixed != AABB_INVALID && surfaceYFixed != AABB_INVALID && surfaceZFixed != AABB_INVALID )
-								surfaceCenterText = "" + (surfaceXFixed / AABB_SCALE) + "," +
-									(surfaceYFixed / AABB_SCALE) + "," + (surfaceZFixed / AABB_SCALE);
-
-							tracePreview(
-								"NESTED_CENTER captured offset=" +
-								nestedCenterOffsetX + "," + nestedCenterOffsetY + "," + nestedCenterOffsetZ +
-								" baseYpr=" + nestedCenterBaseYaw + "," +
-								nestedCenterBasePitch + "," + nestedCenterBaseRoll +
-								" selectedSurfaceCentroid=" + useSurfaceCentroid +
-								" nativeWorldCenter=" + nativeCenterX + "," + nativeCenterY + "," + nativeCenterZ +
-								" aabbWorldCenter=" + aabbCenterText +
-								" surfaceWorldCenter=" + surfaceCenterText +
-								" currentPartPos=" + currentPartPosition.x + "," + currentPartPosition.y + "," + currentPartPosition.z
-							);
-						}
-						else
-						if( !nestedCenterWaitLogged )
-						{
-							tracePreview(
-								"NESTED_CENTER waiting for render pose; native query invalid"
-							);
-							nestedCenterWaitLogged = 1;
-						}
-					}
-				}
-
-				if( nestedCenterOffsetReady )
-				{
-					Vector3 capturedOffset = new Vector3(
-						nestedCenterOffsetX,
-						nestedCenterOffsetY,
-						nestedCenterOffsetZ
-					);
-					Vector3 rotatedNestedOffset = rotateOffsetFromBase(
-						capturedOffset,
-						new Ypr( nestedCenterBaseYaw, nestedCenterBasePitch, nestedCenterBaseRoll ),
-						targetOrientation
-					);
-
-					Vector3 rotatedMountOffset = new Vector3( savedPosition );
-					rotatedMountOffset.rotate( targetOrientation );
-					previewPivot = new Vector3(
-						rotatedMountOffset.x + rotatedNestedOffset.x,
-						rotatedMountOffset.y + rotatedNestedOffset.y,
-						rotatedMountOffset.z + rotatedNestedOffset.z
-					);
-				}
-			}
-
-			Vector3 previewPosition = new Vector3(
-				-previewPivot.x,
-				-previewPivot.y,
-				-previewPivot.z
-			);
-
-			previewPart.setMatrix( previewPosition, targetOrientation );
-
-			// One-shot trace of the exact parent transform requested by Java.
-			// This helps distinguish the calculated center from any later native
-			// transform or visual-origin discrepancy.
-			if( nestedCenterOffsetReady && !nestedCenterApplyLogged )
-			{
-				Vector3 appliedPartPosition = previewPart.getPos();
-				if( !appliedPartPosition )
-					appliedPartPosition = new Vector3( 0.0, 0.0, 0.0 );
-				tracePreview(
-					"NESTED_CENTER_APPLY savedPosition=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
-					" pivot=" + previewPivot.x + "," + previewPivot.y + "," + previewPivot.z +
-					" requestedPartPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
-					" actualPartPos=" + appliedPartPosition.x + "," + appliedPartPosition.y + "," + appliedPartPosition.z
-				);
-				nestedCenterApplyLogged = 1;
-			}
-
-			// Read-only verification on the following render frame. This does
-			// not feed the measured result back into the Part transform.
-			if( nestedCenterOffsetReady )
-			{
-				if( !nestedCenterVerifyInitialDone && !nestedCenterVerifyPending )
-					nestedCenterVerifyPending = 1;
-				else
-				if( nestedCenterVerifyInitialDone && !nestedCenterVerifyRotationDone &&
-					!nestedCenterVerifyPending )
-				{
-					float yawDelta = yaw - nestedCenterBaseYaw;
-					float pitchDelta = pitch - nestedCenterBasePitch;
-					float rollDelta = roll - nestedCenterBaseRoll;
-					if( yawDelta < 0.0 ) yawDelta = -yawDelta;
-					if( pitchDelta < 0.0 ) pitchDelta = -pitchDelta;
-					if( rollDelta < 0.0 ) rollDelta = -rollDelta;
-					if( yawDelta > 0.25 || pitchDelta > 0.25 || rollDelta > 0.25 )
-						nestedCenterVerifyPending = 2;
-				}
-			}
-		}
+		Ypr inverse = new Ypr( -yaw, 0.0, 0.0 );
+		inverse.mul( new Ypr( 0.0, -pitch, 0.0 ) );
+		inverse.mul( new Ypr( 0.0, 0.0, -roll ) );
+		return inverse;
 	}
 
 	private void updateCamera()
 	{
 		if( previewCamera )
 		{
-			Vector3 cameraPosition = new Vector3( 0.0, modelSize * zoom - modelSize * CAMERA_VERTICAL_OFFSET, modelSize * zoom );
+			Ypr inversePartOrientation = buildInversePreviewOrientation();
+
+			// Keep the same base camera pose and GII_SIZE-based zoom as before.
+			Vector3 cameraPosition = new Vector3(
+				0.0,
+				modelSize * zoom - modelSize * CAMERA_VERTICAL_OFFSET,
+				modelSize * zoom
+			);
 			cameraPosition.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
-			previewCamera.setMatrix( cameraPosition, new Ypr( -2.5, -0.7, 0.0 ) );
+			cameraPosition.rotate( inversePartOrientation );
+
+			// Equivalent view to rotating the part by (yaw,pitch,roll):
+			// cameraWorld = inverse(partRotation) * baseCameraWorld.
+			Ypr cameraOrientation = new Ypr( -2.5, -0.7, 0.0 );
+			cameraOrientation.mul( inversePartOrientation );
+			previewCamera.setMatrix( cameraPosition, cameraOrientation );
 		}
 	}
 
@@ -1055,22 +801,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		if( !previewPart || !previewCamera )
 			return;
-
-		// Verify the result after the previous render pass has consumed
-		// setMatrix(). One check at the base pose, one after a meaningful turn.
-		if( nestedCenterVerifyPending == 1 )
-		{
-			verifyNestedCenterAfterRender( "NESTED_CENTER_VERIFY_BASE" );
-			nestedCenterVerifyPending = 0;
-			nestedCenterVerifyInitialDone = 1;
-		}
-		else
-		if( nestedCenterVerifyPending == 2 )
-		{
-			verifyNestedCenterAfterRender( "NESTED_CENTER_VERIFY_ROTATED" );
-			nestedCenterVerifyPending = 0;
-			nestedCenterVerifyRotationDone = 1;
-		}
 
 		int traceFrame = 0;
 		if( animateTraceFrames < 3 )
@@ -1104,19 +834,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( traceFrame ) tracePreview( "A5 after wheel Input.getAxis" );
 		int overPreview = cursorOverPreview( mouseX, mouseY );
 
-		// Keep the reference pose fixed until the nested render child has
-		// produced its first valid AABB center. This normally takes only a
-		// couple of render frames; unsupported resource paths time out.
-		int waitingForNestedCenter = hasNestedMeshBounds &&
-			!nestedCenterOffsetReady && nestedCenterWaitFrames < 30;
-		if( waitingForNestedCenter )
-		{
-			nestedCenterWaitFrames++;
-			dragging = 0;
-			lastMouseX = mouseX;
-			lastMouseY = mouseY;
-		}
-		else
 		if( leftButton > 0.5 )
 		{
 			if( !dragging && overPreview )
@@ -1169,10 +886,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		if( zoom < MIN_ZOOM ) zoom = MIN_ZOOM;
 		if( zoom > MAX_ZOOM ) zoom = MAX_ZOOM;
 
-		if( traceFrame ) tracePreview( "A6 before applyPartTransform" );
-		applyPartTransform();
-		if( traceFrame ) tracePreview( "A7 after applyPartTransform" );
 		updateCamera();
+		if( traceFrame ) tracePreview( "A6 after camera orbit update" );
 		if( traceFrame ) tracePreview( "A8 after updateCamera" );
 	}
 
