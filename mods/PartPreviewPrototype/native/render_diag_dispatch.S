@@ -70,6 +70,20 @@ render_diag_dispatch:
     # Secondary collection pointer read by native 0x541FE0 at embedded +0x160.
     cmp ecx, 385
     je .embedded_collection_pointer
+
+    # ResourceRef internal payload: 0x419860 returns ResourceRef +0x80.
+    cmp ecx, 417
+    jbe .resource_payload_fields
+    cmp ecx, 418
+    je .resource_child_pointer
+    cmp ecx, 439
+    jbe .resource_child_header
+    cmp ecx, 471
+    jbe .resource_child_payload
+    cmp ecx, 472
+    je .resource_collection_pointer
+    cmp ecx, 488
+    jbe .resource_collection_header
     jmp .invalid
 
 .f4_pointer_fields:
@@ -215,6 +229,62 @@ render_diag_dispatch:
 
 .embedded_collection_pointer:
     mov eax, dword ptr [esi+0x238]
+    jmp 0x005e6ec5
+
+.resource_payload_fields:
+    # [ResourceRef+0x80+(axis-386)*4], inner object returned by vtable +0x0C.
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    sub ecx, 386
+    mov eax, dword ptr [edx+ecx*4+0x80]
+    jmp 0x005e6ec5
+
+.resource_child_pointer:
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    mov eax, dword ptr [edx+0x98]
+    jmp 0x005e6ec5
+
+.resource_child_header:
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    mov edx, dword ptr [edx+0x98]
+    test edx, edx
+    je .invalid
+    sub ecx, 419
+    mov eax, dword ptr [edx+ecx*4]
+    jmp 0x005e6ec5
+
+.resource_child_payload:
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    mov edx, dword ptr [edx+0x98]
+    test edx, edx
+    je .invalid
+    sub ecx, 440
+    mov eax, dword ptr [edx+ecx*4+0x80]
+    jmp 0x005e6ec5
+
+.resource_collection_pointer:
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    mov eax, dword ptr [edx+0xb8]
+    jmp 0x005e6ec5
+
+.resource_collection_header:
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    mov edx, dword ptr [edx+0xb8]
+    test edx, edx
+    je .invalid
+    sub ecx, 473
+    mov eax, dword ptr [edx+ecx*4]
     jmp 0x005e6ec5
 
 .embedded_list:
