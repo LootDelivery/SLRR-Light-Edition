@@ -625,6 +625,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 							int matrixValue = liveRenderRef.getInfo( AABB_QUERY, 123 + matrixIndex );
 						tracePreview( "T04 renderMatrix[" + matrixIndex + "]=" + matrixValue );
 						}
+						for( int field = 20; field < 56; field++ )
+						{
+							int value = liveRenderRef.getInfo( AABB_QUERY, 160 + field - 20 );
+						tracePreview( "T05 outer+" + (field * 4) + "=" + value );
+						}
+						for( int field = 0; field < 21; field++ )
+						{
+							int value = liveRenderRef.getInfo( AABB_QUERY, 230 + field );
+						tracePreview( "T05 embedded+" + (0x100 + field * 4) + "=" + value );
+						}
 					}
 					else
 						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
