@@ -56,6 +56,20 @@ render_diag_dispatch:
     # 311..318 = first eight DWORDs of the bone00 node.
     cmp ecx, 318
     jbe .bone_list_diagnostics
+
+    # Embedded render object fields +0x54..+0xFC (outer +0x12C..+0x1D4).
+    cmp ecx, 361
+    jbe .embedded_middle_fields
+
+    # Resource descriptor pointer at embedded +0x84, followed by its header.
+    cmp ecx, 362
+    je .embedded_resource_pointer
+    cmp ecx, 384
+    jbe .embedded_resource_fields
+
+    # Secondary collection pointer read by native 0x541FE0 at embedded +0x160.
+    cmp ecx, 385
+    je .embedded_collection_pointer
     jmp .invalid
 
 .f4_pointer_fields:
@@ -180,6 +194,28 @@ render_diag_dispatch:
     pop edi
     pop ebx
     jmp .invalid
+
+.embedded_middle_fields:
+    sub ecx, 319
+    add ecx, 21
+    mov eax, dword ptr [esi+ecx*4+0xd8]
+    jmp 0x005e6ec5
+
+.embedded_resource_pointer:
+    mov eax, dword ptr [esi+0x15c]
+    jmp 0x005e6ec5
+
+.embedded_resource_fields:
+    mov edx, dword ptr [esi+0x15c]
+    test edx, edx
+    je .invalid
+    sub ecx, 363
+    mov eax, dword ptr [edx+ecx*4]
+    jmp 0x005e6ec5
+
+.embedded_collection_pointer:
+    mov eax, dword ptr [esi+0x238]
+    jmp 0x005e6ec5
 
 .embedded_list:
     sub ecx, 230
