@@ -43,6 +43,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float nestedMeshSizeY;
 	float nestedMeshSizeZ;
 	int hasNestedMeshBounds;
+	int nestedMeshResourceID;
 	float nestedCenterOffsetX;
 	float nestedCenterOffsetY;
 	float nestedCenterOffsetZ;
@@ -487,6 +488,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		boundsCenterY = 0.0;
 		boundsCenterZ = 0.0;
 		hasNestedMeshBounds = 0;
+		nestedMeshResourceID = 0;
 		nestedCenterOffsetReady = 0;
 		nestedCenterWaitFrames = 0;
 		nestedCenterWaitLogged = 0;
@@ -674,15 +676,19 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		else
 			tracePreview( "19 previewPart.getMesh returned 0; AABB skipped" );
 
-		// A valid direct Part.getMesh() AABB is authoritative. The nested
-		// render resource can be a secondary engine/submesh and must not replace
-		// the direct mesh center (e.g. belts and other compound engine parts).
-		// Keep the nested path only as a fallback for parts with no usable
-		// direct-mesh bounds, such as suspension springs with getMesh()==0.
-		if( hasRuntimeBounds && hasNestedMeshBounds )
+		// A nested resource may be a different submesh from Part.getMesh().
+		// Use nested centering when it is the actual direct mesh, or when the
+		// Part has no direct mesh (e.g. suspension springs). If both resources
+		// exist but identify different meshes, retain the established direct
+		// Part.getMesh() bounds instead of centering an unrelated engine submesh.
+		if( hasRuntimeBounds && hasNestedMeshBounds &&
+			previewMeshID && nestedMeshResourceID != previewMeshID )
 		{
 			hasNestedMeshBounds = 0;
-			tracePreview( "NESTED_CENTER skipped: valid direct mesh AABB has priority" );
+			tracePreview(
+				"NESTED_CENTER skipped: nested meshID=" + nestedMeshResourceID +
+				" differs from direct meshID=" + previewMeshID
+			);
 		}
 
 		tracePreview( "30 before previewPart.getPos" );
