@@ -383,19 +383,54 @@ render_diag_dispatch:
     sar eax, 1
     mov dword ptr [esp+0x30], eax
 
-    # This is the same bone-list fallback selected by 0x5433E0 when F4=0
-    # and the auxiliary list at +0x134 is empty.
-    cmp dword ptr [esi+0xf4], 0
-    jne .nested_center_fail
+    # Match the node selection in native 0x5433E0 exactly:
+    # an empty auxiliary list uses the first node; otherwise it scans the
+    # sorted +0x1FC list for "bone00". The F4 path is also supported: native
+    # 0x5433E0 copies its final position/scale into this INSTANCE_RENDER, so
+    # the fields read below already contain the post-F4 values.
     lea ecx, [esi+0x134]
     call 0x00429390
     test eax, eax
-    jz .nested_center_fail
+    jnz .nested_first_node
+
     lea ecx, [esi+0x1fc]
     call 0x004293a0
     test eax, eax
-    jz .nested_center_fail
+    je .nested_center_fail
     mov edi, eax
+    mov dword ptr [esp+0x10], 64
+.nested_find_bone00:
+    cmp dword ptr [edi+0x14], 0x656e6f62
+    jne .nested_next_bone
+    cmp dword ptr [edi+0x18], 0x00003030
+    je .nested_node_ready
+.nested_next_bone:
+    mov ecx, edi
+    call 0x0040cfc0
+    test eax, eax
+    je .nested_center_fail
+    mov edi, eax
+    dec dword ptr [esp+0x10]
+    jnz .nested_find_bone00
+    jmp .nested_center_fail
+
+.nested_first_node:
+    lea ecx, [esi+0x1fc]
+    call 0x004293a0
+    test eax, eax
+    je .nested_center_fail
+    mov edi, eax
+
+.nested_node_ready:
+    # The native render update has not initialized the pose if its uniform
+    # scale fields are still zero. Do not mistake an uninitialized all-zero
+    # transform for a valid world-space center.
+    cmp dword ptr [esi+0x90], 0
+    je .nested_center_fail
+    cmp dword ptr [esi+0x94], 0
+    je .nested_center_fail
+    cmp dword ptr [esi+0x98], 0
+    je .nested_center_fail
 
     # Scale each local AABB-center component by INSTANCE_RENDER scale.
     fild dword ptr [esp+0x28]
@@ -419,8 +454,8 @@ render_diag_dispatch:
     fmul dword ptr [esi+0x98]
     fstp dword ptr [esp+0x3c]
 
-    # WorldCenter = INSTANCE_RENDER.position + boneMatrix * scaledLocalCenter.
-    # bone00 is the first node consumed by 0x5433E0 in this fallback branch.
+    # WorldCenter = INSTANCE_RENDER.position + selectedNodeMatrix * scaledLocalCenter.
+    # selectedNode follows the same branch and name selection as 0x5433E0.
     fld dword ptr [esp+0x34]
     fmul dword ptr [edi+0xb0]
     fld dword ptr [esp+0x38]
