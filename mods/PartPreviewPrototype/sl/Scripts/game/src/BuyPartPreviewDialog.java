@@ -814,9 +814,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		int surfaceYFixed = nestedRenderRef.getInfo( AABB_QUERY, 504 );
 		int surfaceZFixed = nestedRenderRef.getInfo( AABB_QUERY, 505 );
 
-		int selectedXFixed = nestedCenterUsingSurfaceCentroid ? surfaceXFixed : aabbXFixed;
-		int selectedYFixed = nestedCenterUsingSurfaceCentroid ? surfaceYFixed : aabbYFixed;
-		int selectedZFixed = nestedCenterUsingSurfaceCentroid ? surfaceZFixed : aabbZFixed;
+		int selectedXFixed = aabbXFixed;
+		int selectedYFixed = aabbYFixed;
+		int selectedZFixed = aabbZFixed;
+		if( nestedCenterUsingSurfaceCentroid )
+		{
+			selectedXFixed = surfaceXFixed;
+			selectedYFixed = surfaceYFixed;
+			selectedZFixed = surfaceZFixed;
+		}
 
 		Vector3 partPosition = previewPart.getPos();
 		Ypr partOrientation = previewPart.getOri();
@@ -849,7 +855,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 
 		tracePreview(
-			label + " selected=" + (nestedCenterUsingSurfaceCentroid ? "surface-centroid" : "aabb") +
+			label + " selectedSurfaceCentroid=" + nestedCenterUsingSurfaceCentroid +
 			" selectedWorldCenter=" +
 			(selectedXFixed / AABB_SCALE) + "," +
 			(selectedYFixed / AABB_SCALE) + "," +
@@ -892,13 +898,21 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						int surfaceYFixed = nestedRenderRef.getInfo( AABB_QUERY, 504 );
 						int surfaceZFixed = nestedRenderRef.getInfo( AABB_QUERY, 505 );
 
-						int useSurfaceCentroid =
-							surfaceXFixed != AABB_INVALID &&
+						int useSurfaceCentroid = 0;
+						if( surfaceXFixed != AABB_INVALID &&
 							surfaceYFixed != AABB_INVALID &&
-							surfaceZFixed != AABB_INVALID;
-						int centerXFixed = useSurfaceCentroid ? surfaceXFixed : aabbXFixed;
-						int centerYFixed = useSurfaceCentroid ? surfaceYFixed : aabbYFixed;
-						int centerZFixed = useSurfaceCentroid ? surfaceZFixed : aabbZFixed;
+							surfaceZFixed != AABB_INVALID )
+							useSurfaceCentroid = 1;
+
+						int centerXFixed = aabbXFixed;
+						int centerYFixed = aabbYFixed;
+						int centerZFixed = aabbZFixed;
+						if( useSurfaceCentroid )
+						{
+							centerXFixed = surfaceXFixed;
+							centerYFixed = surfaceYFixed;
+							centerZFixed = surfaceZFixed;
+						}
 
 						if( centerXFixed != AABB_INVALID &&
 							centerYFixed != AABB_INVALID &&
@@ -938,7 +952,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 								nestedCenterOffsetX + "," + nestedCenterOffsetY + "," + nestedCenterOffsetZ +
 								" baseYpr=" + nestedCenterBaseYaw + "," +
 								nestedCenterBasePitch + "," + nestedCenterBaseRoll +
-								" selected=" + (useSurfaceCentroid ? "surface-centroid" : "aabb-fallback") +
+								" selectedSurfaceCentroid=" + useSurfaceCentroid +
 								" nativeWorldCenter=" + nativeCenterX + "," + nativeCenterY + "," + nativeCenterZ +
 								" aabbWorldCenter=" + aabbCenterText +
 								" surfaceWorldCenter=" + surfaceCenterText +
