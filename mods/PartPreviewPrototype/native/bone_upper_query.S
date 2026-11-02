@@ -9,13 +9,34 @@
 # the original axis-500 range check, preserving axes 500..502 unchanged.
 bone_upper_gate:
     cmp ecx, 489
-    jb .pass_through
+    jb .check_native_pivot
     cmp ecx, 498
     jbe .probe
 
+.check_native_pivot:
+    cmp ecx, 510
+    jb .pass_through
+    cmp ecx, 512
+    jbe .native_pivot
+
 .pass_through:
+    # Restore the original axis-500 comparison flags for the stock route.
     cmp ecx, 500
     jmp 0x007E17CD
+
+.native_pivot:
+    # Axes 510..512 return INSTANCE_RENDER.position XYZ as signed fixed-point
+    # world coordinates (*1000), distinct from the geometry center at 500..502.
+    sub ecx, 510
+    fld dword ptr [esi+ecx*4+0x84]
+    push 1000
+    fimul dword ptr [esp]
+    add esp, 4
+    sub esp, 4
+    fistp dword ptr [esp]
+    mov eax, dword ptr [esp]
+    add esp, 4
+    jmp 0x005E6EC5
 
 .probe:
     push ebx
