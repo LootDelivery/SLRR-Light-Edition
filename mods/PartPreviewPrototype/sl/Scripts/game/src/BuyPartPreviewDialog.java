@@ -270,6 +270,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					"3C stored loader AABB min=" + rootMinXFixed + "," + rootMinYFixed + "," + rootMinZFixed +
 					" max=" + rootMaxXFixed + "," + rootMaxYFixed + "," + rootMaxZFixed
 				);
+				// Temporary read-only dump of the first two runtime groups.
+				// Axes 12..41 return raw native field values, not coordinates:
+				// 12=root group count, 13=root group array pointer;
+				// 14..27=group 0, 28..41=group 1 (wrapper, inner object,
+				// child array/count/capacity, inner vtable/fields, vtable slots).
+				for( int diagAxis = 12; diagAxis <= 41; diagAxis++ )
+				{
+					int diagValue = previewMeshRef.getInfo( AABB_QUERY, diagAxis );
+					tracePreview( "GD" + diagAxis + " raw=" + diagValue );
+				}
 
 				if( minXFixed != AABB_INVALID && minYFixed != AABB_INVALID && minZFixed != AABB_INVALID &&
 					maxXFixed != AABB_INVALID && maxYFixed != AABB_INVALID && maxZFixed != AABB_INVALID )
