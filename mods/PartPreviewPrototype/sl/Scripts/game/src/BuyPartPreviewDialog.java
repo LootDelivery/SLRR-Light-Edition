@@ -387,22 +387,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			Vector3 rotatedCenter = new Vector3( boundsCenterX, boundsCenterY, boundsCenterZ );
 			rotatedCenter.rotate( new Ypr( yaw, pitch, roll ) );
 
-			// The native transform composes this translation with the Part's
-			// existing mount offset: readback position tracks R * savedPosition
-			// when this argument is zero. Hold the original AABB center in place
-			// by cancelling the rotation of (mount offset + local AABB center).
-			Vector3 previewPivot = new Vector3(
-				savedPosition.x + boundsCenterX,
-				savedPosition.y + boundsCenterY,
-				savedPosition.z + boundsCenterZ
-			);
-			Vector3 rotatedPivot = new Vector3( previewPivot );
-			rotatedPivot.rotate( new Ypr( yaw, pitch, roll ) );
-
+			// setMatrix's Part position is additive to the original mount offset
+			// (confirmed by getPos() readback). Make the rotated AABB center land
+			// at the preview origin: effectivePos + R(localBoundsCenter) = 0.
+			// Therefore effectivePos = -R(center), and the requested offset must
+			// also cancel the Part's original savedPosition.
 			Vector3 previewPosition = new Vector3(
-				previewPivot.x - rotatedPivot.x,
-				previewPivot.y - rotatedPivot.y,
-				previewPivot.z - rotatedPivot.z
+				-rotatedCenter.x - savedPosition.x,
+				-rotatedCenter.y - savedPosition.y,
+				-rotatedCenter.z - savedPosition.z
 			);
 
 			if( animateTraceFrames == 0 )
@@ -410,9 +403,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					"T00 center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
 					" rotatedCenter=" + rotatedCenter.x + "," + rotatedCenter.y + "," + rotatedCenter.z +
 					" sourcePos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
-					" pivot=" + previewPivot.x + "," + previewPivot.y + "," + previewPivot.z +
-					" rotatedPivot=" + rotatedPivot.x + "," + rotatedPivot.y + "," + rotatedPivot.z +
-					" finalPos=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
+					" targetEffectivePos=" + (-rotatedCenter.x) + "," + (-rotatedCenter.y) + "," + (-rotatedCenter.z) +
+					" requestedOffset=" + previewPosition.x + "," + previewPosition.y + "," + previewPosition.z +
 					" ypr=" + yaw + "," + pitch + "," + roll
 				);
 
