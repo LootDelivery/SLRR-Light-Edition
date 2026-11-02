@@ -849,34 +849,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			int centerYFixed = orbitRenderRef.getInfo( AABB_QUERY, 501 );
 			int centerZFixed = orbitRenderRef.getInfo( AABB_QUERY, 502 );
 
-			// Diagnostic comparison only. Axis 503 computes and caches X/Y/Z;
-			// axes 504 and 505 read the cached Y/Z. Camera center remains AABB.
-			int surfaceXFixed = orbitRenderRef.getInfo( AABB_QUERY, 503 );
-			int surfaceYFixed = orbitRenderRef.getInfo( AABB_QUERY, 504 );
-			int surfaceZFixed = orbitRenderRef.getInfo( AABB_QUERY, 505 );
-			if( surfaceXFixed != AABB_INVALID &&
-				surfaceYFixed != AABB_INVALID &&
-				surfaceZFixed != AABB_INVALID )
-			{
-				tracePreview(
-					"CAMERA_ORBIT_CENTER surface centroid world=" +
-					surfaceXFixed / AABB_SCALE + "," +
-					surfaceYFixed / AABB_SCALE + "," +
-					surfaceZFixed / AABB_SCALE
-				);
-				tracePreview(
-					"CAMERA_ORBIT_CENTER AABB-to-surface delta=" +
-					(centerXFixed - surfaceXFixed) / AABB_SCALE + "," +
-					(centerYFixed - surfaceYFixed) / AABB_SCALE + "," +
-					(centerZFixed - surfaceZFixed) / AABB_SCALE
-				);
-			}
-			else
-				tracePreview(
-					"CAMERA_ORBIT_CENTER surface centroid invalid=" +
-					surfaceXFixed + "," + surfaceYFixed + "," + surfaceZFixed
-				);
-
 			if( centerXFixed != AABB_INVALID &&
 				centerYFixed != AABB_INVALID &&
 				centerZFixed != AABB_INVALID )
