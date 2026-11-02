@@ -138,3 +138,40 @@ Built v2 EXE:
 - base EXE SHA-256 remains `38e09d0dbdd1c8d8afa1f3d0365b8a629b91e0fa8968c91ec53ccbc69bacdc88`.
 
 Static verification passed: dispatcher code is 1700 bytes (v1: 1603), and only the existing .reloc dispatcher extension changed. Runtime validation in SLRR is still outstanding. Resource collections containing multiple mesh children remain unsupported.
+
+
+## Follow-up Java stabilization (2026-11-02)
+
+The latest runtime log from the spring confirms:
+- the nested mesh AABB remains valid: local center Y about 1.053;
+- native center query is invalid during initial construction because INSTANCE_RENDER scale fields +0x90/+0x94/+0x98 are still zero;
+- after the render update, the preview position converges to approximately Y=-0.257 (1.053 multiplied by runtime scale about 0.244);
+- the former Java path queried the previous completed world pose and then applied a new Part transform on every frame. This creates a one-frame feedback path while the user rotates the preview.
+
+Java commit `64402df9d6582eea3fd303d7c311d785f6884e46` changes this:
+1. Hold the initial orientation until a first valid native center is available (up to 30 preview frames).
+2. Capture the center offset relative to Part position once.
+3. Convert that captured offset from its reference orientation using rotated basis vectors, then apply the target orientation to it.
+4. Stop querying the native center every frame once captured. This removes the stale-world-pose feedback loop.
+5. Remove the active +0.1 X translation probe that previously ran after the tenth transform sample and restored itself two frames later.
+
+The new expected trace line is:
+`NESTED_CENTER captured offset=x,y,z baseYpr=y,p,r`
+
+For the known spring, the expected captured offset magnitude is close to 0.257 units on Y (sign depends on the render coordinate convention); this is the scale-adjusted local AABB center, not the raw 1.053 local center.
+
+Direct-mesh handling remains on its existing AABB path. The native EXE is unchanged from v2; only the Java script changed.
+
+## Remaining body-part limitation
+
+The latest supplied log is still from the spring. It proves the spring's single-child type-5 path, but does not expose the resource tree of a body panel. The current discovery code sets `hasNestedMeshBounds` only when the embedded type-14 resource's +0x18 child resolves to a type-5 mesh. A body part that uses a different child type, a collection at +0x38, or another embedded render path will continue to use its original pivot.
+
+To identify the body path without another full dump, the useful lines from one body-part preview are:
+- `R11 F4 pointer` and `R11 auxiliary-list-empty`;
+- `R12 embedded+0x84 resource-pointer`;
+- `R13 resource-payload+0x18 child-resource`;
+- `R13 nested mesh GameRef type` (if present);
+- `R13 resource-payload+0x38 collection`;
+- `NESTED_CENTER waiting` or `NESTED_CENTER captured`.
+
+No body-part behavior is claimed until that resource path is observed.
