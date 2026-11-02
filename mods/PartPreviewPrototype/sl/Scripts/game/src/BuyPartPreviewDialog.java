@@ -43,7 +43,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float boundsCenterX;
 	float boundsCenterY;
 	float boundsCenterZ;
+	float runtimeBoundsExtent;
 	int hasRuntimeBounds;
+	float cameraBoundsMinX;
+	float cameraBoundsMinY;
+	float cameraBoundsMinZ;
+	float cameraBoundsMaxX;
+	float cameraBoundsMaxY;
+	float cameraBoundsMaxZ;
+	int cameraBoundsValidCount;
+	int cameraBoundsDiscoveredCount;
 	float nestedMeshCenterX;
 	float nestedMeshCenterY;
 	float nestedMeshCenterZ;
@@ -525,6 +534,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		boundsCenterX = 0.0;
 		boundsCenterY = 0.0;
 		boundsCenterZ = 0.0;
+		runtimeBoundsExtent = 0.0;
 		hasRuntimeBounds = 0;
 		hasNestedMeshBounds = 0;
 		nestedMeshResourceID = 0;
@@ -551,7 +561,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		renderTransformTracePivotX = AABB_INVALID;
 		renderTransformTracePivotY = AABB_INVALID;
 		renderTransformTracePivotZ = AABB_INVALID;
-		float runtimeModelSize = 0.0;
 		tracePreview( "00 createPreview begin" );
 
 		if( !sourcePart )
@@ -698,7 +707,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					float sizeX = maxX - minX;
 					float sizeY = maxY - minY;
 					float sizeZ = maxZ - minZ;
-					runtimeModelSize = sizeX;
+					runtimeBoundsExtent = sizeX;
 					if( sizeY > runtimeModelSize ) runtimeModelSize = sizeY;
 					if( sizeZ > runtimeModelSize ) runtimeModelSize = sizeZ;
 
@@ -977,63 +986,78 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		renderTransformTraceFrames++;
 	}
 
-	// Add a render-instance ID once. Assemblies may expose the same root
-	// instance both through GII_RENDERINSTANCE and as a direct child.
-	private int appendRenderInstanceID( int[] ids, int count, int renderInstanceID )
+	// Add one render component to the current assembly bounds. This uses no
+	// Java arrays: the SLRR script parser treats int[] signatures inconsistently.
+	private void addCameraRenderComponent( int renderInstanceID, int rootRenderInstance )
 	{
-		if( !renderInstanceID || count >= 64 )
-			return count;
+		if( !renderInstanceID )
+			return;
+		if( renderInstanceID == rootRenderInstance && cameraBoundsDiscoveredCount > 0 )
+			return;
 
-		for( int i = 0; i < count; i++ )
+		cameraBoundsDiscoveredCount++;
+		GameRef componentRenderRef = new GameRef( renderInstanceID );
+		int centerXFixed = componentRenderRef.getInfo( AABB_QUERY, 500 );
+		int centerYFixed = componentRenderRef.getInfo( AABB_QUERY, 501 );
+		int centerZFixed = componentRenderRef.getInfo( AABB_QUERY, 502 );
+
+		if( centerXFixed == AABB_INVALID ||
+			centerYFixed == AABB_INVALID ||
+			centerZFixed == AABB_INVALID )
 		{
-			if( ids[i] == renderInstanceID )
-				return count;
-		}
-		ids[count] = renderInstanceID;
-		return count + 1;
-	}
-
-	// A Part can be a compound assembly: previewPart.getMesh() may be zero while
-	// its resource tree contains several type-3 INSTANCE_RENDER children. Collect
-	// the root handle plus direct children and one nested child level.
-	private int collectPreviewRenderInstances( int[] ids )
-	{
-		int count = 0;
-		int rootRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-		count = appendRenderInstanceID( ids, count, rootRenderInstance );
-
-		ResourceRef child = previewPart.getFirstChild();
-		int childIndex = 0;
-		while( child && childIndex < 64 )
-		{
-			if( child.type() == 3 )
-				count = appendRenderInstanceID( ids, count, child.id() );
-
-			ResourceRef nested = child.getFirstChild();
-			int nestedIndex = 0;
-			while( nested && nestedIndex < 32 )
-			{
-				if( nested.type() == 3 )
-					count = appendRenderInstanceID( ids, count, nested.id() );
-				nested = nested.getNextChild();
-				nestedIndex++;
-			}
-
-			child = child.getNextChild();
-			childIndex++;
+			if( cameraOrbitCenterWaitFrames == 1 || cameraOrbitCenterWaitFrames >= 60 )
+				tracePreview(
+					"CAMERA_ORBIT_CENTER component id=" + renderInstanceID +
+					" bounds=PENDING values=" + centerXFixed + "," + centerYFixed + "," + centerZFixed
+				);
+			return;
 		}
 
-		tracePreview(
-			"CAMERA_ORBIT_CENTER render components discovered=" + count +
-			" rootRenderInstance=" + rootRenderInstance
-		);
-		return count;
+		float centerX = centerXFixed / AABB_SCALE;
+		float centerY = centerYFixed / AABB_SCALE;
+		float centerZ = centerZFixed / AABB_SCALE;
+		float componentRadius = queryRenderComponentRadius( componentRenderRef );
+		if( componentRadius < 0.0 )
+		{
+			if( cameraOrbitCenterWaitFrames == 1 || cameraOrbitCenterWaitFrames >= 60 )
+				tracePreview( "CAMERA_ORBIT_CENTER component id=" + renderInstanceID + " radius unavailable; center-only fallback" );
+			componentRadius = 0.0;
+		}
+
+		if( cameraOrbitCenterWaitFrames == 1 || cameraOrbitCenterWaitFrames >= 60 )
+			tracePreview(
+				"CAMERA_ORBIT_CENTER component id=" + renderInstanceID +
+				" center=" + centerX + "," + centerY + "," + centerZ +
+				" radius=" + componentRadius
+			);
+
+		if( cameraBoundsValidCount == 0 )
+		{
+			cameraBoundsMinX = centerX - componentRadius;
+			cameraBoundsMinY = centerY - componentRadius;
+			cameraBoundsMinZ = centerZ - componentRadius;
+			cameraBoundsMaxX = centerX + componentRadius;
+			cameraBoundsMaxY = centerY + componentRadius;
+			cameraBoundsMaxZ = centerZ + componentRadius;
+		}
+		else
+		{
+			if( centerX - componentRadius < cameraBoundsMinX ) cameraBoundsMinX = centerX - componentRadius;
+			if( centerY - componentRadius < cameraBoundsMinY ) cameraBoundsMinY = centerY - componentRadius;
+			if( centerZ - componentRadius < cameraBoundsMinZ ) cameraBoundsMinZ = centerZ - componentRadius;
+			if( centerX + componentRadius > cameraBoundsMaxX ) cameraBoundsMaxX = centerX + componentRadius;
+			if( centerY + componentRadius > cameraBoundsMaxY ) cameraBoundsMaxY = centerY + componentRadius;
+			if( centerZ + componentRadius > cameraBoundsMaxZ ) cameraBoundsMaxZ = centerZ + componentRadius;
+		}
+		cameraBoundsValidCount++;
+
+		if( renderInstanceID == rootRenderInstance )
+			traceRenderNativePose( componentRenderRef, "CAMERA_ORBIT_CENTER_ROOT" );
 	}
 
-	// Return a conservative sphere radius for one render component. The native
-	// query exposes its embedded RESOURCE_MESH ID (axis 439) and INSTANCE_RENDER
-	// scale (axes 513..515). A sphere around the scaled local AABB encloses the
-	// mesh even when its render-record applies an additional rotation.
+	// Conservative local-AABB sphere radius after INSTANCE_RENDER scale.
+	// The sum of half-extents is used instead of Math.sqrt to stay compatible
+	// with the old SLRR Java runtime while still enclosing all AABB corners.
 	private float queryRenderComponentRadius( GameRef componentRenderRef )
 	{
 		int meshID = componentRenderRef.getInfo( AABB_QUERY, 439 );
@@ -1050,7 +1074,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		int maxXFixed = meshRef.getInfo( AABB_QUERY, 3 );
 		int maxYFixed = meshRef.getInfo( AABB_QUERY, 4 );
 		int maxZFixed = meshRef.getInfo( AABB_QUERY, 5 );
-
 		int scaleXFixed = componentRenderRef.getInfo( AABB_QUERY, 513 );
 		int scaleYFixed = componentRenderRef.getInfo( AABB_QUERY, 514 );
 		int scaleZFixed = componentRenderRef.getInfo( AABB_QUERY, 515 );
@@ -1063,144 +1086,88 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		float scaleX = scaleXFixed / AABB_SCALE;
 		float scaleY = scaleYFixed / AABB_SCALE;
 		float scaleZ = scaleZFixed / AABB_SCALE;
+		if( scaleX < 0.0 ) scaleX = -scaleX;
+		if( scaleY < 0.0 ) scaleY = -scaleY;
+		if( scaleZ < 0.0 ) scaleZ = -scaleZ;
+
 		float halfX = (maxXFixed - minXFixed) / 2000.0 * scaleX;
 		float halfY = (maxYFixed - minYFixed) / 2000.0 * scaleY;
 		float halfZ = (maxZFixed - minZFixed) / 2000.0 * scaleZ;
-		float radius = (float)Math.sqrt(
-			halfX * halfX + halfY * halfY + halfZ * halfZ
-		);
-		return radius;
+		return halfX + halfY + halfZ;
 	}
 
-	// Query every render component, not only the root GII_RENDERINSTANCE.
-	// Component AABBs are enclosed by spheres; the envelope of those spheres
-	// gives the assembly target, and the enclosing radius becomes the camera
-	// fit distance. This avoids GII_SIZE underestimating long/off-center meshes.
+	// Query root + direct + one-level nested type-3 children without arrays.
+	// Native AABB center axes are already in previewRoot coordinates.
 	private int captureCameraOrbitCenter()
 	{
 		if( cameraOrbitCenterReady )
 			return 1;
 
 		cameraOrbitCenterWaitFrames++;
-		int renderInstanceIDs[] = new int[64];
-		int renderInstanceCount = collectPreviewRenderInstances( renderInstanceIDs );
+		cameraBoundsValidCount = 0;
+		cameraBoundsDiscoveredCount = 0;
+
 		int rootRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-
-		int validCount = 0;
-		float minX = 0.0;
-		float minY = 0.0;
-		float minZ = 0.0;
-		float maxX = 0.0;
-		float maxY = 0.0;
-		float maxZ = 0.0;
-
-		for( int i = 0; i < renderInstanceCount; i++ )
+		if( rootRenderInstance )
 		{
-			int renderInstanceID = renderInstanceIDs[i];
-			GameRef componentRenderRef = new GameRef( renderInstanceID );
-			if( !orbitRenderRef || renderInstanceID == rootRenderInstance )
-				orbitRenderRef = componentRenderRef;
-
-			int centerXFixed = componentRenderRef.getInfo( AABB_QUERY, 500 );
-			int centerYFixed = componentRenderRef.getInfo( AABB_QUERY, 501 );
-			int centerZFixed = componentRenderRef.getInfo( AABB_QUERY, 502 );
-			if( centerXFixed == AABB_INVALID ||
-				centerYFixed == AABB_INVALID ||
-				centerZFixed == AABB_INVALID )
-			{
-				tracePreview(
-					"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
-					" bounds=PENDING values=" + centerXFixed + "," + centerYFixed + "," + centerZFixed
-				);
-				continue;
-			}
-
-			float centerX = centerXFixed / AABB_SCALE;
-			float centerY = centerYFixed / AABB_SCALE;
-			float centerZ = centerZFixed / AABB_SCALE;
-			float componentRadius = queryRenderComponentRadius( componentRenderRef );
-			if( componentRadius < 0.0 )
-			{
-				tracePreview(
-					"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
-					" radius unavailable; center-only fallback"
-				);
-				componentRadius = 0.0;
-			}
-
-			tracePreview(
-				"CAMERA_ORBIT_CENTER component[" + i + "] id=" + renderInstanceID +
-				" center=" + centerX + "," + centerY + "," + centerZ +
-				" radius=" + componentRadius
-			);
-
-			if( validCount == 0 )
-			{
-				minX = centerX - componentRadius;
-				minY = centerY - componentRadius;
-				minZ = centerZ - componentRadius;
-				maxX = centerX + componentRadius;
-				maxY = centerY + componentRadius;
-				maxZ = centerZ + componentRadius;
-			}
-			else
-			{
-				if( centerX - componentRadius < minX ) minX = centerX - componentRadius;
-				if( centerY - componentRadius < minY ) minY = centerY - componentRadius;
-				if( centerZ - componentRadius < minZ ) minZ = centerZ - componentRadius;
-				if( centerX + componentRadius > maxX ) maxX = centerX + componentRadius;
-				if( centerY + componentRadius > maxY ) maxY = centerY + componentRadius;
-				if( centerZ + componentRadius > maxZ ) maxZ = centerZ + componentRadius;
-			}
-			validCount++;
-
-			if( renderInstanceID == rootRenderInstance )
-				traceRenderNativePose( componentRenderRef, "CAMERA_ORBIT_CENTER_ROOT" );
+			orbitRenderRef = new GameRef( rootRenderInstance );
+			addCameraRenderComponent( rootRenderInstance, rootRenderInstance );
 		}
 
-		if( validCount > 0 &&
-			(validCount == renderInstanceCount || cameraOrbitCenterWaitFrames >= 60) )
+		ResourceRef child = previewPart.getFirstChild();
+		int childIndex = 0;
+		while( child && childIndex < 64 )
 		{
-			cameraOrbitCenterX = (minX + maxX) * 0.5;
-			cameraOrbitCenterY = (minY + maxY) * 0.5;
-			cameraOrbitCenterZ = (minZ + maxZ) * 0.5;
-
-			float assemblyRadius = 0.0;
-			for( int i = 0; i < renderInstanceCount; i++ )
+			if( child.type() == 3 )
 			{
-				GameRef componentRenderRef = new GameRef( renderInstanceIDs[i] );
-				int centerXFixed = componentRenderRef.getInfo( AABB_QUERY, 500 );
-				int centerYFixed = componentRenderRef.getInfo( AABB_QUERY, 501 );
-				int centerZFixed = componentRenderRef.getInfo( AABB_QUERY, 502 );
-				if( centerXFixed == AABB_INVALID ||
-					centerYFixed == AABB_INVALID ||
-					centerZFixed == AABB_INVALID )
-					continue;
-
-				float centerX = centerXFixed / AABB_SCALE;
-				float centerY = centerYFixed / AABB_SCALE;
-				float centerZ = centerZFixed / AABB_SCALE;
-				float componentRadius = queryRenderComponentRadius( componentRenderRef );
-				if( componentRadius < 0.0 )
-					componentRadius = 0.0;
-
-				float dx = centerX - cameraOrbitCenterX;
-				float dy = centerY - cameraOrbitCenterY;
-				float dz = centerZ - cameraOrbitCenterZ;
-				float enclosingRadius = (float)Math.sqrt( dx * dx + dy * dy + dz * dz ) + componentRadius;
-				if( enclosingRadius > assemblyRadius )
-					assemblyRadius = enclosingRadius;
+				if( child.id() != rootRenderInstance )
+					addCameraRenderComponent( child.id(), rootRenderInstance );
 			}
 
+			ResourceRef nested = child.getFirstChild();
+			int nestedIndex = 0;
+			while( nested && nestedIndex < 32 )
+			{
+				if( nested.type() == 3 )
+				{
+					if( nested.id() != rootRenderInstance )
+						addCameraRenderComponent( nested.id(), rootRenderInstance );
+				}
+				nested = nested.getNextChild();
+				nestedIndex++;
+			}
+			child = child.getNextChild();
+			childIndex++;
+		}
+
+		if( cameraOrbitCenterWaitFrames == 1 || cameraOrbitCenterWaitFrames >= 60 )
+			tracePreview(
+				"CAMERA_ORBIT_CENTER components discovered=" + cameraBoundsDiscoveredCount +
+				" valid=" + cameraBoundsValidCount +
+			" rootRenderInstance=" + rootRenderInstance
+			);
+
+		if( cameraBoundsValidCount > 0 &&
+			(cameraBoundsValidCount == cameraBoundsDiscoveredCount || cameraOrbitCenterWaitFrames >= 60) )
+		{
+			cameraOrbitCenterX = (cameraBoundsMinX + cameraBoundsMaxX) * 0.5;
+			cameraOrbitCenterY = (cameraBoundsMinY + cameraBoundsMaxY) * 0.5;
+			cameraOrbitCenterZ = (cameraBoundsMinZ + cameraBoundsMaxZ) * 0.5;
+
+			float halfX = (cameraBoundsMaxX - cameraBoundsMinX) * 0.5;
+			float halfY = (cameraBoundsMaxY - cameraBoundsMinY) * 0.5;
+			float halfZ = (cameraBoundsMaxZ - cameraBoundsMinZ) * 0.5;
+			float assemblyRadius = halfX + halfY + halfZ;
 			float previousModelSize = modelSize;
 			if( assemblyRadius > modelSize )
 				modelSize = assemblyRadius;
+
 			tracePreview(
 				"CAMERA_FIT assemblyCenter=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
 				" assemblyRadius=" + assemblyRadius +
-			" oldGII_SIZE=" + previousModelSize +
-			" cameraModelSize=" + modelSize +
-			" valid=" + validCount + " discovered=" + renderInstanceCount
+				" oldGII_SIZE=" + previousModelSize +
+				" cameraModelSize=" + modelSize +
+				" valid=" + cameraBoundsValidCount + " discovered=" + cameraBoundsDiscoveredCount
 			);
 			cameraOrbitCenterReady = 1;
 			return 1;
@@ -1208,11 +1175,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		if( cameraOrbitCenterWaitFrames >= 60 )
 		{
-			if( hasRuntimeBounds && runtimeModelSize * 0.5 > modelSize )
-				modelSize = runtimeModelSize * 0.5;
+			if( hasRuntimeBounds && runtimeBoundsExtent * 0.5 > modelSize )
+				modelSize = runtimeBoundsExtent * 0.5;
 			tracePreview(
 				"CAMERA_FIT timeout; fallback modelSize=" + modelSize +
-				" valid=" + validCount + " discovered=" + renderInstanceCount
+				" valid=" + cameraBoundsValidCount + " discovered=" + cameraBoundsDiscoveredCount
 			);
 			cameraOrbitCenterReady = 1;
 			return 1;
