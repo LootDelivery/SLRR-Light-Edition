@@ -42,6 +42,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	int cameraOrbitCandidateYFixed;
 	int cameraOrbitCandidateZFixed;
 	int cameraOrbitDiagnosticsLogged;
+	int cameraAimDiagnosticsLogged;
 	int previewMeshResourceID;
 	Ypr savedOrientation;
 
@@ -627,6 +628,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCandidateYFixed = AABB_INVALID;
 		cameraOrbitCandidateZFixed = AABB_INVALID;
 		cameraOrbitDiagnosticsLogged = 0;
+		cameraAimDiagnosticsLogged = 0;
 		previewMeshResourceID = 0;
 		tracePreview( "00 createPreview begin" );
 
@@ -1100,9 +1102,29 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				cameraOrbitCenterZ + cameraOffset.z
 			);
 
-			// Rotate the camera basis by the same inverse rotation.
-			Ypr cameraOrientation = new Ypr( -2.5, -0.7, 0.0 );
-			cameraOrientation.mul( inversePartOrientation );
+			// The old fixed orientation (-2.5,-0.7,0) always looked toward
+			// previewRoot origin. Once the orbit center can be offset from origin,
+			// derive the camera aim from its actual position to the captured center.
+			// cameraOffset already contains inversePartOrientation, so this
+			// direction rotates with the orbit without another Ypr multiplication.
+			Vector3 cameraDirection = new Vector3(
+				cameraOrbitCenterX - cameraPosition.x,
+				cameraOrbitCenterY - cameraPosition.y,
+				cameraOrbitCenterZ - cameraPosition.z
+			);
+			Ypr cameraOrientation = new Ypr( cameraDirection );
+
+			if( cameraOrbitCenterReady && !cameraAimDiagnosticsLogged )
+			{
+				tracePreview(
+					"CAMERA_AIM target=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" position=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
+					" direction=" + cameraDirection.x + "," + cameraDirection.y + "," + cameraDirection.z +
+					" ypr=" + cameraOrientation.y + "," + cameraOrientation.p + "," + cameraOrientation.r
+				);
+				cameraAimDiagnosticsLogged = 1;
+			}
+
 			previewCamera.setMatrix( cameraPosition, cameraOrientation );
 		}
 	}
