@@ -43,6 +43,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float nestedMeshSizeY;
 	float nestedMeshSizeZ;
 	int hasNestedMeshBounds;
+	int renderTranslationProbeState;
+	Vector3 renderTranslationProbeRestorePosition;
+	float renderTranslationProbeYaw;
+	float renderTranslationProbePitch;
+	float renderTranslationProbeRoll;
 	float yaw;
 	float pitch;
 	float roll;
@@ -858,37 +863,27 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						traceRenderResourceDiagnostics( liveRenderRef, "T07" );
 						traceRenderPayloadDiagnostics( liveRenderRef, "T08" );
 
-						// Reversible calibration probe: temporarily add +0.1 on Part X,
-						// read the native bone matrix/instance pose, then restore exactly
-						// the transform that was active before the probe.
+						// Leave the temporary +0.1 X parent translation active across
+						// one render update. The render tree composes parent/local matrices
+						// later; an immediate set/restore cannot observe that composition.
 						tracePartTransform( previewPart, "P00 baseline" );
 						traceRenderNativePose( liveRenderRef, "P00 baseline" );
+						renderTranslationProbeRestorePosition = new Vector3(
+							previewPosition.x,
+							previewPosition.y,
+							previewPosition.z
+						);
+						renderTranslationProbeYaw = yaw;
+						renderTranslationProbePitch = pitch;
+						renderTranslationProbeRoll = roll;
 						Vector3 probePosition = new Vector3(
 							previewPosition.x + 0.1,
 							previewPosition.y,
 							previewPosition.z
 						);
-					previewPart.setMatrix( probePosition, new Ypr( yaw, pitch, roll ) );
-					tracePartTransform( previewPart, "P01 plusX_0.1" );
-					int probeRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-					if( probeRenderInstance )
-					{
-						GameRef probeRenderRef = new GameRef( probeRenderInstance );
-						traceRenderNativePose( probeRenderRef, "P01 plusX_0.1" );
-					}
-					else
-						tracePreview( "P01 render instance missing during translation probe" );
-
-					previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
-					tracePartTransform( previewPart, "P02 restored" );
-					int restoredRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
-					if( restoredRenderInstance )
-					{
-						GameRef restoredRenderRef = new GameRef( restoredRenderInstance );
-						traceRenderNativePose( restoredRenderRef, "P02 restored" );
-					}
-					else
-						tracePreview( "P02 render instance missing after translation probe restore" );
+						previewPart.setMatrix( probePosition, new Ypr( yaw, pitch, roll ) );
+						tracePartTransform( previewPart, "P01 immediate" );
+						renderTranslationProbeState = 1;
 					}
 					else
 						tracePreview( "T04 GII_RENDERINSTANCE returned zero after transform" );
@@ -911,6 +906,43 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	{
 		if( !previewPart || !previewCamera )
 			return;
+
+		// The previous frame's render pass has now had a chance to compose the
+		// Part transform with the nested render-child matrix. Capture it before
+		// the normal preview transform is applied again.
+		if( renderTranslationProbeState == 1 )
+		{
+			tracePartTransform( previewPart, "P01 delayed" );
+			int probeRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+			if( probeRenderInstance )
+			{
+				GameRef probeRenderRef = new GameRef( probeRenderInstance );
+				traceRenderNativePose( probeRenderRef, "P01 delayed" );
+			}
+			else
+				tracePreview( "P01 delayed render instance missing" );
+
+			previewPart.setMatrix(
+				renderTranslationProbeRestorePosition,
+				new Ypr( renderTranslationProbeYaw, renderTranslationProbePitch, renderTranslationProbeRoll )
+			);
+			tracePartTransform( previewPart, "P02 immediate restore" );
+			renderTranslationProbeState = 2;
+		}
+		else
+		if( renderTranslationProbeState == 2 )
+		{
+			tracePartTransform( previewPart, "P02 delayed restored" );
+			int restoredRenderInstance = previewPart.getInfo( GameType.GII_RENDERINSTANCE );
+			if( restoredRenderInstance )
+			{
+				GameRef restoredRenderRef = new GameRef( restoredRenderInstance );
+				traceRenderNativePose( restoredRenderRef, "P02 delayed restored" );
+			}
+			else
+				tracePreview( "P02 delayed render instance missing" );
+			renderTranslationProbeState = 0;
+		}
 
 		int traceFrame = 0;
 		if( animateTraceFrames < 3 )
