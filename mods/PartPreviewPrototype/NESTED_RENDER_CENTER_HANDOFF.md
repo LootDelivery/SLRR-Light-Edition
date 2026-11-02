@@ -234,3 +234,43 @@ Expected selection after this fix:
 - Springs: the base and rotated native checks still report worldCenter approximately zero, but this verifies only the selected nested mesh AABB center, not necessarily the perceived visible rotation pivot of every spring variant.
 
 Only `BuyPartPreviewDialog.java` changed in this fix. No native dispatcher source or EXE replacement is required. Runtime validation of the corrected ID selection is pending.
+
+## Runtime retest after identity tracking fix (2026-11-02)
+
+Java commit `e61710463a03e4b9d232d13c92f00d9c96f0eda0` produced the following:
+
+### Nissan SR20 chain
+
+- Direct Part mesh ID: `1351684`.
+- Nested type-5 mesh ID: `1351684` (identity match confirmed).
+- AABB min: `(-1.033, 1.452, -1.279)`.
+- AABB max: `(1.069, 5.385, -1.151)`.
+- AABB center: approximately `(0.018, 3.418, -1.215)`.
+- Captured runtime center offset: `(0.010, 1.917, -0.682)`.
+- Verification after compensation: world center `(0,0,0)); after yaw, within about 0.001.
+
+The local AABB center transformed by the observed runtime scale (about 0.56) is consistent with the captured offset. The data therefore supports the current native AABB calculation. It does not explain the user's visual impression that the rotation pivot remains laterally offset. One possibility is that the AABB midpoint is not the visually perceived center of this elongated, very thin mesh (Z extent only 0.128); this is not yet established.
+
+### OCA bumper
+
+- Direct Part mesh ID and nested type-5 mesh ID both equal `3014932`.
+- AABB center: `(0,-0.447,0)`.
+- Captured runtime offset: `(0.044,-0.400,0.054)`.
+- Verification after compensation: world center `(0,0,0)); after rotation, within about 0.001.
+- User still perceives the pivot low on Y while X/Z appear acceptable.
+
+There is a trace inconsistency to resolve before changing the centering formula: the log reports `savedPosition=(0.557,-0.012,-0.006)`, while the verified final Part position is almost exactly the negative captured offset `(-0.043,0.400,-0.054)`. The current Java source combines savedPosition and the rotated nested offset when constructing the requested parent position, so those reported values do not appear to agree with the source-level calculation. Do not change the math until the exact requested and actual positions are logged at the setMatrix call.
+
+### One-shot transform diagnostic
+
+Commit `26322f51ca4d476c0e5198b29a3e006881a1bc6e` adds:
+- capture log fields `nativeWorldCenter` and `currentPartPos`;
+- one-time `NESTED_CENTER_APPLY` trace with `savedPosition`, computed `pivot`, `requestedPartPos`, and immediate `actualPartPos` after `setMatrix`.
+
+Only the Java preview script changed in this diagnostic commit. No EXE update is required. Use the exact new Java source and report only:
+- `NESTED_CENTER captured ...`
+- `NESTED_CENTER_APPLY ...`
+- `NESTED_CENTER_VERIFY_BASE ...`
+- `NESTED_CENTER_VERIFY_ROTATED ...`
+
+The full GD/raw pointer dump is no longer needed for these two known resource paths.
