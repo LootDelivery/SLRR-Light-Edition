@@ -823,6 +823,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 
 		// This is the only native center sample for this preview instance.
+		int nativeCenterCaptured = 0;
 		if( orbitRenderRef )
 		{
 			int centerXFixed = orbitRenderRef.getInfo( AABB_QUERY, 500 );
@@ -836,6 +837,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				cameraOrbitCenterX = centerXFixed / AABB_SCALE;
 				cameraOrbitCenterY = centerYFixed / AABB_SCALE;
 				cameraOrbitCenterZ = centerZFixed / AABB_SCALE;
+				nativeCenterCaptured = 1;
 				tracePreview(
 					"CAMERA_ORBIT_CENTER captured native world=" +
 					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
@@ -849,9 +851,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 
 		// Keep the cached root AABB center if the single native sample failed.
+		if( nativeCenterCaptured )
+			tracePreview(
+				"CAMERA_ORBIT_CENTER finalized native world=" +
+				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
+			);
+		else
 		if( hasRuntimeBounds )
 			tracePreview(
-				"CAMERA_ORBIT_CENTER finalized root AABB fallback=" +
+				"CAMERA_ORBIT_CENTER finalized cached root AABB=" +
 				cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ
 			);
 		else
@@ -860,6 +868,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		cameraOrbitCenterReady = 1;
 		return 1;
 	}
+
 	private void updateCamera()
 	{
 		if( previewCamera )
