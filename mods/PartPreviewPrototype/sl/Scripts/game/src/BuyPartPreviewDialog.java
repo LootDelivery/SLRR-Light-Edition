@@ -1285,28 +1285,47 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				else
 				if( cameraCenterSamplesMatch( centerXFixed, centerYFixed, centerZFixed ) )
 				{
-					// The queried render instance is a child of previewPart. Its
-					// transformed mesh center is therefore Part-local, not yet in
-					// previewRoot space. Compose it with the Part pose captured after
-					// setMatrix(null,null), exactly like the direct-AABB fallback.
-					Vector3 partLocalCenter = new Vector3(
+					// The native center is expressed in the render instance's parent space.
+// Different part resources attach that instance either directly to previewRoot
+// or beneath previewPart. Compose only when the actual parent is previewPart.
+					int renderParentID = orbitRenderRef.getParentID();
+					Vector3 renderParentCenter = new Vector3(
 						centerXFixed / AABB_SCALE,
 						centerYFixed / AABB_SCALE,
 						centerZFixed / AABB_SCALE
 					);
-				partLocalCenter.rotate( savedOrientation );
-				cameraOrbitCenterX = savedPosition.x + partLocalCenter.x;
-				cameraOrbitCenterY = savedPosition.y + partLocalCenter.y;
-				cameraOrbitCenterZ = savedPosition.z + partLocalCenter.z;
-				cameraOrbitCenterReady = 1;
-				tracePreview(
-					"CAMERA_ORBIT_CENTER captured root world=" +
-					cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-					" partLocal=" + (centerXFixed / AABB_SCALE) + "," +
-					(centerYFixed / AABB_SCALE) + "," + (centerZFixed / AABB_SCALE) +
-					" partPos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
-					" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
-					" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
+					String parentTransform = "unresolved-parent; treated as previewRoot-local";
+					if( renderParentID == previewPart.id() )
+					{
+						renderParentCenter.rotate( savedOrientation );
+						cameraOrbitCenterX = savedPosition.x + renderParentCenter.x;
+						cameraOrbitCenterY = savedPosition.y + renderParentCenter.y;
+						cameraOrbitCenterZ = savedPosition.z + renderParentCenter.z;
+						parentTransform = "previewPart-to-previewRoot";
+					}
+					else
+					{
+						// A root-parented render instance is already in previewRoot space.
+						// Do not add previewPart's transform a second time.
+						cameraOrbitCenterX = renderParentCenter.x;
+						cameraOrbitCenterY = renderParentCenter.y;
+						cameraOrbitCenterZ = renderParentCenter.z;
+						if( renderParentID == previewRoot.id() )
+							parentTransform = "already-previewRoot";
+					}
+					cameraOrbitCenterReady = 1;
+					tracePreview(
+						"CAMERA_ORBIT_CENTER captured root world=" +
+						cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+						" renderParentCenter=" + (centerXFixed / AABB_SCALE) + "," +
+						(centerYFixed / AABB_SCALE) + "," + (centerZFixed / AABB_SCALE) +
+						" renderParentID=" + renderParentID +
+						" previewPartID=" + previewPart.id() +
+						" previewRootID=" + previewRoot.id() +
+						" transform=" + parentTransform +
+						" partPos=" + savedPosition.x + "," + savedPosition.y + "," + savedPosition.z +
+						" samples=" + cameraOrbitCandidateXFixed + "," + cameraOrbitCandidateYFixed + "," + cameraOrbitCandidateZFixed +
+						" / " + centerXFixed + "," + centerYFixed + "," + centerZFixed
 					);
 					return 1;
 				}
@@ -1383,7 +1402,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			);
 
 			// In native coordinates:
-			// cameraPosition*10 = orbitCenter + cameraOffset*10.
+			// cameraPosition*10 = orbitCenter*10 + cameraOffset*10.
 			// Therefore the exact direction toward the orbit center is simply
 			// -cameraOffset. It is already rotated by inversePartOrientation.
 			Vector3 cameraDirection = new Vector3(
