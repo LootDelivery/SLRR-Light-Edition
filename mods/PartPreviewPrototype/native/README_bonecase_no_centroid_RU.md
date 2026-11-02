@@ -60,26 +60,22 @@ Centroid удалён: нет surface-centroid handler, triangle scan или cac
 
 ## Java timeline и камера
 
-`TRANSFORM_TIMELINE` записывает:
-- translation исходного render-record;
-- translation native-выбранного node;
-- INSTANCE_RENDER position и scale;
-- native pivot (axes 510..512).
+`TRANSFORM_TIMELINE` записывает исходный render-record translation, native-selected node translation, INSTANCE_RENDER position/scale и native pivot (axes 510..512). Первые четыре кадра записываются всегда, последующие изменения — до кадра 44.
 
-Первые четыре кадра записываются всегда, последующие изменения — до кадра 44.
+Камера обходит корневой `GII_RENDERINSTANCE`, прямых дочерних и дочерних на один уровень глубже. Обход выполнен обычными `ResourceRef`-циклами **без Java-массивов**: старый SLRR script parser неверно разбирает `int[]` в сигнатурах и вызовах методов.
 
-Для камеры Java собирает корневой `GII_RENDERINSTANCE`, прямых дочерних и дочерних на один уровень глубже. ID дедуплицируются. Для каждой render-компоненты:
+Для каждой render-компоненты:
 1. axes 500..502 дают transformed live-AABB center;
 2. axis 439 даёт ID вложенного `RESOURCE_MESH`;
 3. mesh axes 0..5 дают live local AABB;
-4. axes 513..515 дают native scale;
-5. scaled half-diagonal даёт консервативный bounding-sphere radius.
+4. axes 513..515 дают INSTANCE_RENDER scale;
+5. сумма трёх scaled half-extents используется как консервативный bounding-sphere radius — без `Math.sqrt`, для совместимости со старым JVM.
 
-Камера центрируется по общему конверту этих сфер. Её `modelSize` увеличивается до enclosing radius сборки, когда `GII_SIZE` меньше реального размера bounds. Это нацелено на вытянутые/смещённые детали (цепь, ремень, пайп) и сборки из нескольких render instance.
+Общие границы сфер дают центр сборки и консервативный радиус. `modelSize` увеличивается относительно `GII_SIZE`, когда фактические bounds требуют большего отступа. Если компонента ещё не готова, камера ждёт до 60 кадров; в trace выводится первый и последний опрос.
 
-Если native render instance не найден, сохраняется root-AABB center fallback; для дистанции используется не меньше половины максимального direct Part mesh extent. Детали, которые вообще не создают render instance и не рендерятся, этим не исправляются.
+Если native render instance отсутствует, используется root-AABB fallback; для дистанции берётся не меньше половины максимального direct Part mesh extent. Отсутствие самого рендера у ремня этим не исправляется.
 
-**Геометрический центр не называется native pivot.** Native pivot остаётся доступен отдельно по axes 510..512. Bounding sphere намеренно консервативен и может дать чуть больший отступ, чем точный union AABB. Центр компоненты использует transformed-AABB center; render-record с собственной трансляцией ещё требует отдельной проверки.
+**Ограничение:** радиус намеренно консервативен. Центр компоненты использует native transformed-AABB center; отдельные render-record с собственной трансляцией требуют отдельной проверки.
 
 ## Сборка
 
