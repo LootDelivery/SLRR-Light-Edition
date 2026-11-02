@@ -84,6 +84,8 @@ render_diag_dispatch:
     je .resource_collection_pointer
     cmp ecx, 488
     jbe .resource_collection_header
+    cmp ecx, 498
+    jbe .bone_upper_fields
     cmp ecx, 500
     jb .invalid
     cmp ecx, 502
@@ -290,6 +292,100 @@ render_diag_dispatch:
     sub ecx, 473
     mov eax, dword ptr [edx+ecx*4]
     jmp 0x005e6ec5
+
+# Read-only exact-case probe for the VStanced BON spelling "Bone00".
+# Axis 489 returns the matching node pointer.
+# Axes 490..498 return the nine matrix terms used by the center transform:
+# [b0,c0,d0,b1,c1,d1,b2,c2,d2] at node offsets B0,C0,D0,B4,C4,D4,B8,C8,D8.
+# The existing lowercase "bone00" lookup at axes 294..310 is unchanged.
+.bone_upper_fields:
+    push ebx
+    push edi
+    mov ebx, ecx
+
+    lea ecx, [esi+0x1fc]
+    call 0x004293a0
+    test eax, eax
+    je .bone_upper_not_found
+    mov edi, 64
+
+.bone_upper_scan:
+    # Inline name "Bone00" at node+0x14 / node+0x18.
+    cmp dword ptr [eax+0x14], 0x656e6f42
+    jne .bone_upper_next
+    cmp dword ptr [eax+0x18], 0x00003030
+    je .bone_upper_found
+
+.bone_upper_next:
+    mov ecx, eax
+    call 0x0040cfc0
+    test eax, eax
+    je .bone_upper_not_found
+    dec edi
+    jnz .bone_upper_scan
+    jmp .bone_upper_not_found
+
+.bone_upper_found:
+    cmp ebx, 489
+    je .bone_upper_return_pointer
+    cmp ebx, 490
+    je .bone_upper_m00
+    cmp ebx, 491
+    je .bone_upper_m01
+    cmp ebx, 492
+    je .bone_upper_m02
+    cmp ebx, 493
+    je .bone_upper_m10
+    cmp ebx, 494
+    je .bone_upper_m11
+    cmp ebx, 495
+    je .bone_upper_m12
+    cmp ebx, 496
+    je .bone_upper_m20
+    cmp ebx, 497
+    je .bone_upper_m21
+    cmp ebx, 498
+    je .bone_upper_m22
+    jmp .bone_upper_not_found
+
+.bone_upper_m00:
+    mov eax, dword ptr [eax+0xb0]
+    jmp .bone_upper_return
+.bone_upper_m01:
+    mov eax, dword ptr [eax+0xc0]
+    jmp .bone_upper_return
+.bone_upper_m02:
+    mov eax, dword ptr [eax+0xd0]
+    jmp .bone_upper_return
+.bone_upper_m10:
+    mov eax, dword ptr [eax+0xb4]
+    jmp .bone_upper_return
+.bone_upper_m11:
+    mov eax, dword ptr [eax+0xc4]
+    jmp .bone_upper_return
+.bone_upper_m12:
+    mov eax, dword ptr [eax+0xd4]
+    jmp .bone_upper_return
+.bone_upper_m20:
+    mov eax, dword ptr [eax+0xb8]
+    jmp .bone_upper_return
+.bone_upper_m21:
+    mov eax, dword ptr [eax+0xc8]
+    jmp .bone_upper_return
+.bone_upper_m22:
+    mov eax, dword ptr [eax+0xd8]
+    jmp .bone_upper_return
+
+.bone_upper_return_pointer:
+.bone_upper_return:
+    pop edi
+    pop ebx
+    jmp 0x005e6ec5
+
+.bone_upper_not_found:
+    pop edi
+    pop ebx
+    jmp .invalid
 
 # Axes 500..502 return the runtime center of the embedded mesh in world
 # coordinates, fixed-point * 1000. The nested RESOURCE_MESH AABB is read via
