@@ -674,6 +674,17 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		else
 			tracePreview( "19 previewPart.getMesh returned 0; AABB skipped" );
 
+		// A valid direct Part.getMesh() AABB is authoritative. The nested
+		// render resource can be a secondary engine/submesh and must not replace
+		// the direct mesh center (e.g. belts and other compound engine parts).
+		// Keep the nested path only as a fallback for parts with no usable
+		// direct-mesh bounds, such as suspension springs with getMesh()==0.
+		if( hasRuntimeBounds && hasNestedMeshBounds )
+		{
+			hasNestedMeshBounds = 0;
+			tracePreview( "NESTED_CENTER skipped: valid direct mesh AABB has priority" );
+		}
+
 		tracePreview( "30 before previewPart.getPos" );
 		savedPosition = previewPart.getPos();
 		tracePreview( "31 after previewPart.getPos" );
