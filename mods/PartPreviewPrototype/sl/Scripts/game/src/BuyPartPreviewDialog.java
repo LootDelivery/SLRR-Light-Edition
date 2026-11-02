@@ -192,6 +192,18 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				" GII_TYPE=" + renderChildType
 			);
 
+			Vector3 renderGamePosition = renderGameRef.getPos();
+			Ypr renderGameOrientation = renderGameRef.getOri();
+			if( renderGamePosition && renderGameOrientation )
+				tracePreview(
+					"R04 GameRef transform pos=" + renderGamePosition.x + "," +
+					renderGamePosition.y + "," + renderGamePosition.z +
+					" ypr=" + renderGameOrientation.y + "," +
+					renderGameOrientation.p + "," + renderGameOrientation.r
+				);
+			else
+				tracePreview( "R04 GameRef transform contains null" );
+
 			RenderRef renderRef = new RenderRef( renderInstance );
 			Vector3 renderLocalPosition = renderRef.getPos();
 			if( renderLocalPosition )
