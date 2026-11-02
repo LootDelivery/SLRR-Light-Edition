@@ -197,7 +197,7 @@ Each line reports native world-space AABB center, Part.getPos(), and Part.getOri
 No native EXE change is required; continue using the v2 EXE. Runtime result of the new probes is pending.
 
 
-## Direct-mesh precedence correction (2026-11-02)
+## Nested/direct mesh identity selection (2026-11-02)
 
 Latest user measurements:
 - spring: captured offset `(0.000, +0.257, 0.000)`; native verification center is `(0,0,0)` both at base and after rotation;
@@ -205,14 +205,16 @@ Latest user measurements:
 - OCA bumper: captured `(+0.044, -0.400, +0.054)`; verified center remains `(0,0,0)`;
 - Vstanced arm: captured `(-0.954, -0.020, -0.733)`; verified center remains within 0.001 after rotation.
 
-These prove the native world-center query and fixed captured-offset rotation are numerically consistent for those render paths. They do not alone prove that every visible submesh in a compound Part uses that same render transform.
+The verification confirms that the selected nested AABB center is mathematically at world origin after the compensation, including after rotation. It does not by itself prove that the selected nested resource is the same mesh that produces all visible geometry for a compound Part.
 
-A bug was identified in Java selection: `traceRenderPayloadDiagnostics()` can discover a nested type-5 mesh even when `Part.getMesh()` already supplies a valid direct mesh AABB. Previously, `hasNestedMeshBounds` then overrode the direct AABB center unconditionally. This can shift compound engine parts (e.g. belts) using a secondary nested submesh's bounds rather than the Part's direct mesh.
+The engine-belt symptom points to a resource-selection issue: the nested type-5 child discovered under the render instance may be a secondary submesh different from the Part's direct `getMesh()`. The prior Java code let any discovered nested mesh override the direct AABB, even when the IDs differed. That can shift an engine part sideways by centering the wrong submesh.
 
-Commit `135e4dacaff518f3392b43051115df59fb0bf4e6` fixes precedence:
-- valid direct `Part.getMesh()` AABB always wins;
-- nested render-child center is used only as a fallback when direct mesh bounds are unavailable;
-- spring path (`getMesh()==0`) remains eligible for nested centering;
+Commit `735b2f35ed10e7b0edb77407096219fea0a351c5` implements identity-aware precedence:
+- if `Part.getMesh()` is zero, nested type-5 AABB remains the fallback (spring);
+- if direct and nested mesh IDs match, nested runtime transform-aware center remains enabled (OCA bumper example: both IDs were `3014932`);
+- if both exist but IDs differ, nested centering is disabled and the established direct-mesh AABB path is retained (expected to prevent unrelated engine submesh offsets);
 - no native EXE change.
 
-Runtime retest is pending. If engine belts return to their original pivot, this confirms the precedence bug. Spring still reports a mathematically centered AABB; if its visible rotation pivot remains at the mounting point, the remaining issue is likely a mismatch between the nested resource AABB and the actual spring render transform or an additional transform in its render hierarchy, not a failure of the measured center compensation. Do not add more compensation based solely on the existing zero-center verification.
+Runtime retest is pending. This is intentionally narrower than disabling nested centering for every direct-mesh Part, because the OCA bumper demonstrated that a matching nested/direct resource can have a useful render transform.
+
+If the spring's visible rotation still appears to pivot at its mounting point while the native center remains exactly zero, the remaining mismatch is in the relationship between the selected type-5 AABB and the actual visible spring render transform (or in what is visually perceived as the pivot). Do not add further positional correction based solely on the current zero-center logs.
