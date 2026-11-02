@@ -77,7 +77,7 @@ Native dispatcher builder:
 
 It requires the known-good payload-diagnostic EXE as input and verifies its SHA-256 before patching only the existing .reloc dispatcher area.
 
-Built test EXE:
+Built v1 test EXE (superseded):
 - `StreetLegal_Redline_native_aabb_rendercenter_diag.exe`
 - SHA-256: `8b3e85af7001e404da176b97aecb6956efef2839d980117f33b5cab7ff10428c`
 - base EXE SHA-256: `38e09d0dbdd1c8d8afa1f3d0365b8a629b91e0fa8968c91ec53ccbc69bacdc88`
@@ -108,3 +108,33 @@ Use both:
 Test the same spring preview once. The expected trace line begins `NESTED_CENTER nativeWorld=`; the visual result should place the mesh's geometric center at the preview origin. If the native query returns `AABB_INVALID`, inspect whether F4/auxiliary-list state differs from the tested path. Once this works, test one damper before generalizing to all render-child parts.
 
 No further Java float decoder or repeated P00/P01 calibration loop is needed.
+
+
+## Follow-up v2: render-path selection and initialization guard (2026-11-02)
+
+The user's latest spring log showed:
+- the nested type-5 AABB is still valid: min `(-433,-10,-433)`, max `(433,2116,433)`, center Y about `1.053`;
+- at `createPreview` time, INSTANCE_RENDER +0x90/+0x94/+0x98 are all zero, so the v1 native query returned a false-but-valid world center `(0,0,0)`;
+- by animation frame 2, Java requested Y about `-0.257`, consistent with the live render scale being initialized and the AABB center being transformed;
+- the observed spring path had F4=0 and auxiliary-list-empty=1.
+
+The original native function `0x005433E0` was disassembled. Its selection/override behavior is:
+1. If the auxiliary list at +0x134 is empty, it uses the first node from +0x1FC.
+2. Otherwise it walks the sorted +0x1FC list until it finds the node named `bone00`.
+3. It calculates the pose, then, when +0xF4 is non-null, copies seven DWORDs from F4+0x128 into INSTANCE_RENDER +0x80..+0x98. Therefore the final position/scale fields on INSTANCE_RENDER are already the F4-overridden values.
+
+v2 updates `render_diag_dispatch.S` accordingly:
+- matches the original first-node vs `bone00` selection;
+- no longer rejects non-null F4;
+- returns AABB_INVALID while any of the three final scale fields +0x90/+0x94/+0x98 is still zero, preventing pre-render initialization data from being mistaken for a real center;
+- continues to require a single nested type-5 mesh resource.
+
+The Java code/API did not change. Direct-mesh parts remain unchanged.
+
+Built v2 EXE:
+- `StreetLegal_Redline_native_aabb_rendercenter_v2.exe`
+- SHA-256: `ebc2b46a976e00914f624f6937070bdac1d8dc8f6bb8e2538f74bd204244c0f8`
+- ZIP SHA-256: `4be889aa88b0304da7ee0c57e4f4bff0f2c24ad197d9f1df648412cd8726ec2f`
+- base EXE SHA-256 remains `38e09d0dbdd1c8d8afa1f3d0365b8a629b91e0fa8968c91ec53ccbc69bacdc88`.
+
+Static verification passed: dispatcher code is 1700 bytes (v1: 1603), and only the existing .reloc dispatcher extension changed. Runtime validation in SLRR is still outstanding. Resource collections containing multiple mesh children remain unsupported.
