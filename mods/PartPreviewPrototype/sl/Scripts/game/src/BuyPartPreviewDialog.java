@@ -386,18 +386,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			Vector3 rotatedCenter = new Vector3( boundsCenterX, boundsCenterY, boundsCenterZ );
 			rotatedCenter.rotate( new Ypr( yaw, pitch, roll ) );
 
-			// This Part lives under a private preview root whose camera targets
-			// the root origin. Do not preserve the part's original install/mount
-			// position here: remove it entirely and place the rotated mesh center
-			// at (0, 0, 0). savedPosition is kept only as a diagnostic reference.
+			// Preserve the Part's known-good mount/install position. The AABB
+			// correction is applied relative to that position, in the same way
+			// the original preview kept savedPosition for every rotation update.
 			Vector3 previewPosition = new Vector3(
-				-rotatedCenter.x,
-				-rotatedCenter.y,
-				-rotatedCenter.z
+				savedPosition.x - rotatedCenter.x,
+				savedPosition.y - rotatedCenter.y,
+				savedPosition.z - rotatedCenter.z
 			);
 
-			// Log the initial transform once; animateTraceFrames becomes non-zero
-			// before the per-frame update path runs.
 			if( animateTraceFrames == 0 )
 				tracePreview(
 					"T00 center=" + boundsCenterX + "," + boundsCenterY + "," + boundsCenterZ +
@@ -407,36 +404,25 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					" ypr=" + yaw + "," + pitch + "," + roll
 				);
 
+			// Keep the original, previously working Part transform path. Do not
+			// chain the unverified inherited GameRef.setPos() call after it.
 			previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
 
-			// First read back the two-argument Part.setMatrix path independently.
-			if( animateTraceFrames == 0 )
+			// During the first animated frames, compare requested YPR with the
+			// orientation read back from the Part after setMatrix().
+			if( animateTraceFrames > 0 && animateTraceFrames <= 3 )
 			{
-				Vector3 matrixPosition = previewPart.getPos();
-				Ypr matrixOrientation = previewPart.getOri();
-				if( matrixPosition && matrixOrientation )
+				Vector3 readbackPosition = previewPart.getPos();
+				Ypr readbackOrientation = previewPart.getOri();
+				if( readbackPosition && readbackOrientation )
 					tracePreview(
-						"T01 after setMatrix readbackPos=" + matrixPosition.x + "," + matrixPosition.y + "," + matrixPosition.z +
-						" readbackYpr=" + matrixOrientation.y + "," + matrixOrientation.p + "," + matrixOrientation.r
+						"T03 frame=" + animateTraceFrames +
+						" requestedYpr=" + yaw + "," + pitch + "," + roll +
+						" readbackYpr=" + readbackOrientation.y + "," + readbackOrientation.p + "," + readbackOrientation.r +
+						" readbackPos=" + readbackPosition.x + "," + readbackPosition.y + "," + readbackPosition.z
 					);
 				else
-					tracePreview( "T01 after setMatrix readback returned null" );
-			}
-
-			// GameRef has a dedicated native setPos(Vector3) method. Apply the
-			// translation through that API as well; keep Part.setMatrix above for
-			// the preview's YPR rotation, then read back the native position.
-			previewPart.setPos( previewPosition );
-
-			if( animateTraceFrames == 0 )
-			{
-				Vector3 nativePosition = previewPart.getPos();
-				if( nativePosition )
-					tracePreview(
-						"T02 after GameRef.setPos readbackPos=" + nativePosition.x + "," + nativePosition.y + "," + nativePosition.z
-					);
-				else
-					tracePreview( "T02 after GameRef.setPos readback returned null" );
+					tracePreview( "T03 frame=" + animateTraceFrames + " readback returned null" );
 			}
 		}
 	}
