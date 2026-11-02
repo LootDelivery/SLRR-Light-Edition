@@ -229,6 +229,15 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				tracePreview( "R09 embedded-render raw offset=" + (0x100 + innerField * 4) + " value=" + rawValue );
 			}
 
+			// INSTANCE_RENDER+0xF4 is consumed by native 0x005433E0.
+			// Axes 251..272 read the pointer, the source block at +0x120..+0x150,
+			// and the first eight DWORDs of the pointed object.
+			for( int f4Axis = 251; f4Axis <= 272; f4Axis++ )
+			{
+				int f4Value = renderGameRef.getInfo( AABB_QUERY, f4Axis );
+				tracePreview( "R11 f4-chain axis=" + f4Axis + " raw=" + f4Value );
+			}
+
 			// Native lookup 0x005413C0 follows a sorted linked render-record list.
 			// Axis 122 is its terminal node; the terminal's +0x04 field is zero.
 			// Only the first real record owns the matrix at +0x54.
@@ -634,6 +643,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 						{
 							int value = liveRenderRef.getInfo( AABB_QUERY, 230 + field );
 						tracePreview( "T05 embedded+" + (0x100 + field * 4) + "=" + value );
+						}
+						// Compare the same +0xF4 chain after Part.setMatrix() has run.
+						for( int f4Axis = 251; f4Axis <= 272; f4Axis++ )
+						{
+							int value = liveRenderRef.getInfo( AABB_QUERY, f4Axis );
+							tracePreview( "T06 f4-chain axis=" + f4Axis + " raw=" + value );
 						}
 					}
 					else
