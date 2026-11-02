@@ -1,4 +1,4 @@
-name: Build bone-case diagnostic EXE
+name: Build surface-centroid bone-case diagnostic EXEs
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
       - "mods/PartPreviewPrototype/sl/Scripts/game/src/BuyPartPreviewDialog.java"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -18,18 +18,20 @@ jobs:
     steps:
       - name: Checkout diagnostic branch
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Install assembler and linker
+      - name: Install assembler, linker and zip
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils
+          sudo apt-get install -y binutils zip
 
-      - name: Verify base EXE and build diagnostic EXE
+      - name: Build render-center diagnostic EXE
         shell: bash
         run: |
           set -euo pipefail
@@ -39,8 +41,14 @@ jobs:
             "mods/PartPreviewPrototype/StreetLegal_Redline_native_getinfo_route_probe.exe"
             "StreetLegal_Redline.exe"
           )
-          printf "Candidate executable hashes:\n" | tee build-manifest.txt
           MATCH=""
+          {
+            echo "Surface-centroid / bone-case build manifest"
+            echo "Commit: ${GITHUB_SHA}"
+            echo "Pinned render-payload base SHA-256: ${BASE_SHA}"
+            echo
+            echo "Candidate hashes:"
+          } | tee build-manifest.txt
           for candidate in "${CANDIDATES[@]}"; do
             if [[ -f "$candidate" ]]; then
               HASH="$(sha256sum "$candidate" | cut -d' ' -f1)"
@@ -51,20 +59,72 @@ jobs:
             fi
           done
           if [[ -z "$MATCH" ]]; then
-            echo "No tracked executable matches the exact pinned base SHA-256." | tee -a build-manifest.txt
+            echo "No tracked EXE matches pinned base SHA-256." | tee -a build-manifest.txt
             exit 2
           fi
           echo "Matched base: $MATCH" | tee -a build-manifest.txt
-          python mods/PartPreviewPrototype/native/build_rendercenter_diag.py "$MATCH" StreetLegal_Redline_native_bone_case_probe.exe | tee -a build-manifest.txt
-          sha256sum StreetLegal_Redline_native_bone_case_probe.exe | tee -a build-manifest.txt
+          python mods/PartPreviewPrototype/native/build_rendercenter_diag.py "$MATCH" StreetLegal_Redline_native_rendercenter_v2.exe | tee -a build-manifest.txt
+          python mods/PartPreviewPrototype/native/build_surface_centroid_diag.py StreetLegal_Redline_native_rendercenter_v2.exe StreetLegal_Redline_native_surface_centroid_bonecase_diag.exe | tee -a build-manifest.txt
+          echo >> build-manifest.txt
+          sha256sum StreetLegal_Redline_native_rendercenter_v2.exe StreetLegal_Redline_native_surface_centroid_bonecase_diag.exe | tee -a build-manifest.txt
 
-      - name: Upload built EXE
-        if: success()
+      - name: Package EXEs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > README_surface_centroid_bonecase_RU.txt <<'EOF'
+          Street Legal Racing: Redline — диагностическая сборка.
+
+          StreetLegal_Redline_native_rendercenter_v2.exe:
+          - расширенная диагностика INSTANCE_RENDER;
+          - оси 489..498: поиск Bone00 (точный регистр) и матрица 3x3;
+          - оси 500..502: transform-aware AABB center.
+
+          StreetLegal_Redline_native_surface_centroid_bonecase_diag.exe:
+          - всё из rendercenter_v2;
+          - оси 503..505: surface-area-weighted mesh centroid;
+          - оси 500..502 сохранены.
+
+          Java-логирование находится в:
+          mods/PartPreviewPrototype/sl/Scripts/game/src/BuyPartPreviewDialog.java
+
+          Native-запросы read-only. Проверка сборки статическая; тестирование
+          в самой игре выполняется отдельно.
+          EOF
+          zip -j StreetLegal_Redline_native_surface_centroid_bonecase_diag.zip \
+            StreetLegal_Redline_native_rendercenter_v2.exe \
+            StreetLegal_Redline_native_surface_centroid_bonecase_diag.exe \
+            build-manifest.txt README_surface_centroid_bonecase_RU.txt
+          mkdir -p mods/PartPreviewPrototype/builds
+          cp StreetLegal_Redline_native_rendercenter_v2.exe mods/PartPreviewPrototype/builds/
+          cp StreetLegal_Redline_native_surface_centroid_bonecase_diag.exe mods/PartPreviewPrototype/builds/
+          cp StreetLegal_Redline_native_surface_centroid_bonecase_diag.zip mods/PartPreviewPrototype/builds/
+          cp build-manifest.txt mods/PartPreviewPrototype/builds/
+          cp README_surface_centroid_bonecase_RU.txt mods/PartPreviewPrototype/builds/
+
+      - name: Commit build outputs to diagnostic branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mods/PartPreviewPrototype/builds/
+          if git diff --cached --quiet; then
+            echo "Build outputs already current."
+          else
+            git commit -m "Add surface-centroid bone-case diagnostic build [skip ci]"
+            git push origin HEAD:diagnostic/bone-case-probe
+          fi
+
+      - name: Upload EXE and ZIP artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: bone-case-diagnostic-exe
+          name: surface-centroid-bone-case-diagnostic
           path: |
-            StreetLegal_Redline_native_bone_case_probe.exe
+            StreetLegal_Redline_native_rendercenter_v2.exe
+            StreetLegal_Redline_native_surface_centroid_bonecase_diag.exe
+            StreetLegal_Redline_native_surface_centroid_bonecase_diag.zip
             build-manifest.txt
+            README_surface_centroid_bonecase_RU.txt
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
