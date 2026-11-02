@@ -290,28 +290,53 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 	private void traceNestedMeshCenterFromPose( GameRef renderRef, String prefix )
 	{
+		tracePreview( prefix + " nestedCenter begin hasBounds=" + hasNestedMeshBounds );
 		if( !hasNestedMeshBounds )
 		{
 			tracePreview( prefix + " nested mesh center unavailable" );
 			return;
 		}
 
-		float posX = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 173 ) );
-		float posY = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 174 ) );
-		float posZ = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 175 ) );
-		float scaleX = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 176 ) );
-		float scaleY = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 177 ) );
-		float scaleZ = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 178 ) );
+		int rawPosX = renderRef.getInfo( AABB_QUERY, 173 );
+		int rawPosY = renderRef.getInfo( AABB_QUERY, 174 );
+		int rawPosZ = renderRef.getInfo( AABB_QUERY, 175 );
+		int rawScaleX = renderRef.getInfo( AABB_QUERY, 176 );
+		int rawScaleY = renderRef.getInfo( AABB_QUERY, 177 );
+		int rawScaleZ = renderRef.getInfo( AABB_QUERY, 178 );
+		int rawM0 = renderRef.getInfo( AABB_QUERY, 295 );
+		int rawM1 = renderRef.getInfo( AABB_QUERY, 296 );
+		int rawM2 = renderRef.getInfo( AABB_QUERY, 297 );
+		int rawM4 = renderRef.getInfo( AABB_QUERY, 299 );
+		int rawM5 = renderRef.getInfo( AABB_QUERY, 300 );
+		int rawM6 = renderRef.getInfo( AABB_QUERY, 301 );
+		int rawM8 = renderRef.getInfo( AABB_QUERY, 303 );
+		int rawM9 = renderRef.getInfo( AABB_QUERY, 304 );
+		int rawM10 = renderRef.getInfo( AABB_QUERY, 305 );
 
-		float m0 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 295 ) );
-		float m1 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 296 ) );
-		float m2 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 297 ) );
-		float m4 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 299 ) );
-		float m5 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 300 ) );
-		float m6 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 301 ) );
-		float m8 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 303 ) );
-		float m9 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 304 ) );
-		float m10 = nativeFloatFromBits( renderRef.getInfo( AABB_QUERY, 305 ) );
+		tracePreview(
+			prefix + " nestedCenter rawPose pos=" + rawPosX + "," + rawPosY + "," + rawPosZ +
+			" scale=" + rawScaleX + "," + rawScaleY + "," + rawScaleZ +
+			" matrix=" + rawM0 + "," + rawM1 + "," + rawM2 + "," +
+			rawM4 + "," + rawM5 + "," + rawM6 + "," +
+			rawM8 + "," + rawM9 + "," + rawM10
+		);
+
+		float posX = nativeFloatFromBits( rawPosX );
+		float posY = nativeFloatFromBits( rawPosY );
+		float posZ = nativeFloatFromBits( rawPosZ );
+		float scaleX = nativeFloatFromBits( rawScaleX );
+		float scaleY = nativeFloatFromBits( rawScaleY );
+		float scaleZ = nativeFloatFromBits( rawScaleZ );
+		float m0 = nativeFloatFromBits( rawM0 );
+		float m1 = nativeFloatFromBits( rawM1 );
+		float m2 = nativeFloatFromBits( rawM2 );
+		float m4 = nativeFloatFromBits( rawM4 );
+		float m5 = nativeFloatFromBits( rawM5 );
+		float m6 = nativeFloatFromBits( rawM6 );
+		float m8 = nativeFloatFromBits( rawM8 );
+		float m9 = nativeFloatFromBits( rawM9 );
+		float m10 = nativeFloatFromBits( rawM10 );
+		tracePreview( prefix + " nestedCenter decodedPose" );
 
 		float localX = nestedMeshCenterX * scaleX;
 		float localY = nestedMeshCenterY * scaleY;
@@ -319,6 +344,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		float centerWorldX = posX + m0 * localX + m4 * localY + m8 * localZ;
 		float centerWorldY = posY + m1 * localX + m5 * localY + m9 * localZ;
 		float centerWorldZ = posZ + m2 * localX + m6 * localY + m10 * localZ;
+		tracePreview(
+			prefix + " nestedCenter transformed=" + centerWorldX + "," + centerWorldY + "," + centerWorldZ
+		);
 
 		Vector3 partPosition = previewPart.getPos();
 		if( !partPosition )
