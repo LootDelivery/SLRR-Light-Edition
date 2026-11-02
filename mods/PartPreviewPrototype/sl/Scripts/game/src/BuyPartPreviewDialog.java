@@ -408,6 +408,22 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				);
 
 			previewPart.setMatrix( previewPosition, new Ypr( yaw, pitch, roll ) );
+
+			// Read the transform back once immediately after the first setter call.
+			// This distinguishes a rejected/overridden Part transform from an
+			// internal mesh/child offset that is not represented by Part.getPos().
+			if( animateTraceFrames == 0 )
+			{
+				Vector3 appliedPosition = previewPart.getPos();
+				Ypr appliedOrientation = previewPart.getOri();
+				if( appliedPosition && appliedOrientation )
+					tracePreview(
+						"T01 after setMatrix readbackPos=" + appliedPosition.x + "," + appliedPosition.y + "," + appliedPosition.z +
+						" readbackYpr=" + appliedOrientation.y + "," + appliedOrientation.p + "," + appliedOrientation.r
+					);
+				else
+					tracePreview( "T01 after setMatrix readback returned null" );
+			}
 		}
 	}
 
