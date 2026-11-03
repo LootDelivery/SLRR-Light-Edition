@@ -98,6 +98,7 @@ public class MainMenuDialog extends OptionsDialog
 	final static float	CREDITS_TIMER = 0.20;		// speed
 	final static float	CREDITS_BOTTOM = 1.2;		// offscreen pos to start new text
 	final static float	CREDITS_TOP = -1.2;			// offscreen pos to stop text
+	final static float	MENU_WHEEL_SPIN_SPEED = 6.283185;	// one wheel revolution per second
 
 	int				creditsGroup;
 	Text[]			creditsTxt;
@@ -1065,7 +1066,7 @@ public class MainMenuDialog extends OptionsDialog
 					{
 						Ypr wheelYpr = MenuGarageWheels[i].getYpr();
 						if( !wheelYpr ) wheelYpr = new Ypr( 0, 0, 0 );
-						wheelYpr.p += delta * 6.283185;
+						wheelYpr.p += delta * MENU_WHEEL_SPIN_SPEED;
 						while( wheelYpr.p >= 6.283185 ) wheelYpr.p -= 6.283185;
 						MenuGarageWheels[i].setYpr( wheelYpr );
 					}
