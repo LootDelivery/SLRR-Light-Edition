@@ -655,6 +655,54 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		}
 	}
 
+	// Read-only summary for every direct INSTANCE_RENDER child of a Part.
+	// The active center path currently starts from GII_RENDERINSTANCE (one child);
+	// this probe shows whether other render children own additional mesh AABBs.
+	private void traceRenderChildCenterSummary( GameRef renderRef, String prefix )
+	{
+		tracePreview(
+			prefix + " id=" + renderRef.id() +
+			" type=" + renderRef.type() +
+			" parentID=" + renderRef.getParentID()
+		);
+
+		int childResource = renderRef.getInfo( AABB_QUERY, 418 );
+		int nestedMeshID = 0;
+		if( childResource && childResource != AABB_INVALID )
+			nestedMeshID = renderRef.getInfo( AABB_QUERY, 439 );
+
+		int collection = renderRef.getInfo( AABB_QUERY, 472 );
+		tracePreview(
+			prefix + " childResource=" + childResource +
+			" nestedMeshID=" + nestedMeshID +
+			" collection=" + collection
+		);
+
+		if( nestedMeshID > 0 )
+		{
+			GameRef meshRef = new GameRef( nestedMeshID );
+			int meshType = meshRef.type();
+			tracePreview( prefix + " meshType=" + meshType + " meshID=" + meshRef.id() );
+			if( meshType == 5 )
+			{
+				int minX = meshRef.getInfo( AABB_QUERY, 0 );
+				int minY = meshRef.getInfo( AABB_QUERY, 1 );
+				int minZ = meshRef.getInfo( AABB_QUERY, 2 );
+				int maxX = meshRef.getInfo( AABB_QUERY, 3 );
+				int maxY = meshRef.getInfo( AABB_QUERY, 4 );
+				int maxZ = meshRef.getInfo( AABB_QUERY, 5 );
+				int centerX = renderRef.getInfo( AABB_QUERY, 536 );
+				int centerY = renderRef.getInfo( AABB_QUERY, 537 );
+				int centerZ = renderRef.getInfo( AABB_QUERY, 538 );
+				tracePreview(
+					prefix + " meshAABB min=" + minX + "," + minY + "," + minZ +
+					" max=" + maxX + "," + maxY + "," + maxZ +
+					" transformedCenter=" + centerX + "," + centerY + "," + centerZ
+				);
+			}
+		}
+	}
+
 	private void tracePartResourceTree()
 	{
 		tracePreview(
@@ -742,6 +790,14 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		while( child && childIndex < 32 )
 		{
 			traceResourceNode( child, "R10 child[" + childIndex + "]" );
+			if( child.type() == 3 )
+			{
+				GameRef childRenderRef = new GameRef( child.id() );
+				traceRenderChildCenterSummary(
+					childRenderRef,
+					"R31 renderChild[" + childIndex + "]"
+				);
+			}
 
 			ResourceRef nested = child.getFirstChild();
 			int nestedIndex = 0;
