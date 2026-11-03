@@ -1,0 +1,66 @@
+name: Compile main menu TUFA class
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - sl/Scripts/game/src/MainMenu.java
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compile-mainmenu-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  compile-main-menu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out game repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Get SLRR TUFA compiler
+        run: git clone --depth 1 https://github.com/LootDelivery/SLRR-JVM-compiler.git "$RUNNER_TEMP/slrr-jvm-compiler"
+
+      - name: Build compiler
+        working-directory: ${{ runner.temp }}/slrr-jvm-compiler
+        run: |
+          npm ci
+          npm run build
+
+      - name: Compile MainMenu.java
+        run: |
+          node "$RUNNER_TEMP/slrr-jvm-compiler/dist/src/cli.js" \
+            --root "$GITHUB_WORKSPACE" \
+            --out "$RUNNER_TEMP/slrr-classes" \
+            "$GITHUB_WORKSPACE/sl/Scripts/game/src/MainMenu.java"
+          sha256sum sl/Scripts/game/src/MainMenu.java > "$RUNNER_TEMP/mainmenu-source.sha256"
+          cp "$RUNNER_TEMP/slrr-classes/sl/Scripts/game/MainMenu.class" "$RUNNER_TEMP/MainMenu.class"
+
+      - name: Commit generated game class
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp "$RUNNER_TEMP/MainMenu.class" sl/Scripts/game/MainMenu.class
+          git add sl/Scripts/game/MainMenu.class
+          if ! git diff --cached --quiet; then
+            git commit -m "Build main menu TUFA class"
+          fi
+          git fetch origin "$GITHUB_REF_NAME"
+          git rebase FETCH_HEAD
+          if ! sha256sum --check --status "$RUNNER_TEMP/mainmenu-source.sha256"; then
+            echo "MainMenu.java changed during compilation; discarding the stale generated class."
+            git reset --hard FETCH_HEAD
+            exit 0
+          fi
+          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"

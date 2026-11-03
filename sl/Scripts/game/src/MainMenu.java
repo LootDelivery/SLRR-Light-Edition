@@ -7,6 +7,7 @@ import java.render.*;	//Text
 import java.render.osd.*;	//Text
 import java.render.osd.dialog.*;	//Text
 import java.sound.*;
+import java.game.parts.*;
 
 public class MainMenu implements GameState
 {
@@ -97,6 +98,7 @@ public class MainMenuDialog extends OptionsDialog
 	final static float	CREDITS_TIMER = 0.20;		// speed
 	final static float	CREDITS_BOTTOM = 1.2;		// offscreen pos to start new text
 	final static float	CREDITS_TOP = -1.2;			// offscreen pos to stop text
+	final static float	MENU_WHEEL_SPIN_SPEED = 6.283185;	// one wheel revolution per second
 
 	int				creditsGroup;
 	Text[]			creditsTxt;
@@ -112,6 +114,14 @@ public class MainMenuDialog extends OptionsDialog
 	GameRef			CarScene, DriverScene;
 	RenderRef		DriverRender;
 	Camera			CarCam;
+
+	// Isolated 3D garage preview used only by the main menu.
+	GroundRef		MenuGarageMap;
+	RenderRef		MenuGarageStuff, MenuGarageLight, MenuGarageLightType;
+	GameRef			MenuGarageCamera;
+	Vehicle			MenuGarageCar;
+	WheelRef[]		MenuGarageWheels;
+	float			MenuWheelLastTime;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
@@ -148,7 +158,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		Sound.changeMusicSet( Sound.MUSIC_SET_MENU );
 
-		osd.createBG( new ResourceRef( frontend:0x0006r ) );
+		// The main menu background is rendered by the isolated Garage 1 camera.
 
 		versionMainString = "Street Legal Racing: Redline - Light Edition";
 		versionSubString = Config.version + " MWM  (build " + System.buildNumber() + ")";
@@ -160,11 +170,13 @@ public class MainMenuDialog extends OptionsDialog
 
 		super.show();
 
+		createMenuGarageScene();
 		changeMode (mainGroup);
 	}
 
 	public void hide()
 	{
+		destroyMenuGarageScene();
 		super.hide();
 	}
 
@@ -174,7 +186,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		//--------------main menu--------------
 
-		osd.createBG( RID_GENERALBG );
+		// Keep this OSD group transparent so the 3D garage remains visible.
 		osd.createHeader( "MAIN MENU" );
 
 		m = osd.createMenu( butt1, 0.0, -0.6, 0 );
@@ -943,8 +955,126 @@ public class MainMenuDialog extends OptionsDialog
 	}
 
 
+	public void createMenuGarageScene()
+	{
+		// Reuse the first stock garage interior; keep this preview isolated from the player's car.
+		MenuGarageMap = new GroundRef( Garage.RID_GARAGE1 );
+		MenuGarageStuff = new RenderRef( MenuGarageMap, Garage.RID_GARAGE1_STUFF, null );
+
+		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0036r ) );
+
+		MenuGarageLightType = new RenderRef();
+		MenuGarageLightType.duplicate( new RenderRef( misc.garage:0x001Dr ) );
+		MenuGarageLight = new RenderRef( MenuGarageMap, MenuGarageLightType, "Main menu garage light" );
+
+		// Use a separate traffic car so the player's saved car is never modified.
+		MenuGarageCar = new Vehicle( MenuGarageMap, cars.traffic.Wagon:0x0006r, 6, 2.0, 0.0, 1.0, 1.0 );
+		if( MenuGarageCar )
+		{
+			MenuGarageCar.setDamageMultiplier( 0.0 );
+			MenuGarageCar.setCruiseControl( 0 );
+			MenuGarageCar.setMatrix( new Vector3( 0, 0, 0 ), new Ypr( 0, 0, 0 ) );
+			MenuGarageCar.command( "reset" );
+			MenuGarageCar.command( "stop" );
+
+			// Match Garage.enter(): keep the preview car visible but suspend its physics.
+			MenuGarageCar.wakeUp();
+			MenuGarageCar.command( "suspend" );
+
+			if( MenuGarageCar.chassis )
+			{
+				MenuGarageWheels = new WheelRef[MenuGarageCar.chassis.wheels];
+				for( int i=0; i<MenuGarageWheels.length; i++ )
+					MenuGarageWheels[i] = MenuGarageCar.chassis.getWheel( i );
+			}
+		}
+
+
+		MenuGarageCamera = new GameRef( MenuGarageMap, GameRef.RID_CAMERA,
+			"-3.0, 1.7, -2.0,-2.05, -0.25, 0, 0x13, 1.0,1.0,0.05",
+			"Main menu garage camera" );
+		MenuGarageCamera.command( "render " + osd.getViewport().id() + " 0 0 1 " +
+			( Viewport.RENDERFLAG_CLEARDEPTH | Viewport.RENDERFLAG_CLEARTARGET ) );
+		MenuGarageCamera.command( "dist 1.0 10.0" );
+		MenuGarageCamera.command( "smooth 0.25 0.5" );
+		MenuGarageCamera.command( "zoom 60 5" );
+		MenuGarageCamera.command( "force 0.3 0.5 -0.7" );
+		MenuGarageCamera.command( "torque 0.08" );
+
+		if( MenuGarageCar )
+		{
+			MenuGarageCamera.command( "move " + MenuGarageCar.id() + " 0,0,0 3.5" );
+			MenuGarageCamera.command( "look " + MenuGarageCar.id() + " 0,0,0 0,0,0" );
+		}
+
+		MenuWheelLastTime = System.currentTime();
+	}
+
+	public void destroyMenuGarageScene()
+	{
+		if( MenuGarageCamera )
+		{
+			MenuGarageCamera.command( "render 0" );
+			MenuGarageCamera.destroy();
+			MenuGarageCamera = null;
+		}
+
+		if( MenuGarageCar )
+		{
+			MenuGarageCar.destroy();
+			MenuGarageCar = null;
+		}
+
+		// Match Garage.exit(): release every map-owned instance before map.unload().
+		MenuGarageWheels = null;
+
+		if( MenuGarageLight )
+		{
+			MenuGarageLight.destroy();
+			MenuGarageLight = null;
+		}
+		if( MenuGarageLightType )
+		{
+			MenuGarageLightType.destroy();
+			MenuGarageLightType = null;
+		}
+		if( MenuGarageStuff )
+		{
+			MenuGarageStuff.destroy();
+			MenuGarageStuff = null;
+		}
+		if( MenuGarageMap )
+		{
+			MenuGarageMap.unload();
+			MenuGarageMap = null;
+		}
+	}
+
 	public void animate()
 	{
+		// With physics suspended, WheelRef.setYpr can rotate slot 101+wheelId without moving the chassis.
+		if( MenuGarageWheels )
+		{
+			float now = System.currentTime();
+			float delta = now - MenuWheelLastTime;
+			if( delta > 0.0 )
+			{
+				if( delta > 0.25 ) delta = 0.25;
+				for( int i=0; i<MenuGarageWheels.length; i++ )
+				{
+					if( MenuGarageWheels[i] )
+					{
+						Ypr wheelYpr = MenuGarageWheels[i].getYpr();
+						if( !wheelYpr ) wheelYpr = new Ypr( 0, 0, 0 );
+						wheelYpr.p += delta * MENU_WHEEL_SPIN_SPEED;
+						while( wheelYpr.p >= 6.283185 ) wheelYpr.p -= 6.283185;
+						MenuGarageWheels[i].setYpr( wheelYpr );
+					}
+				}
+			}
+			MenuWheelLastTime = now;
+		}
+
 		if (actGroup == CarGroup)
 		{
 			//CarCamAngle+=0.003;
