@@ -11,8 +11,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: compile-mainmenu-${{ github.ref }}
-  cancel-in-progress: true
+  group: compile-mainmenu-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   compile-main-menu:
