@@ -1315,17 +1315,31 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOrbitCenterZ
 		);
 		tracePreview(
-			"CAMERA_PIVOT_SET before setPos target=" +
+			"CAMERA_PIVOT_SET before RenderRef.setMatrix target=" +
 			pivotTarget.x + "," + pivotTarget.y + "," + pivotTarget.z
 		);
 		cameraOrbitPivot.setMatrix( pivotTarget, new Ypr( 0.0, 0.0, 0.0 ) );
 
 		GameRef pivotGameRef = new GameRef( cameraOrbitPivot.id() );
+		int pivotType = pivotGameRef.type();
 		Vector3 actualPosition = pivotGameRef.getPos();
-		tracePreview(
-			"CAMERA_PIVOT_SET after RenderRef.setMatrix type=" + pivotGameRef.type() +
-			" actual=" + actualPosition.x + "," + actualPosition.y + "," + actualPosition.z
-		);
+		if( actualPosition )
+			tracePreview(
+				"CAMERA_PIVOT_SET after RenderRef.setMatrix type=" + pivotType +
+				" actual=" + actualPosition.x + "," + actualPosition.y + "," + actualPosition.z
+			);
+		else
+			tracePreview( "CAMERA_PIVOT_SET readback=null type=" + pivotType );
+
+		// Dump the matrix exposed by the native INSTANCE_RENDER query.
+		for( int axis = 295; axis <= 310; axis++ )
+		{
+			int value = pivotGameRef.getInfo( AABB_QUERY, axis );
+			tracePreview(
+				"CAMERA_PIVOT_SET matrix[" + (axis - 295) +
+				"] rawFloatBits=" + value
+			);
+		}
 
 		cameraOrbitPivotReady = 1;
 	}
