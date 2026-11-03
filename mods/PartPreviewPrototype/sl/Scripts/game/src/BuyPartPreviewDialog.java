@@ -429,8 +429,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			"CAMERA_ORBIT_DIAG palette slot0 count=" + paletteCount +
 			" valid=" + slotZeroValid
 		);
-		if( paletteCount == AABB_INVALID || paletteCount <= 0 ||
-			slotZeroValid != 1 )
+		// 0x532B10 clears the per-slot valid byte during 0x541FE0 cleanup.
+		// Matrix words remain available, so this transient flag must not gate reads.
+		if( paletteCount == AABB_INVALID || paletteCount <= 0 )
 			return;
 
 		// Native 0x542CC9 copies slot+0x40 into BoneNode+0xB0.
