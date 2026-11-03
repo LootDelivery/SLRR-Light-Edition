@@ -312,7 +312,9 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				"CAMERA_NATIVE_PIVOT pos=" +
 				pivotPosition.x + "," + pivotPosition.y + "," + pivotPosition.z +
 				" ypr=" + pivotOrientation.y + "," +
-				pivotOrientation.p + "," + pivotOrientation.r
+				pivotOrientation.p + "," + pivotOrientation.r +
+				" parentID=" + cameraOrbitPivot.getParentID() +
+				" expectedRootID=" + previewRoot.id()
 			);
 		else
 			tracePreview( "CAMERA_NATIVE_PIVOT readback contains null" );
@@ -888,7 +890,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		// The preview Part remains a sibling under previewRoot and is not moved.
 		tracePreview( "06A before camera orbit pivot creation" );
 		cameraOrbitPivot = new Dummy( previewRoot );
-		tracePreview( "06B after camera orbit pivot creation id=" + cameraOrbitPivot.id() );
+		tracePreview(
+			"06B after camera orbit pivot creation id=" + cameraOrbitPivot.id() +
+			" parentID=" + cameraOrbitPivot.getParentID() +
+			" expectedRootID=" + previewRoot.id()
+		);
 
 		GameRef factory = new GameRef();
 		tracePreview( "07 before factory.create" );
