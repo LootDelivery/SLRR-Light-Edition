@@ -1520,7 +1520,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			cameraOffset.rotate( inversePartOrientation );
 
-				// This is a local transform relative to cameraOrbitPivot.
+			// This is a local transform relative to cameraOrbitPivot.
 			Vector3 cameraPosition = new Vector3( cameraOffset );
 
 			// Camera position is local to the pivot; the pivot itself carries
