@@ -1126,7 +1126,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		);
 		// The duplicate exists only as a transform anchor; black tint prevents
 		// it from contributing a second visible light.
-		cameraOrbitPivot.setColor( 0, 0, 0 );
 
 		tracePreview( "38 before preview Viewport creation" );
 		previewViewport = new Viewport( getPreviewViewportPriority(), 0.05, 0.15, 0.43, 0.66 );
