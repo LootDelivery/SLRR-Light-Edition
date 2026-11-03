@@ -3,7 +3,7 @@ name: Compile main menu TUFA class
 on:
   push:
     branches:
-      - feature/main-menu-3d-garage
+      - '**'
     paths:
       - sl/Scripts/game/src/MainMenu.java
 
