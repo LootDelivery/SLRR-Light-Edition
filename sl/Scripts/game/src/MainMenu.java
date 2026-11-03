@@ -1051,6 +1051,7 @@ public class MainMenuDialog extends OptionsDialog
 
 	public void animate()
 	{
+		// Physics stays suspended; update only the visual wheel-slot rotation.
 		if( MenuGarageWheels )
 		{
 			float now = System.currentTime();
