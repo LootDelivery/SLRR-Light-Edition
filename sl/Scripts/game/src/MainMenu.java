@@ -154,7 +154,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		Sound.changeMusicSet( Sound.MUSIC_SET_MENU );
 
-		// The main menu background is rendered by MenuGarageCamera.
+		// The main menu background is rendered by the isolated Garage 1 camera.
 
 		versionMainString = "Street Legal Racing: Redline - Light Edition";
 		versionSubString = Config.version + " MWM  (build " + System.buildNumber() + ")";
