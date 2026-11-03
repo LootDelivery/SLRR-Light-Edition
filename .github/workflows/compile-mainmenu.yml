@@ -21,7 +21,7 @@ jobs:
       - name: Check out game repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -51,23 +51,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git status --short
-          STASH_BEFORE="$(git rev-parse -q --verify refs/stash || true)"
-          if [ -n "$(git status --porcelain)" ]; then
-            git stash push --include-untracked -m "temporary compiler workspace changes"
-          fi
-          STASH_AFTER="$(git rev-parse -q --verify refs/stash || true)"
-          git pull --rebase origin "$GITHUB_REF_NAME"
-          if [ "$STASH_AFTER" != "$STASH_BEFORE" ] && [ -n "$STASH_AFTER" ]; then
-            git stash drop stash@{0}
-          fi
-          if ! sha256sum --check --status "$RUNNER_TEMP/mainmenu-source.sha256"; then
-            echo "MainMenu.java changed after compilation; a newer run must publish the matching class."
-            exit 1
-          fi
           cp "$RUNNER_TEMP/MainMenu.class" sl/Scripts/game/MainMenu.class
           git add sl/Scripts/game/MainMenu.class
           if ! git diff --cached --quiet; then
             git commit -m "Build main menu TUFA class"
-            git push origin "HEAD:$GITHUB_REF_NAME"
           fi
+          git fetch origin "$GITHUB_REF_NAME"
+          git rebase FETCH_HEAD
+          if ! sha256sum --check --status "$RUNNER_TEMP/mainmenu-source.sha256"; then
+            echo "MainMenu.java changed during compilation; discarding the stale generated class."
+            git reset --hard FETCH_HEAD
+            exit 0
+          fi
+          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
