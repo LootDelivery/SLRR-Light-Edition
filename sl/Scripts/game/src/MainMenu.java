@@ -976,12 +976,6 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCar.command( "reset" );
 			MenuGarageCar.command( "stop" );
 
-			if( MenuGarageCar.chassis )
-			{
-				MenuGarageWheels = new WheelRef[MenuGarageCar.chassis.wheels];
-				for( int i=0; i<MenuGarageWheels.length; i++ )
-					MenuGarageWheels[i] = MenuGarageCar.chassis.getWheel( i );
-			}
 		}
 
 		MenuGarageCamera = new GameRef( MenuGarageMap, GameRef.RID_CAMERA,
@@ -1000,8 +994,6 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCamera.command( "move " + MenuGarageCar.id() + " 0,0,0 3.5" );
 			MenuGarageCamera.command( "look " + MenuGarageCar.id() + " 0,0,0 0,0,0" );
 		}
-
-		MenuWheelLastTime = System.currentTime();
 	}
 
 	public void destroyMenuGarageScene()
@@ -1019,13 +1011,7 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCar = null;
 		}
 
-		MenuGarageWheels = null;
-
-		if( MenuGarageStuff )
-		{
-			MenuGarageStuff.destroy();
-			MenuGarageStuff = null;
-		}
+		// Match Garage.exit(): release the light instances before unloading the map.
 		if( MenuGarageLight )
 		{
 			MenuGarageLight.destroy();
@@ -1036,39 +1022,20 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageLightType.destroy();
 			MenuGarageLightType = null;
 		}
+		if( MenuGarageStuff )
+		{
+			MenuGarageStuff.destroy();
+			MenuGarageStuff = null;
+		}
 		if( MenuGarageMap )
 		{
-			MenuGarageMap.destroy();
+			MenuGarageMap.unload();
 			MenuGarageMap = null;
 		}
 	}
 
 	public void animate()
 	{
-		if( MenuGarageWheels )
-		{
-			float now = System.currentTime();
-			float delta = now - MenuWheelLastTime;
-			if( delta > 0.0 && delta < 0.25 )
-			{
-				for( int i=0; i<MenuGarageWheels.length; i++ )
-				{
-					if( MenuGarageWheels[i] )
-					{
-						Ypr wheelYpr = MenuGarageWheels[i].getYpr();
-						if( wheelYpr )
-						{
-							// The wheel axle is the local X axis (Ypr pitch component).
-							wheelYpr.p += delta * 18.0;
-							if( wheelYpr.p > 6.283185 ) wheelYpr.p -= 6.283185;
-							MenuGarageWheels[i].setYpr( wheelYpr );
-						}
-					}
-				}
-			}
-			MenuWheelLastTime = now;
-		}
-
 		if (actGroup == CarGroup)
 		{
 			//CarCamAngle+=0.003;
