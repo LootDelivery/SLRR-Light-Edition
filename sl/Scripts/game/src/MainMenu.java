@@ -1008,7 +1008,7 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCar = null;
 		}
 
-		// Match Garage.exit(): release the light instances before unloading the map.
+		// Match Garage.exit(): release every map-owned instance before map.unload().
 		if( MenuGarageLight )
 		{
 			MenuGarageLight.destroy();
