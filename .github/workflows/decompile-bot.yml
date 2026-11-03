@@ -29,9 +29,10 @@ jobs:
           npm run build
       - name: Decompile Bot.class
         run: |
-          node "$RUNNER_TEMP/slrr-decompiler/dist/src/cli.js" --out "$RUNNER_TEMP/decompiled" "$GITHUB_WORKSPACE/sl/Scripts/game/Bot.class"
+          node "$RUNNER_TEMP/slrr-decompiler/dist/src/cli.js" --ir --out "$RUNNER_TEMP/decompiled" "$GITHUB_WORKSPACE/sl/Scripts/game/Bot.class"
           mkdir -p sl/Scripts/game/decompiled
-          cp "$RUNNER_TEMP/decompiled/sl/Scripts/game/Bot/Bot.java" sl/Scripts/game/decompiled/Bot.java
+          cp "$RUNNER_TEMP/decompiled/java/game/Bot.java" sl/Scripts/game/decompiled/Bot.java
+          cp "$RUNNER_TEMP/decompiled/java/game/Bot.ir" sl/Scripts/game/decompiled/Bot.ir
       - name: Commit decompiled source for inspection
         run: |
           git config user.name "github-actions[bot]"
