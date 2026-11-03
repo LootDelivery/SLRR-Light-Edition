@@ -45,7 +45,6 @@ jobs:
             --out "$RUNNER_TEMP/slrr-classes" \
             "$GITHUB_WORKSPACE/sl/Scripts/game/src/MainMenu.java"
           sha256sum sl/Scripts/game/src/MainMenu.java > "$RUNNER_TEMP/mainmenu-source.sha256"
-          cp "$RUNNER_TEMP/slrr-classes/sl/Scripts/game/MainMenu.class" sl/Scripts/game/MainMenu.class
 
       - name: Commit generated game class
         run: |
@@ -56,6 +55,7 @@ jobs:
             echo "MainMenu.java changed after compilation; a newer run must publish the matching class."
             exit 1
           fi
+          cp "$RUNNER_TEMP/slrr-classes/sl/Scripts/game/MainMenu.class" sl/Scripts/game/MainMenu.class
           git add sl/Scripts/game/MainMenu.class
           if ! git diff --cached --quiet; then
             git commit -m "Build main menu TUFA class"
