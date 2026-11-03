@@ -45,6 +45,7 @@ jobs:
             --out "$RUNNER_TEMP/slrr-classes" \
             "$GITHUB_WORKSPACE/sl/Scripts/game/src/MainMenu.java"
           sha256sum sl/Scripts/game/src/MainMenu.java > "$RUNNER_TEMP/mainmenu-source.sha256"
+          cp "$RUNNER_TEMP/slrr-classes/sl/Scripts/game/MainMenu.class" "$RUNNER_TEMP/MainMenu.class"
 
       - name: Commit generated game class
         run: |
@@ -56,7 +57,16 @@ jobs:
             git stash push --include-untracked -m "temporary compiler workspace changes"
           fi
           STASH_AFTER="$(git rev-parse -q --verify refs/stash || true)"
+          git status --short
+          STASH_BEFORE="$(git rev-parse -q --verify refs/stash || true)"
+          if [ -n "$(git status --porcelain)" ]; then
+            git stash push --include-untracked -m "temporary compiler workspace changes"
+          fi
+          STASH_AFTER="$(git rev-parse -q --verify refs/stash || true)"
           git pull --rebase origin "$GITHUB_REF_NAME"
+          if [ "$STASH_AFTER" != "$STASH_BEFORE" ] && [ -n "$STASH_AFTER" ]; then
+            git stash drop stash@{0}
+          fi
           if [ "$STASH_AFTER" != "$STASH_BEFORE" ] && [ -n "$STASH_AFTER" ]; then
             git stash drop stash@{0}
           fi
@@ -64,7 +74,7 @@ jobs:
             echo "MainMenu.java changed after compilation; a newer run must publish the matching class."
             exit 1
           fi
-          cp "$RUNNER_TEMP/slrr-classes/sl/Scripts/game/MainMenu.class" sl/Scripts/game/MainMenu.class
+          cp "$RUNNER_TEMP/MainMenu.class" sl/Scripts/game/MainMenu.class
           git add sl/Scripts/game/MainMenu.class
           if ! git diff --cached --quiet; then
             git commit -m "Build main menu TUFA class"
