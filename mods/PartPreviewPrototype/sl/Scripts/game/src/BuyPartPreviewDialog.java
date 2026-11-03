@@ -1099,8 +1099,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewCamera = new Camera( previewRoot, previewViewport, 1, 110, 0.001, 10.0 );
 		tracePreview( "3B after preview Camera creation; camera parent is previewRoot" );
 
-		// Give the camera a valid local orbit matrix immediately. The pivot
-		// begins at the previewRoot origin and moves to the captured center once.
+		// Apply the provisional cached center immediately. The native render
+		// center replaces this fallback after the first initialized frames.
 		updateCamera();
 		tracePreview( "3C initial camera matrix set with provisional orbit center" );
 
@@ -1475,8 +1475,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			if( cameraOrbitCenterReady && !cameraAimDiagnosticsLogged )
 			{
 				tracePreview(
-					"CAMERA_AIM pivotRootJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-					" pivotRootNative=" + (cameraOrbitCenterX * 10.0) + "," +
+					"CAMERA_AIM centerRootJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" centerRootNative=" + (cameraOrbitCenterX * 10.0) + "," +
 					(cameraOrbitCenterY * 10.0) + "," + (cameraOrbitCenterZ * 10.0) +
 					" cameraRootJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
 					" cameraRootNative=" + (cameraPosition.x * 10.0) + "," +
