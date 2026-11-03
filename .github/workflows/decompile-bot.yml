@@ -1,0 +1,41 @@
+name: Decompile stock Bot class
+
+on:
+  push:
+    branches:
+      - feature/main-menu-3d-garage
+    paths:
+      - .github/workflows/decompile-bot.yml
+
+permissions:
+  contents: write
+
+jobs:
+  decompile-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build TUFA decompiler
+        run: |
+          git clone --depth 1 https://github.com/LootDelivery/SLRR-JVM-decompiler.git "$RUNNER_TEMP/slrr-decompiler"
+          cd "$RUNNER_TEMP/slrr-decompiler"
+          npm ci
+          npm run build
+      - name: Decompile Bot.class
+        run: |
+          node "$RUNNER_TEMP/slrr-decompiler/dist/src/cli.js" --out "$RUNNER_TEMP/decompiled" "$GITHUB_WORKSPACE/sl/Scripts/game/Bot.class"
+          mkdir -p sl/Scripts/game/decompiled
+          cp "$RUNNER_TEMP/decompiled/sl/Scripts/game/Bot/Bot.java" sl/Scripts/game/decompiled/Bot.java
+      - name: Commit decompiled source for inspection
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sl/Scripts/game/decompiled/Bot.java
+          git commit -m "Temporarily decompile stock Bot class for inspection"
+          git push origin "HEAD:$GITHUB_REF_NAME"
