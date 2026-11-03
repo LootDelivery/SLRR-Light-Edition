@@ -25,6 +25,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	Part previewPart;
 
 	Dummy previewRoot;
+	Dummy cameraOrbitPivot;
 	RenderRef previewLight;
 	Viewport previewViewport;
 	Camera previewCamera;
@@ -289,7 +290,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			"CAMERA_NATIVE wrapperID=" + cameraGameRef.id() +
 			" type=" + cameraType +
 			" parentID=" + cameraParentID +
-			" expectedRootID=" + previewRoot.id()
+			" expectedPivotID=" + cameraOrbitPivot.id()
 		);
 
 		// The camera's setMatrix position is local to previewRoot. The orbit
@@ -303,6 +304,17 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			" ypr=" + rootOrientation.y + "," +
 			rootOrientation.p + "," + rootOrientation.r
 		);
+		Vector3 pivotPosition = cameraOrbitPivot.getPos();
+		Ypr pivotOrientation = cameraOrbitPivot.getOri();
+		if( pivotPosition && pivotOrientation )
+			tracePreview(
+				"CAMERA_NATIVE_PIVOT pos=" +
+				pivotPosition.x + "," + pivotPosition.y + "," + pivotPosition.z +
+				" ypr=" + pivotOrientation.y + "," +
+				pivotOrientation.p + "," + pivotOrientation.r
+			);
+		else
+			tracePreview( "CAMERA_NATIVE_PIVOT readback contains null" );
 		Vector3 partPosition = previewPart.getPos();
 		Ypr partOrientation = previewPart.getOri();
 		tracePreview(
@@ -416,42 +428,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	}
 
 
-
-
-	// Read-only diagnostics for the already-built per-mesh-group matrix palette.
-	// Slot 0 is the first mesh group of this exact INSTANCE_RENDER; no other
-	// render child is inspected, and no transform is modified.
-	private void tracePaletteSlotZeroDiagnostics( GameRef renderRef )
-	{
-		int paletteCount = renderRef.getInfo( AABB_QUERY, 539 );
-		int slotZeroValid = renderRef.getInfo( AABB_QUERY, 540 );
-		tracePreview(
-			"CAMERA_ORBIT_DIAG palette slot0 count=" + paletteCount +
-			" valid=" + slotZeroValid
-		);
-		// 0x532B10 clears the per-slot valid byte during 0x541FE0 cleanup.
-		// Matrix words remain available, so this transient flag must not gate reads.
-		if( paletteCount == AABB_INVALID || paletteCount <= 0 )
-			return;
-
-		// Native 0x542CC9 copies slot+0x40 into BoneNode+0xB0.
-		for( int axis = 541; axis <= 556; axis++ )
-		{
-			int value = renderRef.getInfo( AABB_QUERY, axis );
-			tracePreview(
-				"CAMERA_ORBIT_DIAG palette slot0 seedMatrixWord[" +
-				(axis - 541) + "] rawFloatBits=" + value
-			);
-		}
-		for( int axis = 557; axis <= 572; axis++ )
-		{
-			int value = renderRef.getInfo( AABB_QUERY, axis );
-			tracePreview(
-				"CAMERA_ORBIT_DIAG palette slot0 boneMatrixWord[" +
-				(axis - 557) + "] rawFloatBits=" + value
-			);
-		}
-	}
 
 
 	// One-shot snapshot immediately before the first native center query.
@@ -574,7 +550,6 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		else
 			tracePreview( "CAMERA_ORBIT_DIAG secondBone unavailable" );
 
-		tracePaletteSlotZeroDiagnostics( renderRef );
 		traceRenderRecordDiagnostics( renderRef, "CAMERA_ORBIT render-record" );
 		tracePreview( "CAMERA_ORBIT_DIAG ===== end runtime inputs =====" );
 	}
@@ -868,6 +843,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		nestedMeshResourceID = 0;
 		cameraFitApplied = 0;
 		orbitRenderRef = null;
+		cameraOrbitPivot = null;
+		cameraOrbitPivotReady = 0;
 		cameraOrbitCenterX = 0.0;
 		cameraOrbitCenterY = 0.0;
 		cameraOrbitCenterZ = 0.0;
@@ -906,6 +883,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewRoot = new Dummy( GameType.WORLDTREEROOT );
 		tracePreview( "06 after previewRoot creation" );
 
+		// The camera gets its own transform parent at the visual orbit center.
+		// The preview Part remains a sibling under previewRoot and is not moved.
+		tracePreview( "06A before camera orbit pivot creation" );
+		cameraOrbitPivot = new Dummy( previewRoot );
+		tracePreview( "06B after camera orbit pivot creation id=" + cameraOrbitPivot.id() );
+
 		GameRef factory = new GameRef();
 		tracePreview( "07 before factory.create" );
 		previewPart = factory.create(
@@ -918,7 +901,12 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 		if( !previewPart )
 		{
-			tracePreview( "09 previewPart is null; destroying previewRoot" );
+			tracePreview( "09 previewPart is null; destroying camera orbit pivot and previewRoot" );
+			if( cameraOrbitPivot )
+			{
+				cameraOrbitPivot.destroy();
+				cameraOrbitPivot = null;
+			}
 			previewRoot.destroy();
 			previewRoot = null;
 			tracePreview( "0A preview creation aborted" );
@@ -1131,7 +1119,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		tracePreview( "39 after preview Viewport creation" );
 		previewViewport.activate( Viewport.RENDERFLAG_CLEARDEPTH | Viewport.RENDERFLAG_CLEARTARGET );
 		tracePreview( "3A after preview Viewport.activate" );
-		previewCamera = new Camera( previewRoot, previewViewport, 1, 110, 0.001, 10.0 );
+		previewCamera = new Camera( cameraOrbitPivot, previewViewport, 1, 110, 0.001, 10.0 );
 		tracePreview( "3B after preview Camera creation" );
 
 		// Give the camera a valid matrix immediately. Use the cached direct AABB
@@ -1301,6 +1289,36 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		return 1;
 	}
 
+	// Move only the camera's parent frame to the cached geometric center.
+	// The preview Part stays under previewRoot and is never translated.
+	private void positionCameraOrbitPivot()
+	{
+		if( cameraOrbitPivotReady || !cameraOrbitPivot )
+			return;
+
+		Vector3 pivotTarget = new Vector3(
+			cameraOrbitCenterX,
+			cameraOrbitCenterY,
+			cameraOrbitCenterZ
+		);
+		tracePreview(
+			"CAMERA_PIVOT_SET before setPos target=" +
+			pivotTarget.x + "," + pivotTarget.y + "," + pivotTarget.z
+		);
+		cameraOrbitPivot.setPos( pivotTarget );
+
+		Vector3 actualPosition = cameraOrbitPivot.getPos();
+		if( actualPosition )
+			tracePreview(
+				"CAMERA_PIVOT_SET after setPos actual=" +
+				actualPosition.x + "," + actualPosition.y + "," + actualPosition.z
+			);
+		else
+			tracePreview( "CAMERA_PIVOT_SET readback=null" );
+
+		cameraOrbitPivotReady = 1;
+	}
+
 	// Capture one stable center after native render initialization. Once ready,
 	// this method returns immediately and never queries bounds again.
 	private int captureCameraOrbitCenter()
@@ -1407,6 +1425,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 					}
 					if( parentResolved )
 					{
+						positionCameraOrbitPivot();
 						cameraOrbitCenterReady = 1;
 						tracePreview(
 							"CAMERA_ORBIT_CENTER captured root world=" +
@@ -1471,6 +1490,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				cameraOrbitCenterZ = 0.0;
 				tracePreview( "CAMERA_ORBIT_CENTER timeout; using previewRoot origin" );
 			}
+			positionCameraOrbitPivot();
 			cameraOrbitCenterReady = 1;
 			return 1;
 		}
@@ -1484,9 +1504,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		{
 			Ypr inversePartOrientation = buildInversePreviewOrientation();
 
-			// Keep the legacy camera vector as a radius from the orbit center.
-			// Translate the camera's base pose to the AABB center, then rotate
-			// that radius around the center without moving the preview Part.
+			// Camera is a child of cameraOrbitPivot, which is positioned at the
+			// cached geometric center. Here we set only the local orbit radius.
 			Vector3 cameraOffset = new Vector3(
 				0.0,
 				modelSize * zoom - modelSize * CAMERA_VERTICAL_OFFSET,
@@ -1495,15 +1514,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			cameraOffset.rotate( inversePartOrientation );
 
-			// cameraOrbitCenter is now in previewRoot space and Java/world
-			// units. RenderRef.setMatrix applies native *10 internally to both
-			// the absolute center and the orbit radius. Never divide the center
-			// by 10: axes 500..502 already return pre-*10 position units.
-			Vector3 cameraPosition = new Vector3(
-				cameraOrbitCenterX + cameraOffset.x,
-				cameraOrbitCenterY + cameraOffset.y,
-				cameraOrbitCenterZ + cameraOffset.z
-			);
+			// This is a local transform relative to cameraOrbitPivot.
+			Vector3 cameraPosition = new Vector3( cameraOffset );
 
 			// In native coordinates:
 			// cameraPosition*10 = orbitCenter*10 + cameraOffset*10.
@@ -1519,11 +1531,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			if( cameraOrbitCenterReady && !cameraAimDiagnosticsLogged )
 			{
 				tracePreview(
-					"CAMERA_AIM targetRootJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
-					" targetRootMatrixNative=" + (cameraOrbitCenterX * 10.0) + "," +
+					"CAMERA_AIM pivotRootJava=" + cameraOrbitCenterX + "," + cameraOrbitCenterY + "," + cameraOrbitCenterZ +
+					" pivotRootNative=" + (cameraOrbitCenterX * 10.0) + "," +
 					(cameraOrbitCenterY * 10.0) + "," + (cameraOrbitCenterZ * 10.0) +
-					" cameraJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
-					" cameraNativeExpected=" + (cameraPosition.x * 10.0) + "," +
+					" cameraLocalJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
+					" cameraLocalNative=" + (cameraPosition.x * 10.0) + "," +
 					(cameraPosition.y * 10.0) + "," + (cameraPosition.z * 10.0) +
 					" directionNative=" + (cameraDirection.x * 10.0) + "," +
 					(cameraDirection.y * 10.0) + "," + (cameraDirection.z * 10.0) +
@@ -1544,7 +1556,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 				tracePreview(
 					"CAMERA_SET_INPUT phase=" + phase +
 					" yawPitchRoll=" + yaw + "," + pitch + "," + roll +
-					" cameraJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
+					" cameraLocalJava=" + cameraPosition.x + "," + cameraPosition.y + "," + cameraPosition.z +
 					" orientation=" + cameraOrientation.y + "," +
 					cameraOrientation.p + "," + cameraOrientation.r
 				);
@@ -1738,6 +1750,14 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			previewPart.destroy();
 			previewPart = null;
 			tracePreview( "H41 after previewPart.destroy" );
+		}
+
+		if( cameraOrbitPivot )
+		{
+			tracePreview( "H45 before cameraOrbitPivot.destroy" );
+			cameraOrbitPivot.destroy();
+			cameraOrbitPivot = null;
+			tracePreview( "H46 after cameraOrbitPivot.destroy" );
 		}
 
 		if( previewRoot )
