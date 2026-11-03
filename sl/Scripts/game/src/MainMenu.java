@@ -953,7 +953,7 @@ public class MainMenuDialog extends OptionsDialog
 
 	public void createMenuGarageScene()
 	{
-		// Reuse the first stock garage interior, its props and lighting.
+		// Reuse the first stock garage interior; keep this preview isolated from the player's car.
 		MenuGarageMap = new GroundRef( Garage.RID_GARAGE1 );
 		MenuGarageStuff = new RenderRef( MenuGarageMap, Garage.RID_GARAGE1_STUFF, null );
 
