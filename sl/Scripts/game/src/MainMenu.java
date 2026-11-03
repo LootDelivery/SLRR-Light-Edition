@@ -7,7 +7,6 @@ import java.render.*;	//Text
 import java.render.osd.*;	//Text
 import java.render.osd.dialog.*;	//Text
 import java.sound.*;
-import java.game.parts.*;
 
 public class MainMenu implements GameState
 {
@@ -119,8 +118,6 @@ public class MainMenuDialog extends OptionsDialog
 	RenderRef		MenuGarageStuff, MenuGarageLight, MenuGarageLightType;
 	GameRef			MenuGarageCamera;
 	Vehicle			MenuGarageCar;
-	WheelRef[]		MenuGarageWheels;
-	float			MenuWheelLastTime;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
