@@ -57,16 +57,7 @@ jobs:
             git stash push --include-untracked -m "temporary compiler workspace changes"
           fi
           STASH_AFTER="$(git rev-parse -q --verify refs/stash || true)"
-          git status --short
-          STASH_BEFORE="$(git rev-parse -q --verify refs/stash || true)"
-          if [ -n "$(git status --porcelain)" ]; then
-            git stash push --include-untracked -m "temporary compiler workspace changes"
-          fi
-          STASH_AFTER="$(git rev-parse -q --verify refs/stash || true)"
           git pull --rebase origin "$GITHUB_REF_NAME"
-          if [ "$STASH_AFTER" != "$STASH_BEFORE" ] && [ -n "$STASH_AFTER" ]; then
-            git stash drop stash@{0}
-          fi
           if [ "$STASH_AFTER" != "$STASH_BEFORE" ] && [ -n "$STASH_AFTER" ]; then
             git stash drop stash@{0}
           fi
