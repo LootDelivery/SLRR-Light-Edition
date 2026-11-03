@@ -7,6 +7,7 @@ import java.render.*;	//Text
 import java.render.osd.*;	//Text
 import java.render.osd.dialog.*;	//Text
 import java.sound.*;
+import java.game.parts.*;
 
 public class MainMenu implements GameState
 {
@@ -118,6 +119,8 @@ public class MainMenuDialog extends OptionsDialog
 	RenderRef		MenuGarageStuff, MenuGarageLight, MenuGarageLightType;
 	GameRef			MenuGarageCamera;
 	Vehicle			MenuGarageCar;
+	WheelRef[]		MenuGarageWheels;
+	float			MenuWheelLastTime;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
@@ -973,7 +976,18 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCar.command( "reset" );
 			MenuGarageCar.command( "stop" );
 
+			// Match Garage.enter(): keep the preview car visible but suspend its physics.
+			MenuGarageCar.wakeUp();
+			MenuGarageCar.command( "suspend" );
+
+			if( MenuGarageCar.chassis )
+			{
+				MenuGarageWheels = new WheelRef[MenuGarageCar.chassis.wheels];
+				for( int i=0; i<MenuGarageWheels.length; i++ )
+					MenuGarageWheels[i] = MenuGarageCar.chassis.getWheel( i );
+			}
 		}
+
 
 		MenuGarageCamera = new GameRef( MenuGarageMap, GameRef.RID_CAMERA,
 			"-3.0, 1.7, -2.0,-2.05, -0.25, 0, 0x13, 1.0,1.0,0.05",
@@ -991,6 +1005,8 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCamera.command( "move " + MenuGarageCar.id() + " 0,0,0 3.5" );
 			MenuGarageCamera.command( "look " + MenuGarageCar.id() + " 0,0,0 0,0,0" );
 		}
+
+		MenuWheelLastTime = System.currentTime();
 	}
 
 	public void destroyMenuGarageScene()
@@ -1009,6 +1025,8 @@ public class MainMenuDialog extends OptionsDialog
 		}
 
 		// Match Garage.exit(): release every map-owned instance before map.unload().
+		MenuGarageWheels = null;
+
 		if( MenuGarageLight )
 		{
 			MenuGarageLight.destroy();
@@ -1033,6 +1051,28 @@ public class MainMenuDialog extends OptionsDialog
 
 	public void animate()
 	{
+		if( MenuGarageWheels )
+		{
+			float now = System.currentTime();
+			float delta = now - MenuWheelLastTime;
+			if( delta > 0.0 )
+			{
+				if( delta > 0.25 ) delta = 0.25;
+				for( int i=0; i<MenuGarageWheels.length; i++ )
+				{
+					if( MenuGarageWheels[i] )
+					{
+						Ypr wheelYpr = MenuGarageWheels[i].getYpr();
+						if( !wheelYpr ) wheelYpr = new Ypr( 0, 0, 0 );
+						wheelYpr.p += delta * 6.283185;
+						while( wheelYpr.p >= 6.283185 ) wheelYpr.p -= 6.283185;
+						MenuGarageWheels[i].setYpr( wheelYpr );
+					}
+				}
+			}
+			MenuWheelLastTime = now;
+		}
+
 		if (actGroup == CarGroup)
 		{
 			//CarCamAngle+=0.003;
