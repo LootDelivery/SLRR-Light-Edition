@@ -433,12 +433,21 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			slotZeroValid != 1 )
 			return;
 
+		// Native 0x542CC9 copies slot+0x40 into BoneNode+0xB0.
 		for( int axis = 541; axis <= 556; axis++ )
 		{
 			int value = renderRef.getInfo( AABB_QUERY, axis );
 			tracePreview(
-				"CAMERA_ORBIT_DIAG palette slot0 matrixWord[" +
+				"CAMERA_ORBIT_DIAG palette slot0 seedMatrixWord[" +
 				(axis - 541) + "] rawFloatBits=" + value
+			);
+		}
+		for( int axis = 557; axis <= 572; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			tracePreview(
+				"CAMERA_ORBIT_DIAG palette slot0 boneMatrixWord[" +
+				(axis - 557) + "] rawFloatBits=" + value
 			);
 		}
 	}
