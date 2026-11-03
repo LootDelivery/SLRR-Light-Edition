@@ -1051,7 +1051,7 @@ public class MainMenuDialog extends OptionsDialog
 
 	public void animate()
 	{
-		// Physics stays suspended; update only the visual wheel-slot rotation.
+		// With physics suspended, WheelRef.setYpr can rotate slot 101+wheelId without moving the chassis.
 		if( MenuGarageWheels )
 		{
 			float now = System.currentTime();
