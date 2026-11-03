@@ -417,6 +417,33 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 
 
 
+
+	// Read-only diagnostics for the already-built per-mesh-group matrix palette.
+	// Slot 0 is the first mesh group of this exact INSTANCE_RENDER; no other
+	// render child is inspected, and no transform is modified.
+	private void tracePaletteSlotZeroDiagnostics( GameRef renderRef )
+	{
+		int paletteCount = renderRef.getInfo( AABB_QUERY, 539 );
+		int slotZeroValid = renderRef.getInfo( AABB_QUERY, 540 );
+		tracePreview(
+			"CAMERA_ORBIT_DIAG palette slot0 count=" + paletteCount +
+			" valid=" + slotZeroValid
+		);
+		if( paletteCount == AABB_INVALID || paletteCount <= 0 ||
+			slotZeroValid != 1 )
+			return;
+
+		for( int axis = 541; axis <= 556; axis++ )
+		{
+			int value = renderRef.getInfo( AABB_QUERY, axis );
+			tracePreview(
+				"CAMERA_ORBIT_DIAG palette slot0 matrixWord[" +
+				(axis - 541) + "] rawFloatBits=" + value
+			);
+		}
+	}
+
+
 	// One-shot snapshot immediately before the first native center query.
 	// Captures the exact pose and render-list nodes used by axes 500..502.
 	private void traceCameraOrbitInputs( GameRef renderRef )
@@ -537,6 +564,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		else
 			tracePreview( "CAMERA_ORBIT_DIAG secondBone unavailable" );
 
+		tracePaletteSlotZeroDiagnostics( renderRef );
 		traceRenderRecordDiagnostics( renderRef, "CAMERA_ORBIT render-record" );
 		tracePreview( "CAMERA_ORBIT_DIAG ===== end runtime inputs =====" );
 	}
