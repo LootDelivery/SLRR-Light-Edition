@@ -1123,9 +1123,8 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewCamera = new Camera( cameraOrbitPivot, previewViewport, 1, 110, 0.001, 10.0 );
 		tracePreview( "3B after preview Camera creation" );
 
-		// Give the camera a valid matrix immediately. Use the cached direct AABB
-		// center if available, otherwise previewRoot origin. A stable native
-		// center may replace this provisional target once after render init.
+		// Give the camera a valid local orbit matrix immediately. The pivot
+		// begins at the previewRoot origin and moves to the captured center once.
 		updateCamera();
 		tracePreview( "3C initial camera matrix set with provisional orbit center" );
 
@@ -1515,13 +1514,11 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			cameraOffset.rotate( new Ypr( -2.5, 0.0, 0.0 ) );
 			cameraOffset.rotate( inversePartOrientation );
 
-			// This is a local transform relative to cameraOrbitPivot.
+				// This is a local transform relative to cameraOrbitPivot.
 			Vector3 cameraPosition = new Vector3( cameraOffset );
 
-			// In native coordinates:
-			// cameraPosition*10 = orbitCenter*10 + cameraOffset*10.
-			// Therefore the exact direction toward the orbit center is simply
-			// -cameraOffset. It is already rotated by inversePartOrientation.
+			// Camera position is local to the pivot; the pivot itself carries
+			// cameraOrbitCenter. The local direction toward its origin is -offset.
 			Vector3 cameraDirection = new Vector3(
 				-cameraOffset.x,
 				-cameraOffset.y,
