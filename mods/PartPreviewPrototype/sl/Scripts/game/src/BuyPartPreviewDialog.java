@@ -25,7 +25,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	Part previewPart;
 
 	Dummy previewRoot;
-	Dummy cameraOrbitPivot;
+	RenderRef cameraOrbitPivot;
 	RenderRef previewLight;
 	Viewport previewViewport;
 	Camera previewCamera;
@@ -305,14 +305,16 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			" ypr=" + rootOrientation.y + "," +
 			rootOrientation.p + "," + rootOrientation.r
 		);
-		Vector3 pivotPosition = cameraOrbitPivot.getPos();
-		Ypr pivotOrientation = cameraOrbitPivot.getOri();
+		GameRef pivotGameRef = new GameRef( cameraOrbitPivot.id() );
+		Vector3 pivotPosition = pivotGameRef.getPos();
+		Ypr pivotOrientation = pivotGameRef.getOri();
 		if( pivotPosition && pivotOrientation )
 			tracePreview(
 				"CAMERA_NATIVE_PIVOT pos=" +
 				pivotPosition.x + "," + pivotPosition.y + "," + pivotPosition.z +
 				" ypr=" + pivotOrientation.y + "," +
 				pivotOrientation.p + "," + pivotOrientation.r +
+				" type=" + pivotGameRef.type() +
 				" parentID=" + cameraOrbitPivot.getParentID() +
 				" expectedRootID=" + previewRoot.id()
 			);
@@ -886,15 +888,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewRoot = new Dummy( GameType.WORLDTREEROOT );
 		tracePreview( "06 after previewRoot creation" );
 
-		// The camera gets its own transform parent at the visual orbit center.
-		// The preview Part remains a sibling under previewRoot and is not moved.
-		tracePreview( "06A before camera orbit pivot creation" );
-		cameraOrbitPivot = new Dummy( previewRoot );
-		tracePreview(
-			"06B after camera orbit pivot creation id=" + cameraOrbitPivot.id() +
-			" parentID=" + cameraOrbitPivot.getParentID() +
-			" expectedRootID=" + previewRoot.id()
-		);
+
 
 		GameRef factory = new GameRef();
 		tracePreview( "07 before factory.create" );
@@ -1121,6 +1115,19 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 		previewLight = new RenderRef( previewRoot, RID_PREVIEW_LIGHT, null );
 		tracePreview( "37 after preview RenderRef creation" );
 
+		// A RenderRef owns a render transform. Its setMatrix path is different
+		// from GameRef.setPos, which left the previous Dummy anchor at zero.
+		tracePreview( "37A before camera RenderRef pivot creation" );
+		cameraOrbitPivot = new RenderRef( previewRoot, previewLight, "camera_orbit_pivot" );
+		tracePreview(
+			"37B after camera RenderRef pivot creation id=" + cameraOrbitPivot.id() +
+			" parentID=" + cameraOrbitPivot.getParentID() +
+			" expectedRootID=" + previewRoot.id()
+		);
+		// The duplicate exists only as a transform anchor; black tint prevents
+		// it from contributing a second visible light.
+		cameraOrbitPivot.setColor( 0, 0, 0 );
+
 		tracePreview( "38 before preview Viewport creation" );
 		previewViewport = new Viewport( getPreviewViewportPriority(), 0.05, 0.15, 0.43, 0.66 );
 		tracePreview( "39 after preview Viewport creation" );
@@ -1311,16 +1318,14 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 			"CAMERA_PIVOT_SET before setPos target=" +
 			pivotTarget.x + "," + pivotTarget.y + "," + pivotTarget.z
 		);
-		cameraOrbitPivot.setPos( pivotTarget );
+		cameraOrbitPivot.setMatrix( pivotTarget, new Ypr( 0.0, 0.0, 0.0 ) );
 
-		Vector3 actualPosition = cameraOrbitPivot.getPos();
-		if( actualPosition )
-			tracePreview(
-				"CAMERA_PIVOT_SET after setPos actual=" +
-				actualPosition.x + "," + actualPosition.y + "," + actualPosition.z
-			);
-		else
-			tracePreview( "CAMERA_PIVOT_SET readback=null" );
+		GameRef pivotGameRef = new GameRef( cameraOrbitPivot.id() );
+		Vector3 actualPosition = pivotGameRef.getPos();
+		tracePreview(
+			"CAMERA_PIVOT_SET after RenderRef.setMatrix type=" + pivotGameRef.type() +
+			" actual=" + actualPosition.x + "," + actualPosition.y + "," + actualPosition.z
+		);
 
 		cameraOrbitPivotReady = 1;
 	}
