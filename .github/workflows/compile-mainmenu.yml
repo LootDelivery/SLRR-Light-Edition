@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: compile-mainmenu-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   compile-main-menu:
     runs-on: ubuntu-latest
@@ -40,12 +44,18 @@ jobs:
             --root "$GITHUB_WORKSPACE" \
             --out "$RUNNER_TEMP/slrr-classes" \
             "$GITHUB_WORKSPACE/sl/Scripts/game/src/MainMenu.java"
+          sha256sum sl/Scripts/game/src/MainMenu.java > "$RUNNER_TEMP/mainmenu-source.sha256"
           cp "$RUNNER_TEMP/slrr-classes/sl/Scripts/game/MainMenu.class" sl/Scripts/game/MainMenu.class
 
       - name: Commit generated game class
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          if ! sha256sum --check --status "$RUNNER_TEMP/mainmenu-source.sha256"; then
+            echo "MainMenu.java changed after compilation; a newer run must publish the matching class."
+            exit 1
+          fi
           git add sl/Scripts/game/MainMenu.class
           if ! git diff --cached --quiet; then
             git commit -m "Build main menu TUFA class"
