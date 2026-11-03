@@ -37,6 +37,7 @@ public class BuyPartPreviewDialog extends PartPreviewDialogBase
 	float cameraOrbitCenterY;
 	float cameraOrbitCenterZ;
 	int cameraOrbitCenterReady;
+	int cameraOrbitPivotReady;
 	int cameraOrbitCenterWaitFrames;
 	int cameraOrbitCandidateReady;
 	int cameraOrbitCandidateXFixed;
