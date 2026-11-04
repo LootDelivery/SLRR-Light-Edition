@@ -109,9 +109,20 @@ public class MainMenuDialog extends OptionsDialog
 	final static int	bgVideoActive, CarRotate;
 
 	// osd background renderer variables
-	GameRef			CarScene, DriverScene;
+	// Main menu background scene and car
+	RenderRef		bgSun, DSun, CSun;
+	RenderRef		bgSky;
+	GameRef			bgScene, CarScene, DriverScene;
+	Vehicle			bgVehicle;
 	RenderRef		DriverRender;
-	Camera			CarCam;
+	Camera			bgCam, CarCam;
+	float			bgCamAngle, CarCamAngle;
+	Pori			bgCamPori;
+	Pori			bgCamSpeed;
+	Pori			bgCamSpeedDest;
+	Pori[]			bgCamPath;
+	int				bgCamPathIndex;
+	float			bgCamDestDistance;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
@@ -148,7 +159,6 @@ public class MainMenuDialog extends OptionsDialog
 
 		Sound.changeMusicSet( Sound.MUSIC_SET_MENU );
 
-		osd.createBG( new ResourceRef( frontend:0x0006r ) );
 
 		versionMainString = "Street Legal Racing: Redline - Light Edition";
 		versionSubString = Config.version + " MWM  (build " + System.buildNumber() + ")";
@@ -158,6 +168,58 @@ public class MainMenuDialog extends OptionsDialog
 
 		osd.endGroup();
 
+		// Main menu 3D background scene
+		bgScene = new GroundRef( Maps.Addon_Maps.Home:0x00000001r );
+		bgScene.setFog( 0xFF07121e, 2.0, 100.0 );
+		bgCam = new Camera( bgScene, osd.getViewport(), 0 );
+
+		RenderRef suntype = new RenderRef( maps.skydome:0x0024r );
+		suntype.setLight( 0x00EDC6A4, 0x00646464, 0x00C8C8C8 );
+		bgSun = new RenderRef( bgScene, suntype, "menu_bgSun" );
+		bgSky = new RenderRef( bgScene, maps.skydome:0x0023r, "egbolt-night_02" );
+		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0035r ) );
+
+		// Create the background Taxi through the same Vehicle constructor
+		// used by the in-game car selector.
+		bgVehicle = new Vehicle( bgScene, cars.traffic.Taxi:0x0006r, 6, 2.0, 0.0, 1.0, 1.0 );
+		bgVehicle.command( "reset" );
+		bgVehicle.command( "setsteer -0.2" );
+		bgVehicle.wakeUp();
+		bgVehicle.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
+		bgVehicle.command( "idle" );
+
+		// Camera route around the background car.
+		bgCamPath = new Pori[28];
+		bgCamPath[0] = new Pori( new Vector3(-1.886, 0.483, -2.086), new Ypr(-1.904, 0.014, 0.000) );
+		bgCamPath[1] = new Pori( new Vector3(-1.933, 0.636, -1.248), new Ypr(-1.637, 0.000, 0.000) );
+		bgCamPath[2] = new Pori( new Vector3(-1.982, 0.870, -0.476), new Ypr(-1.723, -0.008, 0.000) );
+		bgCamPath[3] = new Pori( new Vector3(-1.963, 0.996, 0.391), new Ypr(-1.353, -0.088, 0.000) );
+		bgCamPath[4] = new Pori( new Vector3(-1.941, 0.603, 1.013), new Ypr(-1.428, -0.175, 0.000) );
+		bgCamPath[5] = new Pori( new Vector3(-1.933, 0.269, 1.435), new Ypr(-1.325, 0.099, 0.000) );
+		bgCamPath[6] = new Pori( new Vector3(-2.117, 0.273, 2.010), new Ypr(-1.118, 0.108, 0.000) );
+		bgCamPath[7] = new Pori( new Vector3(-1.868, 0.290, 2.449), new Ypr(-0.927, 0.103, 0.000) );
+		bgCamPath[8] = new Pori( new Vector3(-1.373, 0.275, 2.585), new Ypr(-0.700, 0.124, 0.000) );
+		bgCamPath[9] = new Pori( new Vector3(-1.871, 0.258, 2.580), new Ypr(-0.409, 0.291, 0.000) );
+		bgCamPath[10] = new Pori( new Vector3(1.156, 0.266, 2.442), new Ypr(0.851, -0.103, 0.000) );
+		bgCamPath[11] = new Pori( new Vector3(1.308, 0.297, 1.894), new Ypr(0.986, -0.115, 0.000) );
+		bgCamPath[12] = new Pori( new Vector3(1.577, 0.939, 1.532), new Ypr(1.042, -0.112, 0.000) );
+		bgCamPath[13] = new Pori( new Vector3(1.919, 0.932, 1.225), new Ypr(1.106, -0.154, 0.000) );
+		bgCamPath[14] = new Pori( new Vector3(2.084, 0.986, 0.687), new Ypr(1.130, -0.154, 0.000) );
+		bgCamPath[15] = new Pori( new Vector3(2.098, 0.953, 0.086), new Ypr(1.187, -0.104, 0.000) );
+		bgCamPath[16] = new Pori( new Vector3(2.088, 0.923, -0.505), new Ypr(1.406, -0.180, 0.000) );
+		bgCamPath[17] = new Pori( new Vector3(2.051, 0.920, -1.030), new Ypr(1.512, -0.150, 0.000) );
+		bgCamPath[18] = new Pori( new Vector3(2.015, 0.959, -1.509), new Ypr(1.674, -0.141, 0.000) );
+		bgCamPath[19] = new Pori( new Vector3(2.048, 0.938, -1.984), new Ypr(1.758, -0.130, 0.000) );
+		bgCamPath[20] = new Pori( new Vector3(2.015, 0.810, -2.384), new Ypr(1.884, -0.274, 0.000) );
+		bgCamPath[21] = new Pori( new Vector3(1.762, 0.727, -2.636), new Ypr(1.954, -0.243, 0.000) );
+		bgCamPath[22] = new Pori( new Vector3(1.411, 0.679, -2.785), new Ypr(2.223, -0.195, 0.000) );
+		bgCamPath[23] = new Pori( new Vector3(1.029, 0.683, -2.854), new Ypr(2.873, -0.196, 0.000) );
+		bgCamPath[24] = new Pori( new Vector3(-0.969, 0.704, -2.836), new Ypr(3.066, -0.197, 0.000) );
+		bgCamPath[25] = new Pori( new Vector3(-1.367, 0.742, -2.757), new Ypr(2.900, -0.200, 0.000) );
+		bgCamPath[26] = new Pori( new Vector3(-1.699, 0.704, -2.534), new Ypr(2.531, -0.246, 0.000) );
+		bgCamPath[27] = new Pori( new Vector3(-1.886, 0.483, -2.086), new Ypr(0.000, 0.000, 0.000) );
+
+
 		super.show();
 
 		changeMode (mainGroup);
@@ -166,6 +228,19 @@ public class MainMenuDialog extends OptionsDialog
 	public void hide()
 	{
 		super.hide();
+
+		// Remove the background Taxi when leaving the main menu.
+		if( bgVehicle )
+		{
+			bgVehicle.destroy();
+			bgVehicle = null;
+		}
+
+		// Release the main-menu background camera when leaving the menu.
+		if( bgVideoActive )
+			GfxEngine.closeVideo();
+		else
+			bgCam = null;
 	}
 
 	public void addCustomGroups()
@@ -924,20 +999,22 @@ public class MainMenuDialog extends OptionsDialog
 
 		if( actGroup == mainGroup )
 		{
-			if( (GameLogic.gameMode == GameLogic.GM_CARREER || GameLogic.gameMode == GameLogic.GM_SINGLECAR) && GameLogic.player.car )
-				saveCarButton.enable();
-			else
-				saveCarButton.disable();
-
-			if( GameLogic.played )
+			// The menu may be entered before every optional button reference exists.
+			// Do not let a missing button abort the entire main-menu startup.
+			if( saveCarButton )
 			{
-				//saveButton.enable();
-				backGarageButton.enable();
+				if( (GameLogic.gameMode == GameLogic.GM_CARREER || GameLogic.gameMode == GameLogic.GM_SINGLECAR) && GameLogic.player.car )
+					saveCarButton.enable();
+				else
+					saveCarButton.disable();
 			}
-			else
+
+			if( backGarageButton )
 			{
-				//saveButton.disable();
-				backGarageButton.disable();
+				if( GameLogic.played )
+					backGarageButton.enable();
+				else
+					backGarageButton.disable();
 			}
 		}
 	}
@@ -996,6 +1073,32 @@ public class MainMenuDialog extends OptionsDialog
 			}
 		}
 
+		else
+		if( !bgVideoActive )
+		{
+			// Follow the saved route smoothly around the menu car.
+			float distance = 0.0;
+			if( bgCamPori )
+				distance = new Vector3().diff( bgCamPath[bgCamPathIndex].pos, bgCamPori.pos ).length();
+			else
+			{
+				bgCamPori = new Pori( bgCamPath[0] );
+				bgCamSpeed = new Pori();
+			}
+
+			if( bgCamDestDistance <= distance )
+			{
+				bgCamPathIndex = ++bgCamPathIndex % bgCamPath.length;
+				bgCamSpeedDest = new Pori().diff( bgCamPath[bgCamPathIndex], bgCamPori ).mul( 0.001 );
+				bgCamDestDistance = 1000000.0;
+			}
+			else
+				bgCamDestDistance = distance;
+
+			bgCamSpeed = bgCamSpeed.mul( 0.97 ).add( new Pori(bgCamSpeedDest).mul( 0.03 ) );
+			bgCamPori.add( bgCamSpeed );
+			bgCam.setMatrix( bgCamPori );
+		}
 		super.animate();
 	}
 
