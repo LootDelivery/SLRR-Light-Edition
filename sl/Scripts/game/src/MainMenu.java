@@ -993,11 +993,14 @@ public class MainMenuDialog extends OptionsDialog
 				}
 			}
 
-			// Bot.driveStraightTo sends AI_GoToTarget in world coordinates.
-			// At zero yaw this car's forward axis is +Z, so the target is 10 m ahead.
 			MenuGarageBot = new Bot( 0, 0, 0.0 );
+			// This is a menu preview: do not spawn the Bot's separate human render.
+			MenuGarageBot.setDriverObject( NoDriver:0x0000000Cr );
 			MenuGarageBot.createCar( MenuGarageMap, MenuGarageCar );
-			MenuGarageBot.driveStraightTo( new Vector3( 0.0, 0.0, 10.0 ) );
+
+			// At zero yaw the car's nose faces -Z in this garage scene.
+			// Keep the AI target ahead of the car, not behind it.
+			MenuGarageBot.driveStraightTo( new Vector3( 0.0, 0.0, -10.0 ) );
 		}
 
 
