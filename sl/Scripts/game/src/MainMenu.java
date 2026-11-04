@@ -735,6 +735,9 @@ public class MainMenuDialog extends OptionsDialog
 
 					new PlayerSetupDialog( player.controller, Dialog.DF_MODAL|Dialog.DF_DEFAULTBG, "Choose character", player ).display();
 
+					// Release the menu's 3D/physics scene before the loading screen freezes the world.
+					destroyMenuGarageScene();
+
 					Frontend.loadingScreen.show();
 					GameLogic.loadDefaults();
 
