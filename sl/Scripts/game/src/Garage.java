@@ -215,11 +215,6 @@ public class Garage extends Scene implements GameState
 		camera = new GameRef( map, GameRef.RID_CAMERA, cameraPos.x + ", 1.7, " + cameraPos.z + "," + cameraOri.toString() + ", 0x13, 1.0,1.0, 0.05", "Internal camera for garage" );
 		cameraSetup( camera );
 
-		// The new Garage camera now owns the viewport. It is safe to release
-		// the previous menu preview scene after this point.
-		if( prevState instanceof MainMenu )
-			((MainMenu)prevState).completeGarageTransition();
-
 		osd.endGroup();
 
 		painter = new Painter( player, osd, moneytxt, infoline, 0 );
