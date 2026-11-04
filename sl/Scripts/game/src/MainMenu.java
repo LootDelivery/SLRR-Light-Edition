@@ -992,20 +992,22 @@ public class MainMenuDialog extends OptionsDialog
 
 		if( actGroup == mainGroup )
 		{
-			if( (GameLogic.gameMode == GameLogic.GM_CARREER || GameLogic.gameMode == GameLogic.GM_SINGLECAR) && GameLogic.player.car )
-				saveCarButton.enable();
-			else
-				saveCarButton.disable();
-
-			if( GameLogic.played )
+			// The menu may be entered before every optional button reference exists.
+			// Do not let a missing button abort the entire main-menu startup.
+			if( saveCarButton )
 			{
-				//saveButton.enable();
-				backGarageButton.enable();
+				if( (GameLogic.gameMode == GameLogic.GM_CARREER || GameLogic.gameMode == GameLogic.GM_SINGLECAR) && GameLogic.player.car )
+					saveCarButton.enable();
+				else
+					saveCarButton.disable();
 			}
-			else
+
+			if( backGarageButton )
 			{
-				//saveButton.disable();
-				backGarageButton.disable();
+				if( GameLogic.played )
+					backGarageButton.enable();
+				else
+					backGarageButton.disable();
 			}
 		}
 	}
