@@ -130,7 +130,6 @@ public class MainMenuDialog extends OptionsDialog
 	Bot				MenuGarageBot;
 	WheelRef[]		MenuGarageWheels;
 	int				MenuGarageBrakeActive;
-	int				MenuGarageBackgroundGroup = -1;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
@@ -188,13 +187,9 @@ public class MainMenuDialog extends OptionsDialog
 		super.hide();
 	}
 
-	// Return the menu to its stock 2D background state, then release the preview
-	// scene before the next GameState is allowed to create its own camera.
+	// Fully tear down the menu preview before the next GameState starts loading.
 	public void prepareForTransition()
 	{
-		if( osd && MenuGarageBackgroundGroup >= 0 )
-			osd.showGroup( MenuGarageBackgroundGroup );
-
 		destroyMenuGarageScene();
 		super.hide();
 	}
@@ -202,13 +197,6 @@ public class MainMenuDialog extends OptionsDialog
 	public void addCustomGroups()
 	{
 		Menu	m;
-
-		// Keep the original 2D menu background ready, but hidden while the 3D
-		// preview camera renders into the same viewport.
-		osd.beginGroup();
-		osd.createBG( new ResourceRef( frontend:0x0006r ) );
-		osd.createBG( RID_GENERALBG );
-		osd.hideGroup( MenuGarageBackgroundGroup = osd.endGroup() );
 
 		//--------------main menu--------------
 
