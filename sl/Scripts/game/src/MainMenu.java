@@ -978,7 +978,8 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCar.setCruiseControl( 0 );
 			MenuGarageCar.setMatrix( new Vector3( 0, 0, 0 ), new Ypr( 0, 0, 0 ) );
 			MenuGarageCar.command( "reset" );
-			MenuGarageCar.command( "stop" );
+			// Do NOT issue "stop" here: in Garage.java it is used as "grab",
+			// which holds the vehicle and prevents the AI from driving it.
 			MenuGarageCar.wakeUp();
 
 			if( MenuGarageCar.chassis )
