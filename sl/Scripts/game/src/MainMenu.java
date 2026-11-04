@@ -26,25 +26,11 @@ public class MainMenu implements GameState
 
 	public void exit( GameState nextState )
 	{
-		if( nextState instanceof Garage )
-		{
-			// Detach the menu camera, but defer scene destruction until Garage
-			// has installed its replacement camera on the shared viewport.
-			mmd.hideForGarageTransition();
-		}
-		else
-		{
-			mmd.hide();
-			mmd.destroyMenuGarageScene();
-			mmd = null;
-		}
-	}
-
-	public void completeGarageTransition()
-	{
 		if( mmd )
 		{
-			mmd.destroyMenuGarageScene();
+			// Restore the ordinary 2D menu state and release every preview object
+			// before the next GameState (including Garage) starts loading.
+			mmd.prepareForTransition();
 			mmd = null;
 		}
 	}
@@ -144,6 +130,7 @@ public class MainMenuDialog extends OptionsDialog
 	Bot				MenuGarageBot;
 	WheelRef[]		MenuGarageWheels;
 	int				MenuGarageBrakeActive;
+	int				MenuGarageBackgroundGroup = -1;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
@@ -201,12 +188,14 @@ public class MainMenuDialog extends OptionsDialog
 		super.hide();
 	}
 
-	// Keep the menu scene alive until Garage has installed its own viewport camera.
-	public void hideForGarageTransition()
+	// Return the menu to its stock 2D background state, then release the preview
+	// scene before the next GameState is allowed to create its own camera.
+	public void prepareForTransition()
 	{
-		if( MenuGarageCamera )
-			MenuGarageCamera.command( "render 0" );
+		if( osd && MenuGarageBackgroundGroup >= 0 )
+			osd.showGroup( MenuGarageBackgroundGroup );
 
+		destroyMenuGarageScene();
 		super.hide();
 	}
 
@@ -214,9 +203,16 @@ public class MainMenuDialog extends OptionsDialog
 	{
 		Menu	m;
 
+		// Keep the original 2D menu background ready, but hidden while the 3D
+		// preview camera renders into the same viewport.
+		osd.beginGroup();
+		osd.createBG( new ResourceRef( frontend:0x0006r ) );
+		osd.createBG( RID_GENERALBG );
+		osd.hideGroup( MenuGarageBackgroundGroup = osd.endGroup() );
+
 		//--------------main menu--------------
 
-		// Keep this group transparent; the 3D garage camera draws the background.
+		// The 3D garage camera draws the background while this group is active.
 		osd.createHeader( "MAIN MENU" );
 
 		m = osd.createMenu( butt1, 0.0, -0.6, 0 );
@@ -1054,9 +1050,8 @@ public class MainMenuDialog extends OptionsDialog
 	{
 		if( MenuGarageCamera )
 		{
-			// Detach the menu camera from the viewport before destroying it.
-			// Garage.enter() does the same for its previous camera before replacement.
-			MenuGarageCamera.command( "render 0" );
+			// Destroy the menu camera outright; do not leave it bound to the
+			// shared OSD viewport while the next state creates its own camera.
 			MenuGarageCamera.destroy();
 			MenuGarageCamera = null;
 		}
