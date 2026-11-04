@@ -161,7 +161,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		Sound.changeMusicSet( Sound.MUSIC_SET_MENU );
 
-		// The main menu background is rendered by the isolated Garage 1 camera.
+		osd.createBG( new ResourceRef( frontend:0x0006r ) );
 
 		versionMainString = "Street Legal Racing: Redline - Light Edition";
 		versionSubString = Config.version + " MWM  (build " + System.buildNumber() + ")";
@@ -173,16 +173,12 @@ public class MainMenuDialog extends OptionsDialog
 
 		super.show();
 
-		createMenuGarageScene();
 		changeMode (mainGroup);
 	}
 
 	public void hide()
 	{
-		// Stop the menu OSD and its animate callback before releasing objects
-		// that the callback can still reference.
 		super.hide();
-		destroyMenuGarageScene();
 	}
 
 	public void addCustomGroups()
@@ -191,7 +187,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		//--------------main menu--------------
 
-		// Keep this OSD group transparent so the 3D garage remains visible.
+		osd.createBG( RID_GENERALBG );
 		osd.createHeader( "MAIN MENU" );
 
 		m = osd.createMenu( butt1, 0.0, -0.6, 0 );
@@ -734,9 +730,6 @@ public class MainMenuDialog extends OptionsDialog
 					player.name = d.input;
 
 					new PlayerSetupDialog( player.controller, Dialog.DF_MODAL|Dialog.DF_DEFAULTBG, "Choose character", player ).display();
-
-					// Release the menu's 3D/physics scene before the loading screen freezes the world.
-					destroyMenuGarageScene();
 
 					Frontend.loadingScreen.show();
 					GameLogic.loadDefaults();
