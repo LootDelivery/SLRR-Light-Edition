@@ -114,7 +114,6 @@ public class MainMenuDialog extends OptionsDialog
 	RenderRef		bgSky;
 	GameRef			bgScene, CarScene, DriverScene;
 	Vehicle			bgVehicle;
-	Bot				bgCarBot;
 	RenderRef		DriverRender;
 	Camera			bgCam, CarCam;
 	float			bgCamAngle, CarCamAngle;
@@ -180,18 +179,14 @@ public class MainMenuDialog extends OptionsDialog
 		bgSky = new RenderRef( bgScene, maps.skydome:0x0023r, "egbolt-night_02" );
 		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0035r ) );
 
-		// Spawn the taxi like a traffic racer: set its native transform first,
-		// then register it with a suspended Bot controller.
-		float bgCarColorSeed = Math.random()*12345;
-		GameRef bgCarRef = new GameRef( bgScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
-		bgCarRef.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
-		bgVehicle = new Vehicle( bgCarRef );
-		bgCarBot = new Bot( 0, 12345, 0.0 );
-		bgCarBot.setDriverObject( GameLogic.HUMAN_OPPONENT );
-		bgCarBot.createCar( bgScene, bgVehicle );
-		bgCarBot.car.command( "stop" );
-		bgCarBot.car.command( "idle" );
-		bgCarBot.car.command( "setsteer -0.2" );
+		// Create the background Taxi through the same Vehicle constructor
+		// used by the in-game car selector.
+		bgVehicle = new Vehicle( bgScene, cars.traffic.Taxi:0x0006r, 6, 2.0, 0.0, 1.0, 1.0 );
+		bgVehicle.command( "reset" );
+		bgVehicle.command( "setsteer -0.2" );
+		bgVehicle.wakeUp();
+		bgVehicle.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
+		bgVehicle.command( "idle" );
 
 		// Camera route around the background car.
 		bgCamPath = new Pori[28];
@@ -234,11 +229,10 @@ public class MainMenuDialog extends OptionsDialog
 	{
 		super.hide();
 
-		// Remove the temporary bot brain, driver render and background car.
-		if( bgCarBot )
+		// Remove the background Taxi when leaving the main menu.
+		if( bgVehicle )
 		{
-			bgCarBot.deleteCar();
-			bgCarBot = null;
+			bgVehicle.destroy();
 			bgVehicle = null;
 		}
 
