@@ -1027,8 +1027,9 @@ public class MainMenuDialog extends OptionsDialog
 	{
 		if( MenuGarageCamera )
 		{
-			// Destroy the menu camera directly. The next scene installs its own
-			// viewport camera; avoid sending a second render reset during transition.
+			// Detach the menu camera from the viewport before destroying it.
+			// Garage.enter() does the same for its previous camera before replacement.
+			MenuGarageCamera.command( "render 0" );
 			MenuGarageCamera.destroy();
 			MenuGarageCamera = null;
 		}
