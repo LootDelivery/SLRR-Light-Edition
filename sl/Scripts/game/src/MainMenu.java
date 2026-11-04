@@ -180,21 +180,11 @@ public class MainMenuDialog extends OptionsDialog
 		bgSky = new RenderRef( bgScene, maps.skydome:0x0023r, "egbolt-night_02" );
 		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0035r ) );
 
-		// Load the dedicated menu car save, or use the stock fallback car.
-		if( Vehicle.load( GameLogic.carSaveDir + "Menu", bgScene ) )
-		{
-			bgVehicle = Vehicle.load( GameLogic.carSaveDir + "Menu", bgScene );
-			bgVehicle.command( "reset" );
-			bgVehicle.command( "setsteer 0" );
-			bgVehicle.wakeUp();
-		}
-		else
-		{
-			bgVehicle = new Vehicle( bgScene, cars:0x0000r, 1, 1.0, 0.0, 1.0, 1.0 );
-			bgVehicle.command( "reset" );
-			bgVehicle.command( "setsteer 0" );
-			bgVehicle.wakeUp();
-		}
+		// Use a stock traffic vehicle for the main menu background.
+		bgVehicle = new Vehicle( bgScene, cars.traffic.Taxi:0x0006r, 6, 2.0, 0.0, 1.0, 1.0 );
+		bgVehicle.command( "reset" );
+		bgVehicle.command( "setsteer -0.2" );
+		bgVehicle.wakeUp();
 
 		bgVehicle.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
 
