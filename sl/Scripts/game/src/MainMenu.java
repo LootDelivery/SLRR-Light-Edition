@@ -159,7 +159,6 @@ public class MainMenuDialog extends OptionsDialog
 
 		Sound.changeMusicSet( Sound.MUSIC_SET_MENU );
 
-		osd.createBG( new ResourceRef( frontend:0x0006r ) );
 
 		versionMainString = "Street Legal Racing: Redline - Light Edition";
 		versionSubString = Config.version + " MWM  (build " + System.buildNumber() + ")";
