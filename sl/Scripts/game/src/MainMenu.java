@@ -179,13 +179,14 @@ public class MainMenuDialog extends OptionsDialog
 		bgSky = new RenderRef( bgScene, maps.skydome:0x0023r, "egbolt-night_02" );
 		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0035r ) );
 
-		// Use a stock traffic vehicle for the main menu background.
-		bgVehicle = new Vehicle( bgScene, cars.traffic.Taxi:0x0006r, 6, 2.0, 0.0, 1.0, 1.0 );
+		// Spawn the traffic taxi through the same path used by CarSelect.
+		float bgCarColorSeed = Math.random()*12345;
+		GameRef bgCarRef = new GameRef( bgScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
+		bgVehicle = new Vehicle( bgCarRef );
 		bgVehicle.command( "reset" );
+		bgVehicle.setMatrix( null, null );
+		bgVehicle.command( "idle" );
 		bgVehicle.command( "setsteer -0.2" );
-		bgVehicle.wakeUp();
-
-		bgVehicle.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
 
 		// Camera route around the background car.
 		bgCamPath = new Pori[28];
