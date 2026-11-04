@@ -184,9 +184,9 @@ public class MainMenuDialog extends OptionsDialog
 		GameRef bgCarRef = new GameRef( bgScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
 		bgVehicle = new Vehicle( bgCarRef );
 		bgVehicle.command( "reset" );
-		bgVehicle.setMatrix( null, null );
-		bgVehicle.command( "idle" );
 		bgVehicle.command( "setsteer -0.2" );
+		bgVehicle.wakeUp();
+		bgVehicle.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
 
 		// Camera route around the background car.
 		bgCamPath = new Pori[28];
