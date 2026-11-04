@@ -26,13 +26,9 @@ public class MainMenu implements GameState
 
 	public void exit( GameState nextState )
 	{
-		if( mmd )
-		{
-			// Release the entire 3D menu preview before the next GameState
-			// (including Garage) starts loading.
-			mmd.prepareForTransition();
-			mmd = null;
-		}
+		// Menu preview teardown is performed explicitly by MainMenuDialog
+		// immediately before each active-section transition.
+		mmd = null;
 	}
 }
 
@@ -551,6 +547,7 @@ public class MainMenuDialog extends OptionsDialog
 			GameLogic.gameMode = GameLogic.GM_SINGLECAR;;
 			GameLogic.setTime( (Math.random()*14+4)*3600 );
 			player.money = 0;
+			prepareForTransition();
 			GameLogic.changeActiveSection (GameLogic.garage);
 			CarScene.destroy();
 		}
@@ -569,7 +566,8 @@ public class MainMenuDialog extends OptionsDialog
 					player.car = new Vehicle( player, vd.id, vd.colorIndex, vd.optical, vd.power, vd.wear, vd.tear );
 				}
 
-				GameLogic.changeActiveSection( new TrackSelect() );
+				prepareForTransition();
+			GameLogic.changeActiveSection( new TrackSelect() );
 			}
 		}
 		else
@@ -587,6 +585,7 @@ public class MainMenuDialog extends OptionsDialog
 		else
 		if( command == CMD_MENUCAR )
 		{
+			prepareForTransition();
 			GameLogic.changeActiveSection( new CarSelect() );
 		}
 		else
@@ -703,7 +702,8 @@ public class MainMenuDialog extends OptionsDialog
 
 					player.money = 1000000;
 
-					GameLogic.changeActiveSection( GameLogic.garage );
+					prepareForTransition();
+							GameLogic.changeActiveSection( GameLogic.garage );
 				}
 
 			}
@@ -750,7 +750,8 @@ public class MainMenuDialog extends OptionsDialog
 					GameLogic.carrerInProgress = 1;
 					GameLogic.autoSaveQuiet();
 
-					GameLogic.changeActiveSection( GameLogic.garage );
+					prepareForTransition();
+							GameLogic.changeActiveSection( GameLogic.garage );
 				}
 			}
 		}
@@ -779,6 +780,7 @@ public class MainMenuDialog extends OptionsDialog
 						if( !error )
 						{
 							GameLogic.carrerInProgress = 1;
+							prepareForTransition();
 							GameLogic.changeActiveSection( GameLogic.garage );
 						}
 						else
@@ -884,7 +886,8 @@ public class MainMenuDialog extends OptionsDialog
 		else
 		if( command == CMD_BACKTOGARAGE )
 		{
-			GameLogic.changeActiveSection( GameLogic.garage );
+			prepareForTransition();
+							GameLogic.changeActiveSection( GameLogic.garage );
 		}
 		else
 		if( command == CMD_EXIT )
@@ -902,7 +905,8 @@ public class MainMenuDialog extends OptionsDialog
 				if( carreerMode )
 					GameLogic.autoSaveQuiet();
 
-				GameLogic.changeActiveSection( null );
+				prepareForTransition();
+			GameLogic.changeActiveSection( null );
 			}
 		}
 		else
