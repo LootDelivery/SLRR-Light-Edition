@@ -1,4 +1,4 @@
-name: Verify Garage TUFA compilation
+name: Build Garage TUFA class
 
 on:
   push:
@@ -10,10 +10,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  compare:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,21 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Compile Garage and compare with shipped class
+      - name: Compile Garage.java into TUFA
         run: |
-          node compiler/dist/src/cli.js --root "$GITHUB_WORKSPACE" --compare "$GITHUB_WORKSPACE/sl/Scripts/game/src/Garage.java"
+          node compiler/dist/src/cli.js --root "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/slrr-classes" "$GITHUB_WORKSPACE/sl/Scripts/game/src/Garage.java"
+          GENERATED="$RUNNER_TEMP/slrr-classes/sl/Scripts/game/Garage.class"
+          test -s "$GENERATED"
+          cp "$GENERATED" sl/Scripts/game/Garage.class
+          ls -l sl/Scripts/game/Garage.class
+      - name: Commit compiled class to this prototype branch
+        run: |
+          if git diff --quiet -- sl/Scripts/game/Garage.class; then
+            echo "Garage.class is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sl/Scripts/game/Garage.class
+          git commit -m "Build garage AI speed test TUFA class"
+          git push origin "HEAD:$GITHUB_REF_NAME"
