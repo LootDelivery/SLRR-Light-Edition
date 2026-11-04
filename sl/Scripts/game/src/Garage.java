@@ -117,6 +117,20 @@ public class Garage extends Scene implements GameState
 
 	RenderRef		stuff;
 
+	// Isolated garage AI movement test (the player's car is never controlled).
+	final static int	GARAGE_AI_SPEED_TIMER = 3;
+	final static float	GARAGE_AI_SPEED_LIMIT_KMH = 6.0;
+	final static float	GARAGE_AI_TIMER_INTERVAL = 0.10;
+	final static float	GARAGE_AI_ENGAGE_MARGIN_MPS = 0.08;
+	final static float	GARAGE_AI_RELEASE_MARGIN_MPS = 0.12;
+	final static float	GARAGE_AI_BRAKE_GAIN = 1.25;
+	final static float	GARAGE_AI_MIN_BRAKE = 0.08;
+	final static float	GARAGE_AI_MAX_BRAKE = 0.45;
+	Vehicle			garageAITestCar;
+	Bot				garageAITestBot;
+	int				garageAITestActive;
+	int				garageAIBraking;
+
 	int				ClutchStatus = 1;
 	Button			ClutchButton;
 	Text			DebugText;
@@ -302,11 +316,15 @@ public class Garage extends Scene implements GameState
 		}
 
 		GameLogic.played = 1;
+
+		// Start the temporary second car only in the normal garage, never in ROC.
+		startGarageAITest();
 	}
 
 	public void exit( GameState nextState )
 	{
 		clearEventMask( EVENT_ANY );
+		stopGarageAITest();
 
 		Config.camera_ext_viewrange = ext_viewrange;
 		Config.camera_int_viewrange = int_viewrange;
@@ -729,6 +747,144 @@ public class Garage extends Scene implements GameState
 		}
 	}
 
+
+	// Creates one temporary stock car and gives it to the game's normal BOTBRAIN
+	// implementation. The player's own Vehicle/Controller are not touched.
+	private void startGarageAITest()
+	{
+		if( roc || garageAITestBot || !map )
+			return;
+
+		VehicleDescriptor descriptor = GameLogic.getVehicleDescriptor( VehicleType.VS_STOCK );
+		if( !descriptor )
+		{
+			if( DebugText )
+				DebugText.changeText( "GARAGE AI: no stock vehicle descriptor" );
+			return;
+		}
+
+		// This is the safe test position used by the old Garage.java Car2 prototype.
+		garageAITestCar = new Vehicle( map, descriptor.id, descriptor.colorIndex, 1, 1, 1, 1 );
+		if( !garageAITestCar )
+		{
+			if( DebugText )
+				DebugText.changeText( "GARAGE AI: vehicle creation failed" );
+			return;
+		}
+
+		garageAITestCar.setMatrix( new Vector3( 4.0, 0.0, 0.0 ), new Ypr( 0.0, 0.0, 0.0 ) );
+		garageAITestCar.command( "reset" );
+		garageAITestCar.wakeUp();
+
+		// Reuse Bot.enterCar(): it creates BOTBRAIN, the driver render and the
+		// controllable link exactly as the stock traffic/race AI expects.
+		garageAITestBot = new Bot( 0, 17, 0.5 );
+		garageAITestBot.createCar( map, garageAITestCar );
+
+		if( !garageAITestBot.brain || !garageAITestBot.car )
+		{
+			if( DebugText )
+				DebugText.changeText( "GARAGE AI: BOTBRAIN creation failed" );
+			garageAITestBot.deleteCar();
+			garageAITestBot = null;
+			garageAITestCar = null;
+			return;
+		}
+
+		Vector3 start = garageAITestCar.getPos();
+		float yaw = garageAITestCar.getOri().y;
+		float targetX = start.x - (float)Math.sin( yaw ) * 10.0;
+		float targetZ = start.z - (float)Math.cos( yaw ) * 10.0;
+		Vector3 destination = new Vector3( targetX, start.y, targetZ );
+
+		garageAITestActive = 1;
+		garageAIBraking = 0;
+		garageAITestBot.driveStraightTo( destination );
+		addTimer( GARAGE_AI_TIMER_INTERVAL, GARAGE_AI_SPEED_TIMER );
+
+		if( DebugText )
+			DebugText.changeText( "GARAGE AI: driving to point 10m ahead, limit 6 km/h" );
+	}
+
+	private void stopGarageAITest()
+	{
+		garageAITestActive = 0;
+
+		if( garageAITestBot )
+		{
+			if( garageAITestBot.car )
+				setGarageAITestBrake( garageAITestBot.car, 0.0 );
+
+			garageAITestBot.stop();
+			garageAITestBot.deleteCar();
+			garageAITestBot = null;
+		}
+
+		garageAITestCar = null;
+		garageAIBraking = 0;
+	}
+
+	private void updateGarageAITestLimiter()
+	{
+		if( !garageAITestActive || !garageAITestBot || !garageAITestBot.car )
+			return;
+
+		Vehicle vehicle = garageAITestBot.car;
+		if( !vehicle.chassis )
+			return;
+
+		// getSpeedSquare() reports m/s squared. Convert the requested km/h
+		// limit before comparing it with the square-rooted vehicle speed.
+		float speedSquare = vehicle.getSpeedSquare();
+		if( speedSquare < 0.0 )
+			speedSquare = 0.0;
+
+		float speedMps = (float)Math.sqrt( speedSquare );
+		float limitMps = GARAGE_AI_SPEED_LIMIT_KMH / 3.6;
+
+		if( garageAIBraking )
+		{
+			if( speedMps <= limitMps - GARAGE_AI_RELEASE_MARGIN_MPS )
+			{
+				setGarageAITestBrake( vehicle, 0.0 );
+				garageAIBraking = 0;
+			}
+		}
+		else
+		if( speedMps > limitMps + GARAGE_AI_ENGAGE_MARGIN_MPS )
+		{
+			garageAIBraking = 1;
+		}
+
+		if( garageAIBraking )
+		{
+			float brake = ( speedMps - limitMps ) * GARAGE_AI_BRAKE_GAIN;
+			if( brake < GARAGE_AI_MIN_BRAKE )
+				brake = GARAGE_AI_MIN_BRAKE;
+			if( brake > GARAGE_AI_MAX_BRAKE )
+				brake = GARAGE_AI_MAX_BRAKE;
+
+			setGarageAITestBrake( vehicle, brake );
+		}
+
+		if( DebugText )
+			DebugText.changeText( "GARAGE AI: " + Float.toString( speedMps * 3.6, "%1.1f" ) + " / 6.0 km/h" );
+	}
+
+	private void setGarageAITestBrake( Vehicle vehicle, float brake )
+	{
+		if( !vehicle || !vehicle.chassis )
+			return;
+
+		int wheelCount = vehicle.chassis.getWheels();
+		for( int i = 0; i < wheelCount; i++ )
+		{
+			WheelRef wheel = vehicle.chassis.getWheel( i );
+			if( wheel )
+				wheel.setBrake( brake );
+		}
+	}
+
 	public void handleEvent( GameRef obj_ref, int event, int param )
     {
         if( event == EVENT_TIME )
@@ -737,6 +893,12 @@ public class Garage extends Scene implements GameState
             {
 				addTimer( 1, 2 ); // ten sec tick
 				super.refresh( GameLogic.getTime() );
+			}
+			else
+			if( param == GARAGE_AI_SPEED_TIMER && garageAITestActive )
+			{
+				updateGarageAITestLimiter();
+				addTimer( GARAGE_AI_TIMER_INTERVAL, GARAGE_AI_SPEED_TIMER );
 			}
 		}
 	}
