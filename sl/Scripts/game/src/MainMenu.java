@@ -28,8 +28,8 @@ public class MainMenu implements GameState
 	{
 		if( mmd )
 		{
-			// Restore the ordinary 2D menu state and release every preview object
-			// before the next GameState (including Garage) starts loading.
+			// Release the entire 3D menu preview before the next GameState
+			// (including Garage) starts loading.
 			mmd.prepareForTransition();
 			mmd = null;
 		}
@@ -187,7 +187,7 @@ public class MainMenuDialog extends OptionsDialog
 		super.hide();
 	}
 
-	// Fully tear down the menu preview before the next GameState starts loading.
+	// Destroy all menu-preview objects before the next GameState starts loading.
 	public void prepareForTransition()
 	{
 		destroyMenuGarageScene();
