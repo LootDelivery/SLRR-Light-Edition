@@ -26,8 +26,27 @@ public class MainMenu implements GameState
 
 	public void exit( GameState nextState )
 	{
-		mmd.hide();
-		mmd = null;
+		if( nextState instanceof Garage )
+		{
+			// Detach the menu camera, but defer scene destruction until Garage
+			// has installed its replacement camera on the shared viewport.
+			mmd.hideForGarageTransition();
+		}
+		else
+		{
+			mmd.hide();
+			mmd.destroyMenuGarageScene();
+			mmd = null;
+		}
+	}
+
+	public void completeGarageTransition()
+	{
+		if( mmd )
+		{
+			mmd.destroyMenuGarageScene();
+			mmd = null;
+		}
 	}
 }
 
@@ -161,7 +180,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		Sound.changeMusicSet( Sound.MUSIC_SET_MENU );
 
-		osd.createBG( new ResourceRef( frontend:0x0006r ) );
+		// The menu background is rendered by MenuGarageCamera.
 
 		versionMainString = "Street Legal Racing: Redline - Light Edition";
 		versionSubString = Config.version + " MWM  (build " + System.buildNumber() + ")";
@@ -173,11 +192,21 @@ public class MainMenuDialog extends OptionsDialog
 
 		super.show();
 
+		createMenuGarageScene();
 		changeMode (mainGroup);
 	}
 
 	public void hide()
 	{
+		super.hide();
+	}
+
+	// Keep the menu scene alive until Garage has installed its own viewport camera.
+	public void hideForGarageTransition()
+	{
+		if( MenuGarageCamera )
+			MenuGarageCamera.command( "render 0" );
+
 		super.hide();
 	}
 
@@ -187,7 +216,7 @@ public class MainMenuDialog extends OptionsDialog
 
 		//--------------main menu--------------
 
-		osd.createBG( RID_GENERALBG );
+		// Keep this group transparent; the 3D garage camera draws the background.
 		osd.createHeader( "MAIN MENU" );
 
 		m = osd.createMenu( butt1, 0.0, -0.6, 0 );
