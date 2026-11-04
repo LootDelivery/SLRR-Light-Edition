@@ -112,8 +112,9 @@ public class MainMenuDialog extends OptionsDialog
 	// Main menu background scene and car
 	RenderRef		bgSun, DSun, CSun;
 	RenderRef		bgSky;
-	GameRef			bgScene, bgCarScene, CarScene, DriverScene;
+	GameRef			bgScene, CarScene, DriverScene;
 	Vehicle			bgVehicle;
+	Bot				bgCarBot;
 	RenderRef		DriverRender;
 	Camera			bgCam, CarCam;
 	float			bgCamAngle, CarCamAngle;
@@ -179,16 +180,18 @@ public class MainMenuDialog extends OptionsDialog
 		bgSky = new RenderRef( bgScene, maps.skydome:0x0023r, "egbolt-night_02" );
 		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0035r ) );
 
-		// Keep the map as the camera scene, but place the traffic car under
-		// a Dummy child like CarSelect's isolated vehicle preview.
-		bgCarScene = new Dummy( bgScene );
+		// Spawn the taxi like a traffic racer: set its native transform first,
+		// then register it with a suspended Bot controller.
 		float bgCarColorSeed = Math.random()*12345;
-		GameRef bgCarRef = new GameRef( bgCarScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
+		GameRef bgCarRef = new GameRef( bgScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
+		bgCarRef.setMatrix( new Vector3(0,0,0), new Ypr(0,0,0) );
 		bgVehicle = new Vehicle( bgCarRef );
-		bgVehicle.command( "reset" );
-		bgVehicle.setMatrix( null, null );
-		bgVehicle.command( "idle" );
-		bgVehicle.command( "setsteer -0.2" );
+		bgCarBot = new Bot( 0, 12345, 0.0 );
+		bgCarBot.setDriverObject( GameLogic.HUMAN_OPPONENT );
+		bgCarBot.createCar( bgScene, bgVehicle );
+		bgCarBot.car.command( "stop" );
+		bgCarBot.car.command( "idle" );
+		bgCarBot.car.command( "setsteer -0.2" );
 
 		// Camera route around the background car.
 		bgCamPath = new Pori[28];
@@ -230,6 +233,14 @@ public class MainMenuDialog extends OptionsDialog
 	public void hide()
 	{
 		super.hide();
+
+		// Remove the temporary bot brain, driver render and background car.
+		if( bgCarBot )
+		{
+			bgCarBot.deleteCar();
+			bgCarBot = null;
+			bgVehicle = null;
+		}
 
 		// Release the main-menu background camera when leaving the menu.
 		if( bgVideoActive )
