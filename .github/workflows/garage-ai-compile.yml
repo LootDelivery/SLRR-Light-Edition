@@ -1,0 +1,36 @@
+name: Verify Garage TUFA compilation
+
+on:
+  push:
+    branches:
+      - prototype/garage-ai-speed-limit
+    paths:
+      - "sl/Scripts/game/src/Garage.java"
+      - ".github/workflows/garage-ai-compile.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: LootDelivery/SLRR-JVM-compiler
+          path: compiler
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: compiler/package-lock.json
+      - name: Build compiler
+        working-directory: compiler
+        run: |
+          npm ci
+          npm run build
+      - name: Compile Garage and compare with shipped class
+        run: |
+          node compiler/dist/src/cli.js --root "$GITHUB_WORKSPACE" --compare "$GITHUB_WORKSPACE/sl/Scripts/game/src/Garage.java"
