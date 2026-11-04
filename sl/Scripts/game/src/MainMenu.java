@@ -167,6 +167,8 @@ public class MainMenuDialog extends OptionsDialog
 		versionMain = osd.createText( versionMainString, Frontend.smallFont, Text.ALIGN_RIGHT, 0.95, -0.99 );
 		versionSub = osd.createText( versionSubString, Frontend.smallFont, Text.ALIGN_RIGHT, 0.95, -0.94 );
 
+		osd.endGroup();
+
 		// Main menu 3D background scene
 		bgScene = new GroundRef( Maps.Addon_Maps.Home:0x00000001r );
 		bgScene.setFog( 0xFF07121e, 2.0, 100.0 );
@@ -227,7 +229,6 @@ public class MainMenuDialog extends OptionsDialog
 		bgCamPath[26] = new Pori( new Vector3(-1.699, 0.704, -2.534), new Ypr(2.531, -0.246, 0.000) );
 		bgCamPath[27] = new Pori( new Vector3(-1.886, 0.483, -2.086), new Ypr(0.000, 0.000, 0.000) );
 
-		osd.endGroup();
 
 		super.show();
 
