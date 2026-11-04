@@ -567,7 +567,7 @@ public class MainMenuDialog extends OptionsDialog
 				}
 
 				prepareForTransition();
-			GameLogic.changeActiveSection( new TrackSelect() );
+				GameLogic.changeActiveSection( new TrackSelect() );
 			}
 		}
 		else
@@ -703,7 +703,7 @@ public class MainMenuDialog extends OptionsDialog
 					player.money = 1000000;
 
 					prepareForTransition();
-							GameLogic.changeActiveSection( GameLogic.garage );
+					GameLogic.changeActiveSection( GameLogic.garage );
 				}
 
 			}
@@ -751,7 +751,7 @@ public class MainMenuDialog extends OptionsDialog
 					GameLogic.autoSaveQuiet();
 
 					prepareForTransition();
-							GameLogic.changeActiveSection( GameLogic.garage );
+					GameLogic.changeActiveSection( GameLogic.garage );
 				}
 			}
 		}
@@ -887,7 +887,7 @@ public class MainMenuDialog extends OptionsDialog
 		if( command == CMD_BACKTOGARAGE )
 		{
 			prepareForTransition();
-							GameLogic.changeActiveSection( GameLogic.garage );
+			GameLogic.changeActiveSection( GameLogic.garage );
 		}
 		else
 		if( command == CMD_EXIT )
@@ -906,7 +906,7 @@ public class MainMenuDialog extends OptionsDialog
 					GameLogic.autoSaveQuiet();
 
 				prepareForTransition();
-			GameLogic.changeActiveSection( null );
+				GameLogic.changeActiveSection( null );
 			}
 		}
 		else
