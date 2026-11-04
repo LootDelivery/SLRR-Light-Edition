@@ -98,7 +98,9 @@ public class MainMenuDialog extends OptionsDialog
 	final static float	CREDITS_TIMER = 0.20;		// speed
 	final static float	CREDITS_BOTTOM = 1.2;		// offscreen pos to start new text
 	final static float	CREDITS_TOP = -1.2;			// offscreen pos to stop text
-	final static float	MENU_WHEEL_SPIN_SPEED = 6.283185;	// one wheel revolution per second
+	final static float	MENU_GARAGE_BRAKE_ON_SPEED_SQ = 4.0;	// 2.0 m/s = 7.2 km/h
+	final static float	MENU_GARAGE_BRAKE_OFF_SPEED_SQ = 2.25;	// 1.5 m/s = 5.4 km/h
+	final static float	MENU_GARAGE_BRAKE_VALUE = 1.0;
 
 	int				creditsGroup;
 	Text[]			creditsTxt;
@@ -120,8 +122,9 @@ public class MainMenuDialog extends OptionsDialog
 	RenderRef		MenuGarageStuff, MenuGarageLight, MenuGarageLightType;
 	GameRef			MenuGarageCamera;
 	Vehicle			MenuGarageCar;
+	Bot				MenuGarageBot;
 	WheelRef[]		MenuGarageWheels;
-	float			MenuWheelLastTime;
+	int				MenuGarageBrakeActive;
 
 	Text			careerHeader;
 	Text			versionMain, versionSub;
@@ -967,7 +970,7 @@ public class MainMenuDialog extends OptionsDialog
 		MenuGarageLightType.duplicate( new RenderRef( misc.garage:0x001Dr ) );
 		MenuGarageLight = new RenderRef( MenuGarageMap, MenuGarageLightType, "Main menu garage light" );
 
-		// Use a separate traffic car so the player's saved car is never modified.
+		// This is a menu-only vehicle. Never read or modify player.car here.
 		MenuGarageCar = new Vehicle( MenuGarageMap, cars.traffic.Wagon:0x0006r, 6, 2.0, 0.0, 1.0, 1.0 );
 		if( MenuGarageCar )
 		{
@@ -976,17 +979,24 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCar.setMatrix( new Vector3( 0, 0, 0 ), new Ypr( 0, 0, 0 ) );
 			MenuGarageCar.command( "reset" );
 			MenuGarageCar.command( "stop" );
-
-			// Match Garage.enter(): keep the preview car visible but suspend its physics.
 			MenuGarageCar.wakeUp();
-			MenuGarageCar.command( "suspend" );
 
 			if( MenuGarageCar.chassis )
 			{
 				MenuGarageWheels = new WheelRef[MenuGarageCar.chassis.wheels];
 				for( int i=0; i<MenuGarageWheels.length; i++ )
+				{
 					MenuGarageWheels[i] = MenuGarageCar.chassis.getWheel( i );
+					if( MenuGarageWheels[i] )
+						MenuGarageWheels[i].setBrake( 0.0 );
+				}
 			}
+
+			// Bot.driveStraightTo sends AI_GoToTarget in world coordinates.
+			// At zero yaw this car's forward axis is +Z, so the target is 10 m ahead.
+			MenuGarageBot = new Bot( 0, 0, 0.0 );
+			MenuGarageBot.createCar( MenuGarageMap, MenuGarageCar );
+			MenuGarageBot.driveStraightTo( new Vector3( 0.0, 0.0, 10.0 ) );
 		}
 
 
@@ -1007,7 +1017,6 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCamera.command( "look " + MenuGarageCar.id() + " 0,0,0 0,0,0" );
 		}
 
-		MenuWheelLastTime = System.currentTime();
 	}
 
 	public void destroyMenuGarageScene()
@@ -1019,14 +1028,23 @@ public class MainMenuDialog extends OptionsDialog
 			MenuGarageCamera = null;
 		}
 
+		// Release the AI brain and its menu-only car together.
+		if( MenuGarageBot )
+		{
+			MenuGarageBot.deleteCar();
+			MenuGarageBot = null;
+			MenuGarageCar = null;
+		}
+		else
 		if( MenuGarageCar )
 		{
 			MenuGarageCar.destroy();
 			MenuGarageCar = null;
 		}
 
-		// Match Garage.exit(): release every map-owned instance before map.unload().
+		// Release cached wheel refs before map.unload().
 		MenuGarageWheels = null;
+		MenuGarageBrakeActive = 0;
 
 		if( MenuGarageLight )
 		{
@@ -1052,27 +1070,31 @@ public class MainMenuDialog extends OptionsDialog
 
 	public void animate()
 	{
-		// With physics suspended, WheelRef.setYpr can rotate slot 101+wheelId without moving the chassis.
-		if( MenuGarageWheels )
+		// The AI controls steering and throttle. Apply a wheel-brake speed limiter
+		// so the car creeps instead of accelerating to the AI's normal target speed.
+		if( MenuGarageCar && MenuGarageWheels )
 		{
-			float now = System.currentTime();
-			float delta = now - MenuWheelLastTime;
-			if( delta > 0.0 )
+			float speedSquare = MenuGarageCar.getSpeedSquare();
+
+			if( !MenuGarageBrakeActive && speedSquare > MENU_GARAGE_BRAKE_ON_SPEED_SQ )
 			{
-				if( delta > 0.25 ) delta = 0.25;
+				MenuGarageBrakeActive = 1;
 				for( int i=0; i<MenuGarageWheels.length; i++ )
 				{
 					if( MenuGarageWheels[i] )
-					{
-						Ypr wheelYpr = MenuGarageWheels[i].getYpr();
-						if( !wheelYpr ) wheelYpr = new Ypr( 0, 0, 0 );
-						wheelYpr.p += delta * MENU_WHEEL_SPIN_SPEED;
-						while( wheelYpr.p >= 6.283185 ) wheelYpr.p -= 6.283185;
-						MenuGarageWheels[i].setYpr( wheelYpr );
-					}
+						MenuGarageWheels[i].setBrake( MENU_GARAGE_BRAKE_VALUE );
 				}
 			}
-			MenuWheelLastTime = now;
+			else
+			if( MenuGarageBrakeActive && speedSquare < MENU_GARAGE_BRAKE_OFF_SPEED_SQ )
+			{
+				MenuGarageBrakeActive = 0;
+				for( int i=0; i<MenuGarageWheels.length; i++ )
+				{
+					if( MenuGarageWheels[i] )
+						MenuGarageWheels[i].setBrake( 0.0 );
+				}
+			}
 		}
 
 		if (actGroup == CarGroup)
