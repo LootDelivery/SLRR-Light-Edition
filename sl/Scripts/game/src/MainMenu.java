@@ -179,8 +179,10 @@ public class MainMenuDialog extends OptionsDialog
 
 	public void hide()
 	{
-		destroyMenuGarageScene();
+		// Stop the menu OSD and its animate callback before releasing objects
+		// that the callback can still reference.
 		super.hide();
+		destroyMenuGarageScene();
 	}
 
 	public void addCustomGroups()
