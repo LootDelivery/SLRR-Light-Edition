@@ -112,7 +112,7 @@ public class MainMenuDialog extends OptionsDialog
 	// Main menu background scene and car
 	RenderRef		bgSun, DSun, CSun;
 	RenderRef		bgSky;
-	GameRef			bgScene, CarScene, DriverScene;
+	GameRef			bgScene, bgCarScene, CarScene, DriverScene;
 	Vehicle			bgVehicle;
 	RenderRef		DriverRender;
 	Camera			bgCam, CarCam;
@@ -179,9 +179,11 @@ public class MainMenuDialog extends OptionsDialog
 		bgSky = new RenderRef( bgScene, maps.skydome:0x0023r, "egbolt-night_02" );
 		GfxEngine.setGlobalEnvmap( new ResourceRef( maps.skydome:0x0035r ) );
 
-		// Create the traffic taxi exactly like CarSelect does.
+		// Keep the map as the camera scene, but place the traffic car under
+		// a Dummy child like CarSelect's isolated vehicle preview.
+		bgCarScene = new Dummy( bgScene );
 		float bgCarColorSeed = Math.random()*12345;
-		GameRef bgCarRef = new GameRef( bgScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
+		GameRef bgCarRef = new GameRef( bgCarScene, cars.traffic.Taxi:0x0006r, "0,0,0"+","+"0,0,0," + bgCarColorSeed, "nightracer1" );
 		bgVehicle = new Vehicle( bgCarRef );
 		bgVehicle.command( "reset" );
 		bgVehicle.setMatrix( null, null );
