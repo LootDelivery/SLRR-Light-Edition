@@ -1,0 +1,9 @@
+Input EXE: StreetLegal_Redline_native_silent.exe
+Backend source: ttf_backend_mode1_fixed.c
+PE32 x86; original EntryPoint: 0x001514c0
+TTF section VA: 0x007e4000
+DrawText hook VA: 0x007e4000
+MeasureText hook VA: 0x007e8480
+GfxDevice vtable slots changed: +0x204 and +0x214
+Original .text/.data/.rsrc/.reloc raw content preserved; .rdata differs only at the two hook pointer values.
+Runtime test status: not launched in Windows from this build environment.

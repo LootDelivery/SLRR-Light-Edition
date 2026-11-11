@@ -1,0 +1,109 @@
+diff --git a/StreetLegalRedline/system/Scripts/render/src/Text.java b/StreetLegalRedline/system/Scripts/render/src/Text.java
+--- a/StreetLegalRedline/system/Scripts/render/src/Text.java
++++ b/StreetLegalRedline/system/Scripts/render/src/Text.java
+@@ -105,6 +105,79 @@
+ 	public static float getWidth( String str, ResourceRef font, Viewport vp )
+ 	{
+ 		return 2*getWidthPixels( str, font )/(Config.video_x*vp.getWidth());
+ 	}
++
++	/* Runtime TTF scale is stored beside UI.ttf and read by the native renderer. */
++	public static int getTTFScalePercent()
++	{
++		FileInputStream in = null;
++		byte[] data = new byte[12];
++		int count = 0;
++		try
++		{
++			in = new FileInputStream( "Fonts/TTF.scale" );
++			int ch;
++			while( count < data.length && (ch = in.read()) >= 0 )
++			{
++				if( ch == '\r' || ch == '\n' )
++					break;
++				data[count++] = (byte)ch;
++			}
++		}
++		catch( Exception e )
++		{
++			return 100;
++		}
++		finally
++		{
++			if( in != null )
++				try { in.close(); } catch( Exception e ) {}
++		}
++
++		int value = 0;
++		int digits = 0;
++		for( int i = 0; i < count; i++ )
++		{
++			int c = data[i] & 255;
++			if( c >= '0' && c <= '9' )
++			{
++				value = value * 10 + c - '0';
++				digits++;
++				if( digits > 3 )
++					break;
++			}
++			else if( digits > 0 )
++				break;
++			else if( c != ' ' && c != '\t' )
++				return 100;
++		}
++		if( digits == 0 )
++			return 100;
++		if( value < 60 ) value = 60;
++		if( value > 150 ) value = 150;
++		return value;
++	}
++
++	public static void setTTFScalePercent( int percent )
++	{
++		if( percent < 60 ) percent = 60;
++		if( percent > 150 ) percent = 150;
++		FileOutputStream out = null;
++		try
++		{
++			out = new FileOutputStream( "Fonts/TTF.scale" );
++			out.write( Integer.toString( percent ).getBytes() );
++			out.flush();
++		}
++		catch( Exception e )
++		{
++		}
++		finally
++		{
++			if( out != null )
++				try { out.close(); } catch( Exception e ) {}
++		}
++	}
++
+ 	public static native float getWidthPixels( String str, ResourceRef font );
+ }
+diff --git a/StreetLegalRedline/sl/Scripts/game/src/OptionsDialog.java b/StreetLegalRedline/sl/Scripts/game/src/OptionsDialog.java
+--- a/StreetLegalRedline/sl/Scripts/game/src/OptionsDialog.java
++++ b/StreetLegalRedline/sl/Scripts/game/src/OptionsDialog.java
+@@ -63,3 +63,4 @@
+ 	final static int	CMD_PARTICLE = 44;
+ 	final static int	CMD_HEADLIGHTS = 45;
+ 	final static int	CMD_FLARES = 46;
++	final static int	CMD_TTF_SCALE = 47;
+@@ -794,2 +795,4 @@
+ 		m.addItem( "TRAFFIC DENSITY", CMD_TRAFFICDENSITY, Config.trafficDensity, 0.0, 1.5, 0, null );
+ 		m.addItem( "PEDESTRIAN DENSITY", CMD_PEDESTRIANDENSITY, Config.pedestrianDensity, 0.0, 1.5, 0, null );
++		m.addSeparator();
++		m.addItem( "INTERFACE FONT SCALE", CMD_TTF_SCALE, Text.getTTFScalePercent(), 60.0, 150.0, 0, "Runtime TrueType interface font size" ).printValue( "%.0f%%" );
+@@ -1118,7 +1121,12 @@
+ 		else
+ 		if (command == CMD_HMF_3)
+ 		{
+ 			Config.head_move_acc = osd.sliderValue;
+ 		}
++		else
++		if (command == CMD_TTF_SCALE)
++		{
++			Text.setTTFScalePercent( (int)(osd.sliderValue + 0.5f) );
++		}
+ 		else
+ 		if (command == CMD_SHADOW_DETAIL)
