@@ -1,11 +1,17 @@
 package java.game;
 
+import java.localization.EN;
+import java.localization.RU;
+
 /*
  * SLRR Light Edition localization manager.
  *
- * Keep this class compatible with the TUFA script compiler:
- * no java.io streams, collections, exceptions, boolean return values,
- * or Java-only APIs are used here.
+ * TUFA-safe implementation:
+ * - no java.io streams
+ * - no collections
+ * - no exceptions
+ * - no boolean return values
+ * - no Java-only runtime helpers
  */
 public class Localization
 {
