@@ -158,6 +158,9 @@ public class MainMenuDialog extends OptionsDialog
 
 		osd.endGroup();
 
+		// Localization prototype: load an external UTF-8 language file before OSD groups are built.
+		Localization.load( "Languages/ru.ini" );
+
 		super.show();
 
 		changeMode (mainGroup);
@@ -175,21 +178,21 @@ public class MainMenuDialog extends OptionsDialog
 		//--------------main menu--------------
 
 		osd.createBG( RID_GENERALBG );
-		osd.createHeader( "MAIN MENU" );
+		osd.createHeader( Localization.get( "menu.main.title", "MAIN MENU" ) );
 
 		m = osd.createMenu( butt1, 0.0, -0.6, 0 );
-		m.addItem( "NEW CAREER", CMD_NEW );
-		m.addItem( "LOAD CAREER", CMD_LOAD );
+		m.addItem( Localization.get( "menu.main.new_career", "NEW CAREER" ), CMD_NEW );
+		m.addItem( Localization.get( "menu.main.load_career", "LOAD CAREER" ), CMD_LOAD );
 		m.addSeparator();
-		m.addItem( "LOAD CAR", CMD_LOADCAR );
-		saveCarButton = m.addItem( "SAVE CAR", CMD_SAVECAR );
+		m.addItem( Localization.get( "menu.main.load_car", "LOAD CAR" ), CMD_LOADCAR );
+		saveCarButton = m.addItem( Localization.get( "menu.main.save_car", "SAVE CAR" ), CMD_SAVECAR );
 		m.addSeparator();
-		m.addItem( "OPTIONS", CMD_OPTIONS );
-		m.addItem( "EXTRAS", CMD_EXTRAS );
-		m.addItem( "EXIT", CMD_EXIT );
+		m.addItem( Localization.get( "menu.main.options", "OPTIONS" ), CMD_OPTIONS );
+		m.addItem( Localization.get( "menu.main.extras", "EXTRAS" ), CMD_EXTRAS );
+		m.addItem( Localization.get( "menu.main.exit", "EXIT" ), CMD_EXIT );
 
 		m = osd.createMenu( butt2, 0.98, 0.95, 0 );
-		backGarageButton = m.addItem( "BACK TO GARAGE", CMD_BACKTOGARAGE );
+		backGarageButton = m.addItem( Localization.get( "menu.main.back_to_garage", "BACK TO GARAGE" ), CMD_BACKTOGARAGE );
 
 		osd.createHotkey( Input.AXIS_CANCEL, Input.VIRTUAL, CMD_EXIT, this );
 		osd.hideGroup( mainGroup = osd.endGroup() );
