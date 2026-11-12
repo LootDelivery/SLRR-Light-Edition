@@ -1,4 +1,4 @@
-package java.game;
+package java.localization;
 
 /* Russian strings for the main menu. */
 public class RU
