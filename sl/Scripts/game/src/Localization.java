@@ -1,120 +1,57 @@
 package java.game;
 
-import java.io.*;
-import java.util.*;
-
-/**
- * Lightweight external localization loader.
+/*
+ * Localization API smoke test for SLRR.
  *
- * Prototype parser for UTF-8 INI files. Missing or empty translations
- * always fall back to the original string supplied by the caller.
+ * This build intentionally does not read external files. The current
+ * SLRR File wrapper exposes serialized readString(), but no raw text
+ * line/byte reader. Standard Java streams and exception handling are
+ * not supported by the target script compiler.
  */
 public class Localization
 {
-	static Vector keys = new Vector();
-	static Vector values = new Vector();
 	static int loaded = 0;
 
-	/**
-	 * Load a UTF-8 INI file.
-	 *
-	 * Supported syntax:
-	 *   [section.name]
-	 *   key=value
-	 *   # or ; comments
-	 *
-	 * Section names are prepended to keys with a dot.
-	 * Malformed lines are ignored. Later duplicate keys take precedence.
+	/*
+	 * Temporary hard-coded Russian strings to verify the MainMenu OSD
+	 * integration and Cyrillic rendering independently from file I/O.
 	 */
-	public static int load( String fileName )
+	public static void initTestRussian()
 	{
-		keys.removeAllElements();
-		values.removeAllElements();
-		loaded = 0;
-
-		try
-		{
-			BufferedReader reader = new BufferedReader(
-				new InputStreamReader( new FileInputStream( fileName ), "UTF-8" )
-			);
-
-			String section = "";
-			String line = reader.readLine();
-
-			while( line != null )
-			{
-				line = line.trim();
-
-				if( line.length() > 0 )
-				{
-					char first = line.charAt( 0 );
-
-					if( first != '#' && first != ';' )
-					{
-						if( first == '[' && line.charAt( line.length()-1 ) == ']' )
-						{
-							section = line.substring( 1, line.length()-1 ).trim();
-						}
-						else
-						{
-							int separator = line.indexOf( "=" );
-
-							if( separator > 0 )
-							{
-								String key = line.substring( 0, separator ).trim();
-								String value = line.substring( separator+1 ).trim();
-
-								if( key.length() > 0 )
-								{
-									if( section.length() > 0 )
-										key = section + "." + key;
-
-									keys.addElement( key );
-									values.addElement( value );
-								}
-							}
-						}
-					}
-				}
-
-				line = reader.readLine();
-			}
-
-			reader.close();
-			loaded = 1;
-			return 1;
-		}
-		catch( Exception error )
-		{
-			keys.removeAllElements();
-			values.removeAllElements();
-			loaded = 0;
-			return 0;
-		}
+		loaded = 1;
 	}
 
-	/**
-	 * Return a translation or the original text when no usable value exists.
-	 */
 	public static String get( String key, String fallback )
 	{
 		if( key == null )
 			return fallback;
 
-		for( int i = keys.size()-1; i >= 0; i-- )
-		{
-			String storedKey = (String)keys.elementAt( i );
+		if( key.equals( "menu.main.title" ) )
+			return "ГЛАВНОЕ МЕНЮ";
 
-			if( storedKey.equals( key ) )
-			{
-				String value = (String)values.elementAt( i );
+		if( key.equals( "menu.main.new_career" ) )
+			return "НОВАЯ КАРЬЕРА";
 
-				if( value != null && value.length() > 0 )
-					return value;
+		if( key.equals( "menu.main.load_career" ) )
+			return "ЗАГРУЗИТЬ КАРЬЕРУ";
 
-				return fallback;
-			}
-		}
+		if( key.equals( "menu.main.load_car" ) )
+			return "ЗАГРУЗИТЬ АВТО";
+
+		if( key.equals( "menu.main.save_car" ) )
+			return "СОХРАНИТЬ АВТО";
+
+		if( key.equals( "menu.main.options" ) )
+			return "НАСТРОЙКИ";
+
+		if( key.equals( "menu.main.extras" ) )
+			return "ДОПОЛНИТЕЛЬНО";
+
+		if( key.equals( "menu.main.exit" ) )
+			return "ВЫХОД";
+
+		if( key.equals( "menu.main.back_to_garage" ) )
+			return "В ГАРАЖ";
 
 		return fallback;
 	}
