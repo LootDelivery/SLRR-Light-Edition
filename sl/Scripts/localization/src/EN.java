@@ -1,4 +1,4 @@
-package java.game;
+package java.localization;
 
 /* English strings for the main menu. */
 public class EN
