@@ -159,7 +159,7 @@ public class MainMenuDialog extends OptionsDialog
 		osd.endGroup();
 
 		// Localization prototype: load an external UTF-8 language file before OSD groups are built.
-		Localization.load( "Languages/ru.ini" );
+		Localization.initTestRussian();
 
 		super.show();
 
