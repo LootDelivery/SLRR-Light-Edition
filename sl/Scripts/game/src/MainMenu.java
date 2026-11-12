@@ -51,6 +51,7 @@ public class MainMenuDialog extends OptionsDialog
 
 	// Run Track Selector, FreeRide mode
 	final static int	CMD_TRACKSELECT  = 64;
+	final static int	CMD_SWITCH_LANGUAGE = 100;
 	
 	// Car Selector:
 	final static int	CMD_MENUCAR		 = 65;
@@ -118,6 +119,9 @@ public class MainMenuDialog extends OptionsDialog
 	String			versionMainString, versionSubString;
 
 	Button			saveCarButton, backGarageButton, TakeItButton, SelectDriverButton;
+	Text			mainMenuHeader;
+	Button			newCareerButton, loadCareerButton, loadCarButton;
+	Button			optionsButton, extrasButton, exitButton, languageButton;
 
 	//New groups:
 	int				ExtrasGroup;
@@ -178,18 +182,19 @@ public class MainMenuDialog extends OptionsDialog
 		//--------------main menu--------------
 
 		osd.createBG( RID_GENERALBG );
-		osd.createHeader( Localization.get( "menu.main.title", "MAIN MENU" ) );
+		mainMenuHeader = osd.createHeader( Localization.get( "menu.main.title", "MAIN MENU" ) );
 
 		m = osd.createMenu( butt1, 0.0, -0.6, 0 );
-		m.addItem( Localization.get( "menu.main.new_career", "NEW CAREER" ), CMD_NEW );
-		m.addItem( Localization.get( "menu.main.load_career", "LOAD CAREER" ), CMD_LOAD );
+		newCareerButton = m.addItem( Localization.get( "menu.main.new_career", "NEW CAREER" ), CMD_NEW );
+		loadCareerButton = m.addItem( Localization.get( "menu.main.load_career", "LOAD CAREER" ), CMD_LOAD );
 		m.addSeparator();
-		m.addItem( Localization.get( "menu.main.load_car", "LOAD CAR" ), CMD_LOADCAR );
+		loadCarButton = m.addItem( Localization.get( "menu.main.load_car", "LOAD CAR" ), CMD_LOADCAR );
 		saveCarButton = m.addItem( Localization.get( "menu.main.save_car", "SAVE CAR" ), CMD_SAVECAR );
 		m.addSeparator();
-		m.addItem( Localization.get( "menu.main.options", "OPTIONS" ), CMD_OPTIONS );
-		m.addItem( Localization.get( "menu.main.extras", "EXTRAS" ), CMD_EXTRAS );
-		m.addItem( Localization.get( "menu.main.exit", "EXIT" ), CMD_EXIT );
+		optionsButton = m.addItem( Localization.get( "menu.main.options", "OPTIONS" ), CMD_OPTIONS );
+		extrasButton = m.addItem( Localization.get( "menu.main.extras", "EXTRAS" ), CMD_EXTRAS );
+		exitButton = m.addItem( Localization.get( "menu.main.exit", "EXIT" ), CMD_EXIT );
+		languageButton = m.addItem( Localization.get( "menu.main.language", "LANGUAGE: ENGLISH" ), CMD_SWITCH_LANGUAGE );
 
 		m = osd.createMenu( butt2, 0.98, 0.95, 0 );
 		backGarageButton = m.addItem( Localization.get( "menu.main.back_to_garage", "BACK TO GARAGE" ), CMD_BACKTOGARAGE );
@@ -323,6 +328,12 @@ public class MainMenuDialog extends OptionsDialog
 	{
 		if (command < 0)
 			return;
+		else
+		if (command == CMD_SWITCH_LANGUAGE)
+		{
+			Localization.toggleLanguage();
+			refreshMainMenuLocalization();
+		}
 		else
 		if (command == CMD_AMBULANCE)
 		{	
@@ -919,6 +930,31 @@ public class MainMenuDialog extends OptionsDialog
 		}
 		else
 			super.osdCommand( command );
+	}
+
+	public void refreshMainMenuLocalization()
+	{
+		if( mainMenuHeader )
+			mainMenuHeader.changeText( Localization.get( "menu.main.title", "MAIN MENU" ) );
+
+		if( newCareerButton )
+			newCareerButton.changeText( Localization.get( "menu.main.new_career", "NEW CAREER" ) );
+		if( loadCareerButton )
+			loadCareerButton.changeText( Localization.get( "menu.main.load_career", "LOAD CAREER" ) );
+		if( loadCarButton )
+			loadCarButton.changeText( Localization.get( "menu.main.load_car", "LOAD CAR" ) );
+		if( saveCarButton )
+			saveCarButton.changeText( Localization.get( "menu.main.save_car", "SAVE CAR" ) );
+		if( optionsButton )
+			optionsButton.changeText( Localization.get( "menu.main.options", "OPTIONS" ) );
+		if( extrasButton )
+			extrasButton.changeText( Localization.get( "menu.main.extras", "EXTRAS" ) );
+		if( exitButton )
+			exitButton.changeText( Localization.get( "menu.main.exit", "EXIT" ) );
+		if( backGarageButton )
+			backGarageButton.changeText( Localization.get( "menu.main.back_to_garage", "BACK TO GARAGE" ) );
+		if( languageButton )
+			languageButton.changeText( Localization.get( "menu.main.language", "LANGUAGE: ENGLISH" ) );
 	}
 
 	public void changeMode(int group)
