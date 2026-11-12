@@ -1,63 +1,58 @@
 package java.game;
 
 /*
- * Localization API smoke test for SLRR.
+ * SLRR Light Edition localization manager.
  *
- * This build intentionally does not read external files. The current
- * SLRR File wrapper exposes serialized readString(), but no raw text
- * line/byte reader. Standard Java streams and exception handling are
- * not supported by the target script compiler.
+ * Keep this class compatible with the TUFA script compiler:
+ * no java.io streams, collections, exceptions, boolean return values,
+ * or Java-only APIs are used here.
  */
 public class Localization
 {
-	static int loaded = 0;
+	static int language = 1;
 
-	/*
-	 * Temporary hard-coded Russian strings to verify the MainMenu OSD
-	 * integration and Cyrillic rendering independently from file I/O.
-	 */
 	public static void initTestRussian()
 	{
-		loaded = 1;
+		language = 1;
+	}
+
+	public static void setLanguage( int index )
+	{
+		if( index == 0 )
+			language = 0;
+		else
+		if( index == 1 )
+			language = 1;
+	}
+
+	public static void toggleLanguage()
+	{
+		if( language == 0 )
+			language = 1;
+		else
+			language = 0;
+	}
+
+	public static int getLanguageIndex()
+	{
+		return language;
 	}
 
 	public static String get( String key, String fallback )
 	{
+		String value;
+
 		if( key == null )
 			return fallback;
 
-		if( key.equals( "menu.main.title" ) )
-			return "ГЛАВНОЕ МЕНЮ";
+		if( language == 1 )
+			value = RU.get( key );
+		else
+			value = EN.get( key );
 
-		if( key.equals( "menu.main.new_career" ) )
-			return "НОВАЯ КАРЬЕРА";
+		if( value == null || value.equals( "" ) )
+			return fallback;
 
-		if( key.equals( "menu.main.load_career" ) )
-			return "ЗАГРУЗИТЬ КАРЬЕРУ";
-
-		if( key.equals( "menu.main.load_car" ) )
-			return "ЗАГРУЗИТЬ АВТО";
-
-		if( key.equals( "menu.main.save_car" ) )
-			return "СОХРАНИТЬ АВТО";
-
-		if( key.equals( "menu.main.options" ) )
-			return "НАСТРОЙКИ";
-
-		if( key.equals( "menu.main.extras" ) )
-			return "ДОПОЛНИТЕЛЬНО";
-
-		if( key.equals( "menu.main.exit" ) )
-			return "ВЫХОД";
-
-		if( key.equals( "menu.main.back_to_garage" ) )
-			return "В ГАРАЖ";
-
-		return fallback;
-	}
-
-	public static int isLoaded()
-	{
-		return loaded;
+		return value;
 	}
 }
